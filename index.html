@@ -15,6 +15,20 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; overflow-x: hidden; }
 
+  /* Password screen */
+  #lockScreen { position: fixed; inset: 0; background: #f5f5f0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .lock-card { background: #fff; border-radius: 20px; padding: 36px 28px; width: 100%; max-width: 340px; text-align: center; border: 1px solid #e8e8e0; }
+  .lock-icon { font-size: 52px; margin-bottom: 16px; }
+  .lock-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .lock-subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+  .lock-input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 12px 16px; font-size: 18px; text-align: center; letter-spacing: 3px; outline: none; -webkit-appearance: none; margin-bottom: 12px; }
+  .lock-input:focus { border-color: #2d6a4f; }
+  .lock-input.shake { animation: shake 0.4s ease; border-color: #c0392b; }
+  .lock-btn { width: 100%; background: #2d6a4f; color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+  .lock-btn:active { background: #235a42; }
+  .lock-error { font-size: 13px; color: #c0392b; min-height: 18px; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+
   header { background: #fff; border-bottom: 1px solid #e8e8e0; padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; }
   header h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; flex: 1; }
   .header-actions { display: flex; gap: 8px; }
@@ -159,6 +173,17 @@
 </head>
 <body>
 
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">📚</div>
+    <div class="lock-title">My Cookbook Library</div>
+    <div class="lock-subtitle">Enter your password to continue</div>
+    <input type="password" id="lockInput" class="lock-input" placeholder="••••••" maxlength="30" onkeydown="if(event.key==='Enter')checkPassword()" autocomplete="current-password">
+    <button class="lock-btn" onclick="checkPassword()">Unlock</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
 <header>
   <h1>📚 My Cookbooks</h1>
   <div class="header-actions">
@@ -297,13 +322,29 @@
       <span class="modal-title">📷 Scan barcode</span>
       <button class="modal-close" onclick="closeModal('scanModal')">✕</button>
     </div>
-    <p style="font-size:15px;color:#555;line-height:1.6;margin-bottom:14px;">Use your iPhone's <strong>Camera app</strong> to point at the barcode on the back of the book. A yellow banner appears — tap it to copy the ISBN number, then paste it below.</p>
-    <p style="font-size:13px;background:#fff8e1;border-radius:10px;padding:10px 12px;color:#7a5800;margin-bottom:16px;">💡 Or try a free app like <strong>Barcode Scanner</strong> from the App Store to scan directly.</p>
-    <div class="isbn-row">
-      <input type="text" id="scanISBN" class="form-input" placeholder="Paste ISBN here…" inputmode="numeric" autocomplete="off">
-      <button class="btn btn-primary" onclick="lookupFromScan()">Look up</button>
+
+    <div style="text-align:center;padding:8px 0 20px;">
+      <div style="font-size:48px;margin-bottom:12px">📷</div>
+      <p style="font-size:16px;font-weight:600;margin-bottom:8px;">Point your camera at the barcode</p>
+      <p style="font-size:14px;color:#777;margin-bottom:20px;line-height:1.5;">Tap the button below — your iPhone camera will open. Frame the barcode on the back of the book and the ISBN will be read automatically.</p>
+
+      <!-- iOS camera trigger: capture="environment" opens rear camera directly -->
+      <label style="display:inline-flex;align-items:center;gap:10px;background:#2d6a4f;color:#fff;border-radius:14px;padding:14px 28px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:16px;">
+        📸 Open Camera to Scan
+        <input type="file" accept="image/*" capture="environment" id="barcodeImageInput" style="display:none" onchange="processBarcodeScan(event)">
+      </label>
+
+      <div class="status-msg" id="scanStatus" style="margin-bottom:12px;min-height:22px;"></div>
     </div>
-    <div class="status-msg" id="scanStatus"></div>
+
+    <div style="border-top:1px solid #eee;padding-top:16px;">
+      <p style="font-size:13px;color:#999;text-align:center;margin-bottom:10px;">Or type/paste the ISBN manually</p>
+      <div class="isbn-row">
+        <input type="text" id="scanISBN" class="form-input" placeholder="e.g. 9781234567890" inputmode="numeric" autocomplete="off">
+        <button class="btn btn-primary" onclick="lookupFromScan()">Look up</button>
+      </div>
+      <div class="status-msg" id="scanStatusManual" style="margin-top:6px;"></div>
+    </div>
   </div>
 </div>
 
@@ -523,43 +564,50 @@ function deleteBook(id) {
 
 // ── ISBN lookup ────────────────────────────────────────────────────────────
 async function fetchBook(isbn) {
-  // Try Open Library first
-  try {
-    const r = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-    const d = await r.json();
-    const b = d[`ISBN:${isbn}`];
-    if (b && b.title) {
-      return {
-        title: b.title,
-        author: (b.authors||[]).map(a=>a.name).join(', '),
-        publisher: (b.publishers||[]).map(p=>p.name).join(', '),
-        year: b.publish_date?.match(/\d{4}/)?.[0] || '',
-        pages: String(b.number_of_pages||''),
-        cover: b.cover?.large || b.cover?.medium || `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`,
-        description: b.excerpts?.[0]?.text || b.notes?.value || '',
-        subjects: (b.subjects||[]).map(s=>typeof s==='string'?s:s.name)
-      };
-    }
-  } catch(e) {}
-  // Fallback: Google Books
-  try {
-    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1`);
-    const d = await r.json();
-    const info = d.items?.[0]?.volumeInfo;
-    if (info) {
-      return {
-        title: info.title || '',
-        author: (info.authors||[]).join(', '),
-        publisher: info.publisher || '',
-        year: info.publishedDate?.slice(0,4) || '',
-        pages: String(info.pageCount||''),
-        cover: (info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '').replace('http:','https:').replace('&zoom=1','&zoom=3'),
-        description: info.description || '',
-        subjects: info.categories || []
-      };
-    }
-  } catch(e) {}
-  return null;
+  let olData = null, gbData = null;
+
+  // Fetch both APIs in parallel for best data coverage
+  const [olRes, gbRes] = await Promise.allSettled([
+    fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`).then(r=>r.json()),
+    fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1`).then(r=>r.json())
+  ]);
+
+  if (olRes.status === 'fulfilled') {
+    const b = olRes.value[`ISBN:${isbn}`];
+    if (b && b.title) olData = b;
+  }
+  if (gbRes.status === 'fulfilled') {
+    gbData = gbRes.value?.items?.[0]?.volumeInfo || null;
+  }
+
+  if (!olData && !gbData) return null;
+
+  // Merge: prefer Open Library for metadata, Google Books for description & cover quality
+  const title = olData?.title || gbData?.title || '';
+  const author = olData ? (olData.authors||[]).map(a=>a.name).join(', ') : (gbData?.authors||[]).join(', ');
+  const publisher = olData ? (olData.publishers||[]).map(p=>p.name).join(', ') : (gbData?.publisher || '');
+  const year = (olData?.publish_date?.match(/\d{4}/)?.[0]) || gbData?.publishedDate?.slice(0,4) || '';
+  const pages = String(olData?.number_of_pages || gbData?.pageCount || '');
+  const description = gbData?.description || olData?.excerpts?.[0]?.text || olData?.notes?.value || '';
+
+  // Cover: try OL large, then Google Books (higher res), then OL ISBN fallback
+  let cover = '';
+  if (olData?.cover?.large) cover = olData.cover.large;
+  else if (gbData?.imageLinks) {
+    cover = (gbData.imageLinks.extraLarge || gbData.imageLinks.large || gbData.imageLinks.thumbnail || '')
+      .replace('http:','https:').replace('zoom=1','zoom=3').replace('&edge=curl','');
+  }
+  if (!cover) cover = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
+
+  // Gather subjects from both sources for better tag detection
+  const olSubjects = olData ? (olData.subjects||[]).map(s=>typeof s==='string'?s:s.name) : [];
+  const gbSubjects = gbData?.categories || [];
+  // Also use title + description as hints
+  const titleHint = title.toLowerCase();
+  const descHint = description.toLowerCase().slice(0, 300);
+  const subjects = [...olSubjects, ...gbSubjects];
+
+  return { title, author, publisher, year, pages, cover, description, subjects, titleHint, descHint };
 }
 
 function populateForm(data, isbn) {
@@ -571,12 +619,95 @@ function populateForm(data, isbn) {
   document.getElementById('fISBN').value = isbn;
   pendingCover = data.cover || '';
   pendingDesc = data.description || '';
-  // Auto-suggest tags from subjects
-  const subs = (data.subjects||[]).join(' ').toLowerCase();
-  const cuisineMap = {Italian:'italian',French:'french',British:'british english','Asian':'asian',Japanese:'japanese',Chinese:'chinese',Indian:'indian',Mexican:'mexican',Thai:'thai',Greek:'greek',Spanish:'spanish','Middle Eastern':'middle eastern',Mediterranean:'mediterranean',American:'american',Vietnamese:'vietnamese',Korean:'korean',Turkish:'turkish',Moroccan:'moroccan'};
-  const styleMap = {Baking:'baking baked',Pastry:'pastry',BBQ:'barbecue grilling bbq',Bread:'bread loaves',Fermentation:'fermentation fermented',Vegetarian:'vegetarian',Vegan:'vegan','Quick & Easy':'quick easy simple fast','Slow Cooking':'slow cooking'};
-  Object.entries(cuisineMap).forEach(([label, kw]) => { if (subs.includes(kw) && !currentTags.cuisine.includes(label)) currentTags.cuisine.push(label); });
-  Object.entries(styleMap).forEach(([label, kws]) => { if (kws.split(' ').some(k=>subs.includes(k)) && !currentTags.style.includes(label)) currentTags.style.push(label); });
+
+  // Build a broad text corpus: subjects + title + description snippet
+  const corpus = [
+    ...(data.subjects||[]),
+    data.titleHint || data.title,
+    data.descHint || data.description?.slice(0,400) || ''
+  ].join(' ').toLowerCase();
+
+  // ── Cuisine detection (keywords checked against corpus) ──────────────────
+  const CUISINE_MAP = [
+    ['Italian',       ['italian','italy','pasta','risotto','pizza','sicilian','venetian','tuscan','roman cooking']],
+    ['French',        ['french','france','provençal','provencal','bistro','brasserie','normand','burgundy']],
+    ['British',       ['british','english cooking','scottish','welsh','irish','pub food','great british']],
+    ['Asian',         ['asian','east asian','southeast asian','pan-asian']],
+    ['Japanese',      ['japanese','japan','sushi','ramen','tempura','izakaya','washoku','bento']],
+    ['Chinese',       ['chinese','china','cantonese','sichuan','szechuan','dim sum','wok','mandarin']],
+    ['Indian',        ['indian','india','curry','tandoor','moghal','mughal','spices of india','bengali','punjabi']],
+    ['Mexican',       ['mexican','mexico','taco','enchilada','salsa','tex-mex']],
+    ['Thai',          ['thai','thailand','tom yum','pad thai']],
+    ['Greek',         ['greek','greece','mediterranean greek','hellenic']],
+    ['Spanish',       ['spanish','spain','tapas','paella','catalan','basque']],
+    ['Middle Eastern',['middle eastern','persian','lebanese','iranian','turkish','arabic','ottoman','mezze','levantine']],
+    ['Mediterranean', ['mediterranean','levant','north african']],
+    ['American',      ['american','southern cooking','soul food','new england','cajun','creole','tex mex']],
+    ['Vietnamese',    ['vietnamese','vietnam','pho','banh mi']],
+    ['Korean',        ['korean','korea','kimchi','bibimbap']],
+    ['Turkish',       ['turkish','turkey','ottoman','anatolian']],
+    ['Moroccan',      ['moroccan','morocco','tagine','north african']],
+    ['Caribbean',     ['caribbean','jamaican','trinidadian','west indian']],
+    ['Scandinavian',  ['scandinavian','nordic','swedish','norwegian','danish','finnish','new nordic']],
+    ['German',        ['german','germany','austrian','bavarian']],
+    ['Portuguese',    ['portuguese','portugal']],
+  ];
+
+  // ── Style detection ───────────────────────────────────────────────────────
+  const STYLE_MAP = [
+    ['Baking',        ['baking','baked goods','cake','cakes','cookies','muffins','scones','tarts','sponge']],
+    ['Pastry',        ['pastry','pâtisserie','patisserie','croissant','choux','puff pastry','viennoiserie']],
+    ['Bread',         ['bread','sourdough','loaf','loaves','baguette','focaccia','artisan bread']],
+    ['BBQ & Grilling',['barbecue','bbq','grilling','grill','smoke','smoker','pitmaster']],
+    ['Chocolate',     ['chocolate','cocoa','confection','bonbon','ganache','praline']],
+    ['Fermentation',  ['ferment','fermented','pickling','preserved','kimchi','kombucha','sourdough','curing']],
+    ['Slow Cooking',  ['slow cook','slow-cook','braise','braised','casserole','stew','dutch oven','crockpot']],
+    ['One-pot',       ['one pot','one-pot','sheet pan','single pan','traybake','tray bake']],
+    ['Quick & Easy',  ['quick','easy','simple','fast','weeknight','30 minute','15 minute','speedy']],
+    ['Fine Dining',   ['fine dining','michelin','restaurant','gourmet','haute cuisine','cheffy','advanced']],
+    ['Street Food',   ['street food','street eats','snack','hawker','market food']],
+    ['Vegetarian',    ['vegetarian','meat-free','meatless','no meat','veggie']],
+    ['Vegan',         ['vegan','plant-based','plant based','dairy-free and egg-free']],
+    ['Sous Vide',     ['sous vide','precision cooking','immersion circulator']],
+    ['Preserving',    ['preserving','jam','jelly','chutney','pickle','canning','bottling']],
+    ['Meal Prep',     ['meal prep','batch cook','batch cooking','make ahead','meal planning']],
+    ['Comfort Food',  ['comfort food','comfort cooking','hearty','homestyle','family favourite']],
+  ];
+
+  // ── Ingredient detection ──────────────────────────────────────────────────
+  const INGREDIENT_MAP = [
+    ['Seafood',       ['seafood','fish and seafood','shellfish','lobster','crab','prawn','shrimp','scallop','oyster','mussel']],
+    ['Fish',          ['fish','salmon','cod','tuna','sea bass','trout','mackerel','anchovy','haddock']],
+    ['Meat',          ['meat','beef','pork','lamb','veal','charcuterie','cured meat']],
+    ['Chicken',       ['chicken','poultry','duck','turkey','guinea fowl']],
+    ['Game',          ['game','venison','rabbit','pheasant','grouse','partridge','wild boar']],
+    ['Pasta',         ['pasta','noodle','gnocchi','dumpling','ravioli','lasagne','spaghetti']],
+    ['Vegetables',    ['vegetable','veg','greens','root vegetable','garden','allotment','seasonal veg']],
+    ['Cheese',        ['cheese','dairy','fromage','cheesemaking']],
+    ['Eggs',          ['egg','omelette','frittata','quiche','eggs']],
+    ['Mushrooms',     ['mushroom','fungi','truffle','porcini','chanterelle']],
+    ['Fruit',         ['fruit','berry','stone fruit','citrus','apple','strawberr']],
+    ['Bread',         ['bread','sourdough','loaf','baking bread']],
+    ['Spices',        ['spice','herb','seasoning','spice blend','masala']],
+    ['Chocolate',     ['chocolate','cocoa','cacao']],
+    ['Gluten-free',   ['gluten-free','gluten free','coeliac','celiac']],
+    ['Dairy-free',    ['dairy-free','dairy free','lactose']],
+  ];
+
+  const addIfMatch = (mapList, tagType) => {
+    mapList.forEach(([label, keywords]) => {
+      if (!currentTags[tagType].includes(label)) {
+        if (keywords.some(kw => corpus.includes(kw))) {
+          currentTags[tagType].push(label);
+        }
+      }
+    });
+  };
+
+  addIfMatch(CUISINE_MAP, 'cuisine');
+  addIfMatch(STYLE_MAP, 'style');
+  addIfMatch(INGREDIENT_MAP, 'ingredient');
+
   renderTagAreas();
 }
 
@@ -596,8 +727,8 @@ async function lookupISBN() {
 
 async function lookupFromScan() {
   const isbn = document.getElementById('scanISBN').value.trim().replace(/[^0-9X]/gi,'');
-  const el = document.getElementById('scanStatus');
-  if (!isbn) { el.innerHTML = '<span class="status-err">Please paste an ISBN first</span>'; return; }
+  const el = document.getElementById('scanStatusManual');
+  if (!isbn) { el.innerHTML = '<span class="status-err">Please enter an ISBN first</span>'; return; }
   el.innerHTML = '<span class="status-loading"><span class="spinner"></span>Looking up…</span>';
   const data = await fetchBook(isbn);
   if (data) {
@@ -609,6 +740,46 @@ async function lookupFromScan() {
   } else {
     el.innerHTML = '<span class="status-err">Not found — try adding manually</span>';
   }
+}
+
+// Called when user takes a photo of a barcode via iOS camera input
+async function processBarcodeScan(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const el = document.getElementById('scanStatus');
+  el.innerHTML = '<span class="status-loading"><span class="spinner"></span>Reading barcode from photo…</span>';
+
+  // Use the BarcodeDetector API if available (Chrome/Android), otherwise guide user
+  if ('BarcodeDetector' in window) {
+    try {
+      const detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e'] });
+      const img = await createImageBitmap(file);
+      const codes = await detector.detect(img);
+      if (codes.length > 0) {
+        const isbn = codes[0].rawValue.replace(/[^0-9X]/gi,'');
+        el.innerHTML = '<span class="status-loading"><span class="spinner"></span>Barcode found! Looking up book…</span>';
+        const data = await fetchBook(isbn);
+        if (data) {
+          closeModal('scanModal');
+          openAddModal(false);
+          document.getElementById('isbnInput').value = isbn;
+          populateForm(data, isbn);
+          document.getElementById('lookupStatus').innerHTML = `<span class="status-ok">✓ Found: <em>${esc(data.title)}</em></span>`;
+          return;
+        } else {
+          el.innerHTML = `<span class="status-err">Barcode read (${isbn}) but book not found — paste ISBN below to try manually</span>`;
+          document.getElementById('scanISBN').value = isbn;
+          return;
+        }
+      }
+    } catch(e) {}
+    el.innerHTML = '<span class="status-err">Could not read barcode — try the manual entry below</span>';
+  } else {
+    // BarcodeDetector not available on this browser — guide to manual entry
+    el.innerHTML = '<span style="color:#7a5800;font-size:13px;">📱 Your browser doesn't support automatic barcode reading from photos. Check the photo for the ISBN number (usually below the barcode) and paste it in the box below.</span>';
+  }
+  // Reset file input so user can try again
+  event.target.value = '';
 }
 
 // ── Tag system ─────────────────────────────────────────────────────────────
@@ -742,9 +913,41 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
+// ── Password protection ───────────────────────────────────────────────────
+function hashStr(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
+  return (h >>> 0).toString(16);
+}
+const CORRECT = hashStr('Tasha1');
+
+function checkPassword() {
+  const val = document.getElementById('lockInput').value;
+  const input = document.getElementById('lockInput');
+  const err = document.getElementById('lockError');
+  if (hashStr(val) === CORRECT) {
+    sessionStorage.setItem('cb_auth', CORRECT);
+    document.getElementById('lockScreen').style.display = 'none';
+  } else {
+    err.textContent = 'Incorrect password — try again';
+    input.classList.add('shake');
+    input.value = '';
+    setTimeout(() => { input.classList.remove('shake'); err.textContent = ''; }, 1500);
+  }
+}
+
+function initAuth() {
+  if (sessionStorage.getItem('cb_auth') === CORRECT) {
+    document.getElementById('lockScreen').style.display = 'none';
+  } else {
+    setTimeout(() => document.getElementById('lockInput').focus(), 150);
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 load();
 renderBooks();
+initAuth();
 </script>
 </body>
 </html>
