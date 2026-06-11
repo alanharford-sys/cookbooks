@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My Cookbooks">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="My personal cookbook library">
+<title>My Cookbook Library</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; overflow-x: hidden; }
+
+  header { background: #fff; border-bottom: 1px solid #e8e8e0; padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; flex: 1; }
+  .header-actions { display: flex; gap: 8px; }
+
+  .btn { border: none; border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; -webkit-appearance: none; }
+  .btn-primary { background: #2d6a4f; color: #fff; }
+  .btn-primary:active { background: #235a42; }
+  .btn-outline { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
+  .btn-outline:active { background: #f5f5f0; }
+  .btn-danger { background: #c0392b; color: #fff; }
+  .btn-danger:active { background: #a93226; }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  .btn-block { width: 100%; justify-content: center; }
+
+  .search-bar { padding: 10px 16px; background: #fff; border-bottom: 1px solid #e8e8e0; display: flex; gap: 8px; }
+  .search-bar input { flex: 1; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 9px 14px; font-size: 15px; background: #f8f8f5; outline: none; -webkit-appearance: none; }
+  .search-bar input:focus { border-color: #2d6a4f; background: #fff; }
+
+  .filters { padding: 10px 16px; display: flex; gap: 8px; overflow-x: auto; background: #fff; border-bottom: 1px solid #e8e8e0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-chip { border: 1.5px solid #e0e0e0; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; background: #fff; color: #555; transition: all 0.15s; flex-shrink: 0; font-weight: 500; }
+  .filter-chip.active { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
+
+  .stats-bar { padding: 10px 16px; display: flex; gap: 16px; align-items: center; }
+  .stats-bar span { font-size: 13px; color: #777; }
+  .stats-bar strong { color: #1a1a1a; }
+  .view-toggle { margin-left: auto; display: flex; gap: 4px; }
+  .view-btn { background: none; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 16px; color: #777; }
+  .view-btn.active { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
+
+  .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; padding: 14px 16px; }
+  .list-view { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
+
+  .book-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e0; cursor: pointer; transition: transform 0.15s; }
+  .book-card:active { transform: scale(0.97); }
+  .book-cover { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #e8e8e0; display: block; }
+  .cover-placeholder { width: 100%; aspect-ratio: 2/3; background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36px; }
+  .book-info { padding: 8px 10px; }
+  .book-title { font-size: 13px; font-weight: 600; line-height: 1.3; margin-bottom: 2px; }
+  .book-author { font-size: 11px; color: #888; margin-bottom: 5px; }
+  .book-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+
+  .tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+  .tag-cuisine { background: #fff3e0; color: #b85c00; }
+  .tag-style { background: #e8f5e9; color: #2d6a4f; }
+  .tag-ingredient { background: #e3f2fd; color: #0d47a1; }
+
+  .book-list-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e0; padding: 12px; display: flex; gap: 12px; cursor: pointer; transition: background 0.15s; }
+  .book-list-card:active { background: #f5f5f0; }
+  .book-list-cover { width: 54px; height: 80px; object-fit: cover; border-radius: 6px; background: #e8e8e0; flex-shrink: 0; }
+  .list-cover-placeholder { width: 54px; height: 80px; border-radius: 6px; background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; flex-shrink: 0; }
+  .book-list-info { flex: 1; min-width: 0; }
+  .book-list-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .book-list-author { font-size: 13px; color: #888; margin-bottom: 6px; }
+  .book-list-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .empty-state { text-align: center; padding: 60px 24px; color: #aaa; grid-column: 1 / -1; }
+  .empty-icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h2 { font-size: 20px; font-weight: 600; color: #666; margin-bottom: 8px; }
+  .empty-state p { font-size: 15px; line-height: 1.5; color: #888; max-width: 300px; margin: 0 auto; }
+  .no-results { text-align: center; padding: 40px 24px; color: #aaa; grid-column: 1 / -1; }
+
+  /* Modals */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 24px 24px 0 0; padding: 20px 20px; padding-bottom: max(20px, env(safe-area-inset-bottom)); width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .modal-handle { width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px; }
+  .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .modal-title { font-size: 18px; font-weight: 700; flex: 1; }
+  .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+  .form-input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 16px; outline: none; -webkit-appearance: none; background: #fff; font-family: inherit; }
+  .form-input:focus { border-color: #2d6a4f; }
+  textarea.form-input { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .scan-section { background: #f0f7f4; border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1.5px dashed #b7dfce; }
+  .scan-section p { font-size: 13px; color: #555; margin-bottom: 10px; text-align: center; font-weight: 500; }
+  .isbn-row { display: flex; gap: 8px; }
+  .isbn-row input { flex: 1; }
+
+  .tag-input-area { display: flex; flex-wrap: wrap; gap: 6px; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 8px 10px; min-height: 46px; cursor: text; background: #fff; }
+  .tag-input-area:focus-within { border-color: #2d6a4f; }
+  .tag-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+  .tag-pill-remove { background: none; border: none; cursor: pointer; font-size: 15px; line-height: 1; padding: 0; opacity: 0.6; display: flex; align-items: center; }
+  .tag-pill-remove:hover { opacity: 1; }
+  .tag-input-field { border: none; outline: none; font-size: 14px; min-width: 100px; flex: 1; background: transparent; font-family: inherit; padding: 2px 0; }
+  .quick-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .quick-tag { background: #f0f0ec; border: none; border-radius: 20px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: #444; font-weight: 500; transition: background 0.1s; }
+  .quick-tag:active { background: #e0e0dc; }
+
+  /* Detail view */
+  .detail-cover-wrap { text-align: center; margin-bottom: 16px; }
+  .detail-cover-img { max-height: 200px; max-width: 140px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .detail-cover-placeholder { width: 120px; height: 160px; background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 48px; }
+  .detail-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; line-height: 1.2; }
+  .detail-author { font-size: 16px; color: #777; margin-bottom: 12px; }
+  .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .detail-tag { font-size: 13px; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .meta-item { background: #f8f8f5; border-radius: 10px; padding: 10px 12px; }
+  .meta-label { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+  .meta-value { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+  .section-heading { font-size: 12px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 14px; }
+  .section-body { font-size: 15px; color: #333; line-height: 1.6; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 20px; }
+
+  /* Status messages */
+  .status-msg { font-size: 13px; margin-top: 8px; min-height: 20px; }
+  .status-ok { color: #2d6a4f; }
+  .status-err { color: #c0392b; }
+  .status-loading { color: #777; display: flex; align-items: center; gap: 6px; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: #2d6a4f; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* FAB */
+  .fab-wrap { position: fixed; bottom: 28px; right: 20px; z-index: 150; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .fab-main { width: 58px; height: 58px; border-radius: 50%; background: #e07c3a; border: none; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 4px 18px rgba(224,124,58,0.45); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  .fab-main:active { transform: scale(0.94); }
+  .fab-options { display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .fab-options.open { display: flex; }
+  .fab-row { display: flex; align-items: center; gap: 10px; }
+  .fab-label { background: rgba(26,26,26,0.85); color: #fff; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
+  .fab-mini { width: 46px; height: 46px; border-radius: 50%; border: none; color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+  .fab-mini:active { transform: scale(0.94); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: max(100px, calc(28px + 60px + env(safe-area-inset-bottom))); left: 50%; transform: translateX(-50%); background: rgba(26,26,26,0.92); color: #fff; padding: 10px 20px; border-radius: 12px; font-size: 14px; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  /* Import */
+  .import-area { border: 2px dashed #ddd; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; color: #888; font-size: 14px; transition: border-color 0.15s; }
+  .import-area:hover { border-color: #2d6a4f; color: #2d6a4f; }
+
+  @media (min-width: 640px) {
+    .modal { border-radius: 24px; margin-bottom: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 My Cookbooks</h1>
+  <div class="header-actions">
+    <button class="btn btn-outline btn-sm" onclick="showImportExport()">⬆⬇</button>
+    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add</button>
+  </div>
+</header>
+
+<div class="search-bar">
+  <input type="search" id="searchInput" placeholder="Search title, author, cuisine, ingredient…" oninput="renderBooks()" autocomplete="off" autocorrect="off" spellcheck="false">
+</div>
+
+<div class="filters">
+  <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
+  <button class="filter-chip" onclick="setFilter('cuisine', this)">🌍 Cuisine</button>
+  <button class="filter-chip" onclick="setFilter('style', this)">👨‍🍳 Style</button>
+  <button class="filter-chip" onclick="setFilter('ingredient', this)">🥦 Ingredient</button>
+</div>
+
+<div class="stats-bar">
+  <span id="bookCount"><strong>0</strong> books</span>
+  <div class="view-toggle">
+    <button class="view-btn active" id="gridBtn" onclick="setView('grid', this)" title="Grid view">⊞</button>
+    <button class="view-btn" id="listBtn" onclick="setView('list', this)" title="List view">☰</button>
+  </div>
+</div>
+
+<div id="bookGrid" class="grid-view"></div>
+
+<!-- FAB -->
+<div class="fab-wrap">
+  <div class="fab-options" id="fabOptions">
+    <div class="fab-row">
+      <span class="fab-label">Scan barcode (iPhone)</span>
+      <button class="fab-mini" style="background:#2d6a4f" onclick="openScanModal()">📷</button>
+    </div>
+    <div class="fab-row">
+      <span class="fab-label">Enter ISBN</span>
+      <button class="fab-mini" style="background:#5c6bc0" onclick="openAddModal(true)">🔢</button>
+    </div>
+    <div class="fab-row">
+      <span class="fab-label">Add manually</span>
+      <button class="fab-mini" style="background:#888" onclick="openAddModal(false)">✏️</button>
+    </div>
+  </div>
+  <button class="fab-main" id="fabBtn" onclick="toggleFab()">+</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ ADD / EDIT MODAL ══════════════ -->
+<div class="modal-overlay" id="addModal" onclick="overlayClose(event,'addModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title" id="addModalTitle">Add cookbook</span>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+
+    <div id="isbnSection" class="scan-section">
+      <p>Look up book by ISBN</p>
+      <div class="isbn-row">
+        <input type="text" id="isbnInput" class="form-input" placeholder="e.g. 9781234567890" inputmode="numeric" autocomplete="off">
+        <button class="btn btn-primary" onclick="lookupISBN()">Look up</button>
+      </div>
+      <div class="status-msg" id="lookupStatus"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input type="text" id="fTitle" class="form-input" placeholder="Book title" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Author(s)</label>
+      <input type="text" id="fAuthor" class="form-input" placeholder="Author name" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Publisher</label>
+        <input type="text" id="fPublisher" class="form-input" placeholder="Publisher" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Year</label>
+        <input type="text" id="fYear" class="form-input" placeholder="2024" inputmode="numeric">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Pages</label>
+        <input type="text" id="fPages" class="form-input" placeholder="320" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ISBN</label>
+        <input type="text" id="fISBN" class="form-input" placeholder="978…" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🌍 Cuisine</label>
+      <div class="tag-input-area" id="cuisineArea" onclick="focusLast('cuisineArea')"></div>
+      <div class="quick-tags" id="cuisineQuick"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">👨‍🍳 Cooking style</label>
+      <div class="tag-input-area" id="styleArea" onclick="focusLast('styleArea')"></div>
+      <div class="quick-tags" id="styleQuick"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">🥦 Key ingredients / themes</label>
+      <div class="tag-input-area" id="ingredientArea" onclick="focusLast('ingredientArea')"></div>
+      <div class="quick-tags" id="ingredientQuick"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Personal notes</label>
+      <textarea id="fNotes" class="form-input" placeholder="Favourite recipes, where you got it, special memories…"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;padding-top:4px;">
+      <button class="btn btn-outline" onclick="closeModal('addModal')" style="flex:1">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()" style="flex:2">Save to library</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DETAIL MODAL ══════════════ -->
+<div class="modal-overlay" id="detailModal" onclick="overlayClose(event,'detailModal')">
+  <div class="modal" onclick="event.stopPropagation()" id="detailContent"></div>
+</div>
+
+<!-- ══════════════ SCAN MODAL ══════════════ -->
+<div class="modal-overlay" id="scanModal" onclick="overlayClose(event,'scanModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">📷 Scan barcode</span>
+      <button class="modal-close" onclick="closeModal('scanModal')">✕</button>
+    </div>
+    <p style="font-size:15px;color:#555;line-height:1.6;margin-bottom:14px;">Use your iPhone's <strong>Camera app</strong> to point at the barcode on the back of the book. A yellow banner appears — tap it to copy the ISBN number, then paste it below.</p>
+    <p style="font-size:13px;background:#fff8e1;border-radius:10px;padding:10px 12px;color:#7a5800;margin-bottom:16px;">💡 Or try a free app like <strong>Barcode Scanner</strong> from the App Store to scan directly.</p>
+    <div class="isbn-row">
+      <input type="text" id="scanISBN" class="form-input" placeholder="Paste ISBN here…" inputmode="numeric" autocomplete="off">
+      <button class="btn btn-primary" onclick="lookupFromScan()">Look up</button>
+    </div>
+    <div class="status-msg" id="scanStatus"></div>
+  </div>
+</div>
+
+<!-- ══════════════ IMPORT/EXPORT MODAL ══════════════ -->
+<div class="modal-overlay" id="ioModal" onclick="overlayClose(event,'ioModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Import / Export</span>
+      <button class="modal-close" onclick="closeModal('ioModal')">✕</button>
+    </div>
+    <p style="font-size:14px;color:#666;margin-bottom:16px;line-height:1.5;">Export your library as a CSV (opens in Excel / Numbers) or a JSON backup you can re-import later.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <button class="btn btn-primary btn-block" onclick="exportCSV()">⬇ Export as CSV (Excel)</button>
+      <button class="btn btn-outline btn-block" onclick="exportJSON()">⬇ Export as JSON backup</button>
+    </div>
+    <div class="section-heading">Import JSON backup</div>
+    <div class="import-area" onclick="document.getElementById('importFile').click()">
+      Tap to choose a JSON backup file<br>
+      <span style="font-size:12px;color:#bbb;margin-top:4px;display:block;">Previously exported from this app</span>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <div class="status-msg" id="ioStatus" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let books = [];
+let editingId = null;
+let currentFilter = 'all';
+let currentView = 'grid';
+let fabOpen = false;
+let pendingCover = '';
+let pendingDesc = '';
+
+const QUICK = {
+  cuisine: ['Italian','French','British','Asian','Japanese','Chinese','Indian','Mexican','Thai','Greek','Spanish','Middle Eastern','Mediterranean','American','Vietnamese','Korean','Turkish','Moroccan','Caribbean','German'],
+  style: ['Baking','Pastry','BBQ & Grilling','Bread','One-pot','Quick & Easy','Fine Dining','Street Food','Fermentation','Slow Cooking','Pickling','Comfort Food','Meal Prep','Sous Vide','Smoking'],
+  ingredient: ['Seafood','Fish','Meat','Chicken','Lamb','Pork','Beef','Game','Pasta','Vegetables','Pulses','Bread','Chocolate','Cheese','Eggs','Fruit','Mushrooms','Vegetarian','Vegan','Gluten-free','Dairy-free']
+};
+const TAG_COLORS = {
+  cuisine: { bg:'#fff3e0', text:'#b85c00' },
+  style:   { bg:'#e8f5e9', text:'#2d6a4f' },
+  ingredient: { bg:'#e3f2fd', text:'#0d47a1' }
+};
+
+// ── Storage ────────────────────────────────────────────────────────────────
+function load() {
+  try { books = JSON.parse(localStorage.getItem('cookbooks_v2') || '[]'); } catch(e) { books = []; }
+}
+function save() {
+  localStorage.setItem('cookbooks_v2', JSON.stringify(books));
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderBooks() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let list = books.filter(b => {
+    const text = [b.title, b.author, b.publisher, b.notes, ...(b.tags?.cuisine||[]), ...(b.tags?.style||[]), ...(b.tags?.ingredient||[])].join(' ').toLowerCase();
+    const matchQ = !q || text.includes(q);
+    const matchF = currentFilter === 'all' || (b.tags?.[currentFilter]?.length > 0);
+    return matchQ && matchF;
+  });
+  document.getElementById('bookCount').innerHTML = `<strong>${list.length}</strong>${books.length !== list.length ? ' of <strong>'+books.length+'</strong>' : ''} book${list.length !== 1 ? 's' : ''}`;
+  const grid = document.getElementById('bookGrid');
+  grid.className = currentView === 'grid' ? 'grid-view' : 'list-view';
+  if (books.length === 0) { grid.innerHTML = emptyState(); return; }
+  if (list.length === 0) { grid.innerHTML = `<div class="no-results"><div style="font-size:40px;margin-bottom:10px">🔍</div><p style="color:#999">No cookbooks match.<br>Try a different search.</p></div>`; return; }
+  grid.innerHTML = list.map(b => currentView === 'grid' ? gridCard(b) : listCard(b)).join('');
+}
+
+function emptyState() {
+  return `<div class="empty-state"><div class="empty-icon">📚</div><h2>Your library awaits</h2><p>Tap the orange + button to add your first cookbook — scan a barcode, enter an ISBN, or fill in manually.</p></div>`;
+}
+
+function coverImg(b, cls, phCls, phSize) {
+  if (b.cover) return `<img class="${cls}" src="${b.cover}" alt="" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="${phCls}" style="display:none">${phSize}</div>`;
+  return `<div class="${phCls}">📖</div>`;
+}
+
+function tagHtml(type, values, limit) {
+  return (values||[]).slice(0, limit||999).map(t => `<span class="tag tag-${type}">${t}</span>`).join('');
+}
+
+function gridCard(b) {
+  return `<div class="book-card" onclick="showDetail('${b.id}')">
+    ${coverImg(b,'book-cover','cover-placeholder','📖')}
+    <div class="book-info">
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">${esc(b.author||'')}</div>
+      <div class="book-tags">${tagHtml('cuisine',b.tags?.cuisine,2)}${tagHtml('style',b.tags?.style,1)}</div>
+    </div></div>`;
+}
+
+function listCard(b) {
+  return `<div class="book-list-card" onclick="showDetail('${b.id}')">
+    ${coverImg(b,'book-list-cover','list-cover-placeholder','📖')}
+    <div class="book-list-info">
+      <div class="book-list-title">${esc(b.title)}</div>
+      <div class="book-list-author">${esc(b.author||'')}${b.year ? ' · '+b.year : ''}</div>
+      <div class="book-list-tags">${tagHtml('cuisine',b.tags?.cuisine,2)}${tagHtml('style',b.tags?.style,2)}${tagHtml('ingredient',b.tags?.ingredient,2)}</div>
+    </div></div>`;
+}
+
+// ── Detail ─────────────────────────────────────────────────────────────────
+function showDetail(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) return;
+  const allTags = [
+    ...(b.tags?.cuisine||[]).map(t=>`<span class="detail-tag tag-cuisine">${esc(t)}</span>`),
+    ...(b.tags?.style||[]).map(t=>`<span class="detail-tag tag-style">${esc(t)}</span>`),
+    ...(b.tags?.ingredient||[]).map(t=>`<span class="detail-tag tag-ingredient">${esc(t)}</span>`)
+  ].join('');
+  const meta = [
+    b.publisher && `<div class="meta-item"><div class="meta-label">Publisher</div><div class="meta-value">${esc(b.publisher)}</div></div>`,
+    b.year && `<div class="meta-item"><div class="meta-label">Year</div><div class="meta-value">${esc(b.year)}</div></div>`,
+    b.pages && `<div class="meta-item"><div class="meta-label">Pages</div><div class="meta-value">${esc(b.pages)}</div></div>`,
+    b.isbn && `<div class="meta-item"><div class="meta-label">ISBN</div><div class="meta-value" style="font-size:12px">${esc(b.isbn)}</div></div>`,
+  ].filter(Boolean).join('');
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <span class="modal-title">Book details</span>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="detail-cover-wrap">${b.cover
+      ? `<img class="detail-cover-img" src="${b.cover}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="detail-cover-placeholder" style="display:none">📖</span>`
+      : `<span class="detail-cover-placeholder">📖</span>`}</div>
+    <div class="detail-title">${esc(b.title)}</div>
+    <div class="detail-author">${esc(b.author||'Unknown author')}</div>
+    ${allTags ? `<div class="detail-tags">${allTags}</div>` : ''}
+    ${meta ? `<div class="meta-grid">${meta}</div>` : ''}
+    ${b.description ? `<div class="section-heading">About</div><div class="section-body">${esc(b.description).slice(0,400)}${b.description.length>400?'…':''}</div>` : ''}
+    ${b.notes ? `<div class="section-heading">My notes</div><div class="section-body">${esc(b.notes)}</div>` : ''}
+    <div class="detail-actions">
+      <button class="btn btn-outline" style="flex:1" onclick="editBook('${b.id}')">✏️ Edit</button>
+      <button class="btn btn-danger" onclick="deleteBook('${b.id}')">🗑 Remove</button>
+    </div>`;
+  openModal('detailModal');
+}
+
+// ── Add / Edit ─────────────────────────────────────────────────────────────
+function openAddModal(focusISBN) {
+  closeFab();
+  editingId = null;
+  pendingCover = '';
+  pendingDesc = '';
+  document.getElementById('addModalTitle').textContent = 'Add cookbook';
+  ['fTitle','fAuthor','fPublisher','fYear','fPages','fISBN','fNotes','isbnInput'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lookupStatus').innerHTML = '';
+  document.getElementById('isbnSection').style.display = 'block';
+  currentTags = { cuisine:[], style:[], ingredient:[] };
+  renderTagAreas();
+  openModal('addModal');
+  if (focusISBN) setTimeout(() => document.getElementById('isbnInput').focus(), 400);
+}
+
+function editBook(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) return;
+  closeModal('detailModal');
+  editingId = id;
+  pendingCover = b.cover || '';
+  pendingDesc = b.description || '';
+  document.getElementById('addModalTitle').textContent = 'Edit cookbook';
+  document.getElementById('fTitle').value = b.title || '';
+  document.getElementById('fAuthor').value = b.author || '';
+  document.getElementById('fPublisher').value = b.publisher || '';
+  document.getElementById('fYear').value = b.year || '';
+  document.getElementById('fPages').value = b.pages || '';
+  document.getElementById('fISBN').value = b.isbn || '';
+  document.getElementById('fNotes').value = b.notes || '';
+  document.getElementById('isbnInput').value = b.isbn || '';
+  document.getElementById('lookupStatus').innerHTML = '';
+  document.getElementById('isbnSection').style.display = 'block';
+  currentTags = { cuisine:[...(b.tags?.cuisine||[])], style:[...(b.tags?.style||[])], ingredient:[...(b.tags?.ingredient||[])] };
+  renderTagAreas();
+  openModal('addModal');
+}
+
+function saveBook() {
+  const title = document.getElementById('fTitle').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const book = {
+    id: editingId || String(Date.now()),
+    title,
+    author: document.getElementById('fAuthor').value.trim(),
+    publisher: document.getElementById('fPublisher').value.trim(),
+    year: document.getElementById('fYear').value.trim(),
+    pages: document.getElementById('fPages').value.trim(),
+    isbn: document.getElementById('fISBN').value.trim().replace(/[^0-9X]/gi,''),
+    notes: document.getElementById('fNotes').value.trim(),
+    cover: pendingCover,
+    description: pendingDesc,
+    tags: { cuisine:[...currentTags.cuisine], style:[...currentTags.style], ingredient:[...currentTags.ingredient] },
+    addedAt: editingId ? (books.find(b=>b.id===editingId)?.addedAt || new Date().toISOString()) : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  if (editingId) { books = books.map(b => b.id === editingId ? book : b); }
+  else { books.unshift(book); }
+  save();
+  closeModal('addModal');
+  renderBooks();
+  toast(editingId ? '✓ Book updated' : '✓ Added to your library');
+}
+
+function deleteBook(id) {
+  if (!confirm('Remove this book from your library?')) return;
+  books = books.filter(b => b.id !== id);
+  save();
+  closeModal('detailModal');
+  renderBooks();
+  toast('Book removed');
+}
+
+// ── ISBN lookup ────────────────────────────────────────────────────────────
+async function fetchBook(isbn) {
+  // Try Open Library first
+  try {
+    const r = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+    const d = await r.json();
+    const b = d[`ISBN:${isbn}`];
+    if (b && b.title) {
+      return {
+        title: b.title,
+        author: (b.authors||[]).map(a=>a.name).join(', '),
+        publisher: (b.publishers||[]).map(p=>p.name).join(', '),
+        year: b.publish_date?.match(/\d{4}/)?.[0] || '',
+        pages: String(b.number_of_pages||''),
+        cover: b.cover?.large || b.cover?.medium || `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`,
+        description: b.excerpts?.[0]?.text || b.notes?.value || '',
+        subjects: (b.subjects||[]).map(s=>typeof s==='string'?s:s.name)
+      };
+    }
+  } catch(e) {}
+  // Fallback: Google Books
+  try {
+    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1`);
+    const d = await r.json();
+    const info = d.items?.[0]?.volumeInfo;
+    if (info) {
+      return {
+        title: info.title || '',
+        author: (info.authors||[]).join(', '),
+        publisher: info.publisher || '',
+        year: info.publishedDate?.slice(0,4) || '',
+        pages: String(info.pageCount||''),
+        cover: (info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '').replace('http:','https:').replace('&zoom=1','&zoom=3'),
+        description: info.description || '',
+        subjects: info.categories || []
+      };
+    }
+  } catch(e) {}
+  return null;
+}
+
+function populateForm(data, isbn) {
+  document.getElementById('fTitle').value = data.title;
+  document.getElementById('fAuthor').value = data.author;
+  document.getElementById('fPublisher').value = data.publisher;
+  document.getElementById('fYear').value = data.year;
+  document.getElementById('fPages').value = data.pages;
+  document.getElementById('fISBN').value = isbn;
+  pendingCover = data.cover || '';
+  pendingDesc = data.description || '';
+  // Auto-suggest tags from subjects
+  const subs = (data.subjects||[]).join(' ').toLowerCase();
+  const cuisineMap = {Italian:'italian',French:'french',British:'british english','Asian':'asian',Japanese:'japanese',Chinese:'chinese',Indian:'indian',Mexican:'mexican',Thai:'thai',Greek:'greek',Spanish:'spanish','Middle Eastern':'middle eastern',Mediterranean:'mediterranean',American:'american',Vietnamese:'vietnamese',Korean:'korean',Turkish:'turkish',Moroccan:'moroccan'};
+  const styleMap = {Baking:'baking baked',Pastry:'pastry',BBQ:'barbecue grilling bbq',Bread:'bread loaves',Fermentation:'fermentation fermented',Vegetarian:'vegetarian',Vegan:'vegan','Quick & Easy':'quick easy simple fast','Slow Cooking':'slow cooking'};
+  Object.entries(cuisineMap).forEach(([label, kw]) => { if (subs.includes(kw) && !currentTags.cuisine.includes(label)) currentTags.cuisine.push(label); });
+  Object.entries(styleMap).forEach(([label, kws]) => { if (kws.split(' ').some(k=>subs.includes(k)) && !currentTags.style.includes(label)) currentTags.style.push(label); });
+  renderTagAreas();
+}
+
+async function lookupISBN() {
+  const isbn = document.getElementById('isbnInput').value.trim().replace(/[^0-9X]/gi,'');
+  const el = document.getElementById('lookupStatus');
+  if (!isbn) { el.innerHTML = '<span class="status-err">Please enter an ISBN first</span>'; return; }
+  el.innerHTML = '<span class="status-loading"><span class="spinner"></span>Looking up…</span>';
+  const data = await fetchBook(isbn);
+  if (data) {
+    populateForm(data, isbn);
+    el.innerHTML = `<span class="status-ok">✓ Found: <em>${esc(data.title)}</em> — check tags below and save</span>`;
+  } else {
+    el.innerHTML = '<span class="status-err">Not found — please fill in manually</span>';
+  }
+}
+
+async function lookupFromScan() {
+  const isbn = document.getElementById('scanISBN').value.trim().replace(/[^0-9X]/gi,'');
+  const el = document.getElementById('scanStatus');
+  if (!isbn) { el.innerHTML = '<span class="status-err">Please paste an ISBN first</span>'; return; }
+  el.innerHTML = '<span class="status-loading"><span class="spinner"></span>Looking up…</span>';
+  const data = await fetchBook(isbn);
+  if (data) {
+    closeModal('scanModal');
+    openAddModal(false);
+    document.getElementById('isbnInput').value = isbn;
+    populateForm(data, isbn);
+    document.getElementById('lookupStatus').innerHTML = `<span class="status-ok">✓ Found: <em>${esc(data.title)}</em></span>`;
+  } else {
+    el.innerHTML = '<span class="status-err">Not found — try adding manually</span>';
+  }
+}
+
+// ── Tag system ─────────────────────────────────────────────────────────────
+let currentTags = { cuisine:[], style:[], ingredient:[] };
+
+function renderTagAreas() {
+  ['cuisine','style','ingredient'].forEach(type => {
+    const area = document.getElementById(type+'Area');
+    const colors = TAG_COLORS[type];
+    const pills = currentTags[type].map(t =>
+      `<span class="tag-pill" style="background:${colors.bg};color:${colors.text}">${esc(t)}<button class="tag-pill-remove" onclick="removeTag('${type}','${esc(t)}')">×</button></span>`
+    ).join('');
+    area.innerHTML = pills + `<input type="text" class="tag-input-field" placeholder="${currentTags[type].length?'Add more…':'Type and press Enter…'}" onkeydown="tagKeydown(event,'${type}')">`;
+    // Quick tags
+    const used = new Set(currentTags[type]);
+    document.getElementById(type+'Quick').innerHTML = QUICK[type].filter(t=>!used.has(t)).slice(0,12).map(t=>`<button class="quick-tag" onclick="addTag('${type}','${esc(t)}')">${t}</button>`).join('');
+  });
+}
+
+function addTag(type, val) {
+  val = val.trim();
+  if (val && !currentTags[type].includes(val)) { currentTags[type].push(val); renderTagAreas(); }
+}
+function removeTag(type, val) {
+  currentTags[type] = currentTags[type].filter(t=>t!==val); renderTagAreas();
+}
+function tagKeydown(e, type) {
+  if (e.key==='Enter' || e.key===',') {
+    e.preventDefault();
+    const v = e.target.value.replace(/,$/,'').trim();
+    if (v) { addTag(type, v); e.target.value=''; }
+  }
+}
+function focusLast(areaId) {
+  const inp = document.getElementById(areaId).querySelector('input');
+  if (inp) inp.focus();
+}
+
+// ── Import / Export ────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!books.length) { toast('No books to export'); return; }
+  const rows = [['Title','Author','Publisher','Year','Pages','ISBN','Cuisine','Style','Ingredients','Notes','Added']];
+  books.forEach(b => rows.push([b.title,b.author,b.publisher,b.year,b.pages,b.isbn,(b.tags?.cuisine||[]).join('|'),(b.tags?.style||[]).join('|'),(b.tags?.ingredient||[]).join('|'),b.notes,b.addedAt?.slice(0,10)].map(v=>`"${String(v||'').replace(/"/g,'""')}"`)));
+  download('my-cookbooks.csv', rows.map(r=>r.join(',')).join('\n'), 'text/csv');
+  toast('CSV exported');
+}
+function exportJSON() {
+  if (!books.length) { toast('No books to export'); return; }
+  download('my-cookbooks-backup.json', JSON.stringify(books, null, 2), 'application/json');
+  toast('JSON backup exported');
+}
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('Not an array');
+      const merged = [...books];
+      let added = 0;
+      data.forEach(b => {
+        if (b.id && b.title && !merged.find(x=>x.id===b.id)) { merged.unshift(b); added++; }
+      });
+      books = merged;
+      save();
+      renderBooks();
+      document.getElementById('ioStatus').innerHTML = `<span class="status-ok">✓ Imported ${added} books</span>`;
+      toast(`Imported ${added} books`);
+    } catch(err) {
+      document.getElementById('ioStatus').innerHTML = `<span class="status-err">Error reading file</span>`;
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+function download(filename, content, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download = filename;
+  a.click();
+}
+function showImportExport() { openModal('ioModal'); }
+
+// ── Filters / View ─────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderBooks();
+}
+function setView(v, el) {
+  currentView = v;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderBooks();
+}
+
+// ── FAB ────────────────────────────────────────────────────────────────────
+function toggleFab() {
+  fabOpen = !fabOpen;
+  document.getElementById('fabOptions').classList.toggle('open', fabOpen);
+  document.getElementById('fabBtn').textContent = fabOpen ? '✕' : '+';
+}
+function closeFab() {
+  fabOpen = false;
+  document.getElementById('fabOptions').classList.remove('open');
+  document.getElementById('fabBtn').textContent = '+';
+}
+
+// ── Modals ─────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function overlayClose(e, id) { if (e.target===document.getElementById(id)) closeModal(id); }
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Service Worker registration ────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+load();
+renderBooks();
+</script>
+</body>
+</html>
