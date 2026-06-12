@@ -492,7 +492,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
     <div class="mhw"><div class="mh"></div></div>
     <div class="mhdr"><span class="mtit">📷 Scan Barcode</span><button class="mcls" onclick="closeM('scanM')">✕</button></div>
     <div class="mbody">
-      <div class="scnwrap" id="scnwrap"><video id="scnvid" autoplay playsinline muted></video><div class="scnov"><div class="scnbox"></div><div class="scnline"></div></div></div>
+      <div class="scnwrap" id="scnwrap"><div id="scnvid" style="width:100%;height:100%;"></div><div class="scnov"><div class="scnbox"></div><div class="scnline"></div></div></div>
       <div id="scnstart" style="text-align:center;padding:8px 0 16px;">
         <div style="font-size:48px;margin-bottom:12px">📷</div>
         <p style="font-size:16px;font-weight:700;margin-bottom:8px;">Live barcode scanner</p>
@@ -518,7 +518,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
     <div class="mhw"><div class="mh"></div></div>
     <div class="mhdr"><span class="mtit">🤔 Do I Own This?</span><button class="mcls" onclick="closeM('ownM')">✕</button></div>
     <div class="mbody">
-      <div class="scnwrap" id="ownwrap"><video id="ownvid" autoplay playsinline muted></video><div class="scnov"><div class="scnbox"></div><div class="scnline"></div></div></div>
+      <div class="scnwrap" id="ownwrap"><div id="ownvid" style="width:100%;height:100%;"></div><div class="scnov"><div class="scnbox"></div><div class="scnline"></div></div></div>
       <div id="ownstart" style="text-align:center;padding:8px 0 16px;">
         <div style="font-size:48px;margin-bottom:12px">📚</div>
         <p style="font-size:16px;font-weight:700;margin-bottom:8px;">Check your library</p>
@@ -660,7 +660,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
     </div>
   </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.21.3/zxing-browser.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js" crossorigin="anonymous"></script>
 <script>
 // ── SUPABASE ──────────────────────────────────────────────────
 const SB_URL='https://sraoxgdgffxdydesrhyu.supabase.co';
@@ -1027,29 +1027,95 @@ async function scnLookup(){
 }
 
 // ── SCANNER ───────────────────────────────────────────────────
-async function startScn(){
-  document.getElementById('scnstart').style.display='none';document.getElementById('scnactive').style.display='block';document.getElementById('scnwrap').style.display='block';
-  const el=document.getElementById('scnst');el.className='st2 ok';el.textContent='📷 Point at the barcode on the back of the book…';
-  try{
-    scnR=new window.ZXingBrowser.BrowserMultiFormatReader();
-    await scnR.decodeFromConstraints({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}},document.getElementById('scnvid'),async(result)=>{
-      if(result){const isbn=result.getText().replace(/[^0-9X]/gi,'');if(isbn.length>=10){stopScn();el.className='st2 loading';el.innerHTML='<span class="spin"></span>Found! Looking up…';document.getElementById('scnactive').style.display='block';const d=await fetchBk(isbn);if(d){closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=isbn;popForm(d,isbn);document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').innerHTML=`✓ Found: <em>${e(d.title)}</em>`;}else{el.className='st2 err';el.textContent=`Read (${isbn}) but not found — enter manually`;document.getElementById('scnISBN').value=isbn;}}}
-    });
-  }catch(err){stopScn();document.getElementById('scnst').className='st2 err';document.getElementById('scnst').textContent='Camera access denied — use manual entry below';document.getElementById('scnstart').style.display='block';document.getElementById('scnactive').style.display='none';}
+// ── BARCODE SCANNING (QuaggaJS + iOS fallback) ───────────────
+function startScn(){
+  document.getElementById('scnstart').style.display='none';
+  document.getElementById('scnactive').style.display='block';
+  document.getElementById('scnwrap').style.display='block';
+  const el=document.getElementById('scnst');
+  el.className='st2 ok';
+  el.textContent='Point at the barcode on the back of the book…';
+  Quagga.init({
+    inputStream:{
+      name:'Live',
+      type:'LiveStream',
+      target:document.getElementById('scnvid'),
+      constraints:{facingMode:'environment',width:{min:640,ideal:1280},height:{min:480,ideal:720}}
+    },
+    decoder:{readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader']},
+    locate:true
+  }, function(err){
+    if(err){
+      console.error('Quagga init error:',err);
+      stopScn();
+      el.className='st2 err';
+      el.textContent='Camera could not start — use manual entry below';
+      document.getElementById('scnstart').style.display='block';
+      document.getElementById('scnactive').style.display='none';
+      return;
+    }
+    Quagga.start();
+  });
+  Quagga.onDetected(async function(data){
+    const isbn=data.codeResult.code.replace(/[^0-9X]/gi,'');
+    if(isbn.length>=10){
+      stopScn();
+      const el2=document.getElementById('scnst');
+      el2.className='st2 loading';
+      el2.innerHTML='<span class="spin"></span>Barcode detected! Looking up…';
+      document.getElementById('scnactive').style.display='block';
+      const d=await fetchBk(isbn);
+      if(d){
+        closeM('scanM');openAddBk(false);
+        document.getElementById('isbnIn').value=isbn;
+        popForm(d,isbn);
+        document.getElementById('isbnSt').className='st2 ok';
+        document.getElementById('isbnSt').innerHTML='✓ Found: <em>'+e(d.title)+'</em>';
+      }else{
+        el2.className='st2 err';
+        el2.textContent='Barcode read ('+isbn+') but not found — enter manually';
+        document.getElementById('scnISBN').value=isbn;
+      }
+    }
+  });
 }
-function stopScn(){if(scnR){try{scnR.reset();}catch(e){}scnR=null;}document.getElementById('scnwrap').style.display='none';document.getElementById('scnactive').style.display='none';document.getElementById('scnstart').style.display='block';}
+function stopScn(){
+  try{Quagga.offDetected();Quagga.stop();}catch(ex){}
+  document.getElementById('scnwrap').style.display='none';
+  document.getElementById('scnactive').style.display='none';
+  document.getElementById('scnstart').style.display='block';
+}
 
-async function startOwnScn(){
-  document.getElementById('ownstart').style.display='none';document.getElementById('ownactive').style.display='block';document.getElementById('ownwrap').style.display='block';
-  const el=document.getElementById('ownst');el.className='st2 ok';el.textContent='📷 Point at the barcode…';
-  try{
-    ownScnR=new window.ZXingBrowser.BrowserMultiFormatReader();
-    await ownScnR.decodeFromConstraints({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}},document.getElementById('ownvid'),async(result)=>{
-      if(result){const isbn=result.getText().replace(/[^0-9X]/gi,'');if(isbn.length>=10){stopOwnScn();document.getElementById('ownIn').value=isbn;chkOwn();}}
-    });
-  }catch(err){stopOwnScn();document.getElementById('ownst').className='st2 err';document.getElementById('ownst').textContent='Camera access denied — use manual entry below';document.getElementById('ownstart').style.display='block';}
+function startOwnScn(){
+  document.getElementById('ownstart').style.display='none';
+  document.getElementById('ownactive').style.display='block';
+  document.getElementById('ownwrap').style.display='block';
+  const el=document.getElementById('ownst');
+  el.className='st2 ok';
+  el.textContent='Point at the barcode…';
+  Quagga.init({
+    inputStream:{
+      name:'Live',type:'LiveStream',
+      target:document.getElementById('ownvid'),
+      constraints:{facingMode:'environment',width:{min:640,ideal:1280},height:{min:480,ideal:720}}
+    },
+    decoder:{readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader']},
+    locate:true
+  },function(err){
+    if(err){stopOwnScn();el.className='st2 err';el.textContent='Camera could not start — use manual entry below';document.getElementById('ownstart').style.display='block';document.getElementById('ownactive').style.display='none';return;}
+    Quagga.start();
+  });
+  Quagga.onDetected(function(data){
+    const isbn=data.codeResult.code.replace(/[^0-9X]/gi,'');
+    if(isbn.length>=10){stopOwnScn();document.getElementById('ownIn').value=isbn;chkOwn();}
+  });
 }
-function stopOwnScn(){if(ownScnR){try{ownScnR.reset();}catch(e){}ownScnR=null;}document.getElementById('ownwrap').style.display='none';document.getElementById('ownactive').style.display='none';document.getElementById('ownstart').style.display='block';}
+function stopOwnScn(){
+  try{Quagga.offDetected();Quagga.stop();}catch(ex){}
+  document.getElementById('ownwrap').style.display='none';
+  document.getElementById('ownactive').style.display='none';
+  document.getElementById('ownstart').style.display='block';
+}
 
 async function chkOwn(){
   const val=document.getElementById('ownIn').value.trim();const el=document.getElementById('ownres');if(!val){el.innerHTML='';return;}
