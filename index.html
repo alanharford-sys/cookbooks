@@ -174,6 +174,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI'
 .hero p { font-size: 14px; opacity: 0.8; position: relative; }
 .srow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px; }
 .sc { background: var(--surface); border-radius: var(--r); padding: 14px 12px; text-align: center; border: 0.5px solid var(--border); box-shadow: var(--shadow); }
+.sc-link { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
+.sc-link:active { transform: scale(0.95); box-shadow: none; }
+.sc-link:hover { border-color: var(--accent); }
+.sc-arr { font-size: 14px; color: var(--accent); margin-top: 4px; font-weight: 700; opacity: 0.7; }
 .sn { font-size: 30px; font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -1px; }
 .sl { font-size: 11px; color: var(--text3); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .seac { margin: 0 16px 14px; background: var(--surface); border-radius: var(--r2); border: 0.5px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
@@ -356,9 +360,9 @@ textarea.fi { resize: vertical; min-height: 80px; }
     <div class="tp active" id="tp-home">
       <div class="hero"><h2>Good <span id="tgreet"></span></h2><p>Your culinary bible</p></div>
       <div class="srow">
-        <div class="sc"><div class="sn" id="sbooks">0</div><div class="sl">Books</div></div>
-        <div class="sc"><div class="sn" id="srcps">0</div><div class="sl">Recipes</div></div>
-        <div class="sc"><div class="sn" id="scols">0</div><div class="sl">Shelves</div></div>
+        <div class="sc sc-link" onclick="swTab('library',document.querySelector('.ti:nth-child(2)'))"><div class="sn" id="sbooks">0</div><div class="sl">Books</div><div class="sc-arr">&#8594;</div></div>
+        <div class="sc sc-link" onclick="swTab('recipes',document.querySelector('.ti:nth-child(3)'))"><div class="sn" id="srcps">0</div><div class="sl">Recipes</div><div class="sc-arr">&#8594;</div></div>
+        <div class="sc sc-link" onclick="swTab('shelves',document.querySelector('.ti:nth-child(4)'))"><div class="sn" id="scols">0</div><div class="sl">Shelves</div><div class="sc-arr">&#8594;</div></div>
       </div>
       <div class="seac">
         <div class="seah"><h3>🌱 In Season Now</h3><p id="seamth"></p></div>
