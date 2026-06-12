@@ -1472,16 +1472,7 @@ function getCurrSea(){return SEA[new Date().getMonth()].i.map(s=>s.toLowerCase()
 function goSeason(i){swTab('recipes',document.querySelector('.ti:nth-child(3)'));document.getElementById('rcpsrch').value=i;renderRcps();}
 
 // ── HOME ──────────────────────────────────────────────────────
-function renderHome(){
-  document.getElementById('sbooks').textContent=books.length;
-  document.getElementById('srcps').textContent=recipes.length;
-  document.getElementById('scols').textContent=shelves.length;
-  const sr=document.getElementById('homeshelf');
-  if(shelves.length){
-    sr.innerHTML=shelves.slice(0,8).map(s=>{const ct=books.filter(b=>b.shelfId===s.id).length;return`<div class="scube" onclick="showShelfDetail('${s.id}')"><div class="scubei">${s.emoji||'📚'}</div><div class="scuben">${e(s.name)}</div><div class="scubec">${ct} book${ct!==1?'s':''}</div></div>`;}).join('');
-    document.getElementById('shct').textContent=shelves.length+' shelves';
-  }else{sr.innerHTML='<div style="font-size:14px;color:var(--t3);padding:8px 0;">No shelves yet — create one in the Shelves tab</div>';}
-}
+
 function qsearch(q){
   const el=document.getElementById('qres');
   if(!q.trim()){el.innerHTML='';return;}
@@ -1598,7 +1589,264 @@ function renderHome(){
 }
 
 // ── TAB TITLES UPDATE ─────────────────────────────────────────
-const TABTITLES={home:'&#x1F4DA; My Cookbook Library',library:'&#x1F4DA; My Library',recipes:'&#x1F37D;&#xFE0F; Recipe Index',myrecipes:'&#x1F9D1;&#x200D;&#x1F373; My Recipes',shelves:'&#x1F516; My Shelves',search:'&#x1F50D; Search'};
+
+
+// ── MY RECIPES — RENDER ──────────────────────────────────────
+function setFRF(f,el){frFilter=f;document.querySelectorAll('#tp-myrecipes .chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderMyRecipes();}
+function setFRV(v,el){frView=v;renderMyRecipes();}
+
+function renderMyRecipes(){
+  const q=(document.getElementById('frsrch').value||'').toLowerCase().trim();
+  const si=getCurrSea();
+  let list=fullRecipes.filter(r=>{
+    const txt=[r.title,r.description,r.cuisine,r.course,r.dietary].join(' ').toLowerCase();
+    const ings=recipeIngredients.filter(i=>i.recipe_id===r.id).map(i=>i.ingredient).join(' ').toLowerCase();
+    const mq=!q||(txt+' '+ings).includes(q);
+    let mf=true;
+    if(frFilter==='fav')mf=r.is_favourite;
+    else if(frFilter==='starter')mf=(r.course||'').toLowerCase()==='starter';
+    else if(frFilter==='main')mf=(r.course||'').toLowerCase()==='main';
+    else if(frFilter==='dessert')mf=(r.course||'').toLowerCase()==='dessert';
+    else if(frFilter==='easy')mf=(r.difficulty||'').toLowerCase()==='easy';
+    else if(frFilter==='for2')mf=r.serves==='2';
+    else if(frFilter==='for4')mf=r.serves==='4';
+    else if(frFilter==='season')mf=si.some(s=>ings.includes(s)||(r.cuisine||'').toLowerCase().includes(s));
+    return mq&&mf;
+  });
+  document.getElementById('frct').textContent=`${list.length} recipe${list.length!==1?'s':''}${q?' for "'+q+'"':''}`;
+  const el=document.getElementById('frgrid');
+  if(!fullRecipes.length){el.innerHTML='<div class="empty"><div class="emico">\u1F9D1&#x200D;&#x1F373;</div><h3>No recipes yet</h3><p>Add your own full recipes with ingredients, method and photos.</p><button class="btn bp" onclick="openAddFR()">+ Add first recipe</button></div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty"><div class="emico">&#x1F50D;</div><h3>No matches</h3><p>Try a different search or filter.</p></div>';return;}
+  if(frView==='grid'){
+    el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">'+list.map(r=>frGridCard(r)).join('')+'</div>';
+  }else{
+    el.innerHTML=list.map(r=>frListCard(r)).join('');
+  }
+}
+
+function frGridCard(r){
+  const heart=r.is_favourite?'<span style="position:absolute;top:8px;left:8px;font-size:18px;">&#x2764;&#xFE0F;</span>':'';
+  const photoHTML=r.photo
+    ?`<div class="fr-card-img" style="position:relative;">${heart}<img src="${r.photo}" alt="" onerror="this.parentElement.innerHTML='&#x1F37D;&#xFE0F;${heart}'"></div>`
+    :`<div class="fr-card-img" style="position:relative;">${heart}&#x1F37D;&#xFE0F;</div>`;
+  const stars=r.rating>0?'&#x2B50;'.repeat(r.rating):'';
+  return `<div class="fr-card" onclick="showFRDetail('${r.id}')">${photoHTML}<div class="fr-card-info"><div class="fr-card-title">${e(r.title)}</div><div class="fr-card-meta">${r.serves?'Serves '+r.serves:''}${r.cook_time?' &middot; '+r.cook_time+'m':''} ${stars}</div><div class="fr-card-tags">${r.course?`<span class="tag ts">${e(r.course)}</span>`:''}${r.cuisine?`<span class="tag tc">${e(r.cuisine)}</span>`:''}</div></div></div>`;
+}
+
+function frListCard(r){
+  const photo=r.photo?`<img src="${r.photo}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.style.display='none'">`:'<div style="width:72px;height:72px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">&#x1F37D;&#xFE0F;</div>';
+  return `<div class="lcard" onclick="showFRDetail('${r.id}')">${photo}<div class="linfo"><div class="ltit">${e(r.title)}${r.is_favourite?' &#x2764;&#xFE0F;':''}</div><div class="laut">${r.cuisine?e(r.cuisine)+' &middot; ':''}${r.serves?'Serves '+r.serves:''}${r.cook_time?' &middot; '+r.cook_time+'min':''}</div><div class="bktags">${r.course?`<span class="tag ts">${e(r.course)}</span>`:''}${r.difficulty?`<span class="tag tc">${e(r.difficulty)}</span>`:''}</div></div></div>`;
+}
+
+function showFRDetail(id){
+  const r=fullRecipes.find(x=>x.id===id);if(!r)return;
+  const ings=recipeIngredients.filter(i=>i.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order);
+  const steps=recipeSteps.filter(s=>s.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order);
+  const srcBook=r.book_id?books.find(b=>b.id===r.book_id):null;
+  currentScaleBase=parseInt(r.serves)||4;
+  currentScaleServes=currentScaleBase;
+  const photoHTML=r.photo
+    ?`<div class="recipe-hero"><img src="${r.photo}" onerror="this.parentElement.innerHTML='<div class=recipe-hero-ph>&#x1F37D;&#xFE0F;</div>'"><div class="recipe-hero-actions">${!isGuest?`<button class="hero-action-btn" onclick="editFR('${r.id}')">&#x270F;&#xFE0F;</button><button class="hero-action-btn" onclick="deleteFR('${r.id}')">&#x1F5D1;</button>`:''}</div></div>`
+    :`<div class="recipe-hero"><div class="recipe-hero-ph">&#x1F37D;&#xFE0F;</div><div class="recipe-hero-actions">${!isGuest?`<button class="hero-action-btn" onclick="editFR('${r.id}')">&#x270F;&#xFE0F;</button><button class="hero-action-btn" onclick="deleteFR('${r.id}')">&#x1F5D1;</button>`:''}</div></div>`;
+  const metaPills=[r.serves&&`<span class="meta-pill">Serves ${e(r.serves)}</span>`,r.prep_time&&`<span class="meta-pill">Prep ${r.prep_time}m</span>`,r.cook_time&&`<span class="meta-pill">Cook ${r.cook_time}m</span>`,r.difficulty&&`<span class="meta-pill">${e(r.difficulty)}</span>`,r.cuisine&&`<span class="meta-pill">${e(r.cuisine)}</span>`,r.dietary&&`<span class="meta-pill">${e(r.dietary)}</span>`].filter(Boolean).join('');
+  const starsHTML=`<div class="star-row" id="frStars">`+[1,2,3,4,5].map(n=>`<span class="star${(r.rating||0)>=n?' active':''}" onclick="setFRRating('${r.id}',${n})">&#x2B50;</span>`).join('')+`</div>`;
+  const ingHTML=ings.length?`<div class="section-block"><div class="section-block-title">Ingredients</div><div class="scale-row"><span class="scale-label">Adjust serving size</span><button class="scale-btn" onclick="scaleAdj(-1)">-</button><span class="scale-val" id="scaleVal">${currentScaleServes}</span><button class="scale-btn" onclick="scaleAdj(1)">+</button></div><div id="ingList">`+ings.map(i=>`<div class="ingredient-row" data-amount="${i.amount||''}" data-unit="${i.unit||''}"><span class="ing-amount" id="ia-${i.id}">${scaleAmount(i.amount,currentScaleBase,currentScaleServes)}${i.unit?' '+i.unit:''}</span><span class="ing-name">${e(i.ingredient)}</span>${i.notes?`<span class="ing-note">${e(i.notes)}</span>`:''}</div>`).join('')+`</div></div>`:'';
+  const stepsHTML=steps.length?`<div class="section-block"><div class="section-block-title">Method</div>`+steps.map((s,i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div class="step-text">${e(s.step_text)}</div></div>`).join('')+`</div>`:'';
+  document.getElementById('frDetailCont').innerHTML=`<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit" style="font-size:16px;">${e(r.title)}</span><button class="mcls" onclick="closeM('frDetailM')">&#x2715;</button></div><div class="mbody" style="padding-top:0;">${photoHTML}<div style="padding-top:16px;">${starsHTML}<button class="fav-btn${r.is_favourite?' active':''}" onclick="togFRFav('${r.id}')">${r.is_favourite?'Favourited':'Add to favourites'}</button>${srcBook?`<div style="margin-top:10px;font-size:13px;color:var(--t3);">From: <strong>${e(srcBook.title)}</strong></div>`:''} ${r.description?`<p style="font-size:15px;color:var(--t2);margin:12px 0;line-height:1.6;">${e(r.description)}</p>`:''}<div class="meta-row">${metaPills}</div>${ingHTML}${stepsHTML}${r.notes?`<div class="section-block"><div class="section-block-title">Notes</div><div class="dsb">${e(r.notes)}</div></div>`:''}</div></div>`;
+  openM('frDetailM');
+}
+
+function scaleAmount(amount,base,current){
+  if(!amount||!base||base===current)return amount||'';
+  const n=parseFloat(amount);if(isNaN(n))return amount;
+  const scaled=(n*current/base);
+  return scaled%1===0?scaled.toString():(Math.round(scaled*4)/4).toString();
+}
+function scaleAdj(delta){
+  currentScaleServes=Math.max(1,currentScaleServes+delta);
+  document.getElementById('scaleVal').textContent=currentScaleServes;
+  document.querySelectorAll('.ingredient-row').forEach(row=>{
+    const orig=row.dataset.amount,unit=row.dataset.unit||'';
+    const id=row.querySelector('.ing-amount')?.id;
+    if(id){const el=document.getElementById(id);if(el)el.textContent=scaleAmount(orig,currentScaleBase,currentScaleServes)+(unit?' '+unit:'');}
+  });
+}
+async function setFRRating(id,stars){
+  document.querySelectorAll('#frStars .star').forEach((s,i)=>s.classList.toggle('active',i<stars));
+  try{await sbf(`${SB('full_recipes')}?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({rating:stars})});const r=fullRecipes.find(x=>x.id===id);if(r)r.rating=stars;toast('Rating saved');}catch(err){toast('Failed to save rating');}
+}
+async function togFRFav(id){
+  const r=fullRecipes.find(x=>x.id===id);if(!r)return;
+  const nv=!r.is_favourite;
+  try{await sbf(`${SB('full_recipes')}?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({is_favourite:nv})});r.is_favourite=nv;showFRDetail(id);renderMyRecipes();toast(nv?'Added to favourites':'Removed from favourites');}
+  catch(err){toast('Failed to update favourite');}
+}
+
+function openAddFR(){
+  editFRId=null;frIngRowN=0;frStepRowN=0;
+  document.getElementById('addFRTit').textContent='New Recipe';
+  ['frTitle','frDesc','frPhoto','frServes','frPrep','frCook','frNotes','frCuisine','frDietary','frImportURL'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('frDiff').value='';document.getElementById('frCourse').value='';
+  document.getElementById('frBook').value='';document.getElementById('frPhotoPreview').style.display='none';
+  document.getElementById('urlImportSt').innerHTML='';
+  document.getElementById('frIngRows').innerHTML='';document.getElementById('frStepRows').innerHTML='';
+  addIngRow();addIngRow();addIngRow();addStepRow();addStepRow();openM('addFRM');
+}
+function editFR(id){
+  const r=fullRecipes.find(x=>x.id===id);if(!r)return;
+  closeM('frDetailM');editFRId=id;frIngRowN=0;frStepRowN=0;
+  document.getElementById('addFRTit').textContent='Edit Recipe';
+  document.getElementById('frTitle').value=r.title||'';document.getElementById('frDesc').value=r.description||'';
+  document.getElementById('frPhoto').value=r.photo||'';document.getElementById('frServes').value=r.serves||'';
+  document.getElementById('frPrep').value=r.prep_time||'';document.getElementById('frCook').value=r.cook_time||'';
+  document.getElementById('frNotes').value=r.notes||'';document.getElementById('frCuisine').value=r.cuisine||'';
+  document.getElementById('frDietary').value=r.dietary||'';document.getElementById('frDiff').value=r.difficulty||'';
+  document.getElementById('frCourse').value=r.course||'';document.getElementById('frBook').value=r.book_id||'';
+  document.getElementById('frImportURL').value=r.source_url||'';document.getElementById('urlImportSt').innerHTML='';
+  if(r.photo){document.getElementById('frPhotoPreview').style.display='block';document.getElementById('frPhotoImg').src=r.photo;}
+  else document.getElementById('frPhotoPreview').style.display='none';
+  document.getElementById('frIngRows').innerHTML='';
+  recipeIngredients.filter(i=>i.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order).forEach(i=>addIngRow(i.amount,i.unit,i.ingredient,i.notes));
+  if(!recipeIngredients.filter(i=>i.recipe_id===id).length){addIngRow();addIngRow();}
+  document.getElementById('frStepRows').innerHTML='';
+  recipeSteps.filter(s=>s.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order).forEach(s=>addStepRow(s.step_text));
+  if(!recipeSteps.filter(s=>s.recipe_id===id).length){addStepRow();}
+  openM('addFRM');
+}
+function addIngRow(amount='',unit='',ingredient='',notes=''){
+  frIngRowN++;const n=frIngRowN;
+  const d=document.createElement('div');d.className='ing-form-row';d.id='ingr'+n;
+  d.innerHTML=`<input type="text" placeholder="Qty" value="${e(amount)}" style="width:52px;flex:none;" id="iq${n}"><input type="text" placeholder="Unit" value="${e(unit)}" style="width:52px;flex:none;" id="iu${n}"><input type="text" placeholder="Ingredient *" value="${e(ingredient)}" style="flex:2;" id="ii${n}"><input type="text" placeholder="Note" value="${e(notes)}" style="flex:1;font-size:12px;" id="in${n}"><button class="ing-del" onclick="this.parentElement.remove()">X</button>`;
+  document.getElementById('frIngRows').appendChild(d);
+}
+function addStepRow(text=''){
+  frStepRowN++;const n=frStepRowN;
+  const d=document.createElement('div');d.className='step-form-row';d.id='stepr'+n;
+  d.innerHTML=`<div class="step-num-sm">${n}</div><textarea placeholder="Describe this step..." id="st${n}">${e(text)}</textarea><button class="ing-del" style="margin-top:8px;" onclick="this.parentElement.remove()">X</button>`;
+  document.getElementById('frStepRows').appendChild(d);
+}
+function previewFRPhoto(){
+  const url=document.getElementById('frPhoto').value.trim();if(!url)return;
+  document.getElementById('frPhotoPreview').style.display='block';document.getElementById('frPhotoImg').src=url;
+}
+async function saveFR(){
+  const title=document.getElementById('frTitle').value.trim();if(!title){alert('Please enter a recipe title.');return;}
+  const btn=document.getElementById('saveFRBtn');btn.disabled=true;btn.textContent='Saving...';
+  const row={title,description:document.getElementById('frDesc').value.trim()||null,photo:document.getElementById('frPhoto').value.trim()||null,serves:document.getElementById('frServes').value.trim()||null,prep_time:parseInt(document.getElementById('frPrep').value)||null,cook_time:parseInt(document.getElementById('frCook').value)||null,difficulty:document.getElementById('frDiff').value||null,course:document.getElementById('frCourse').value||null,cuisine:document.getElementById('frCuisine').value.trim()||null,dietary:document.getElementById('frDietary').value.trim()||null,notes:document.getElementById('frNotes').value.trim()||null,source_url:document.getElementById('frImportURL').value.trim()||null,book_id:document.getElementById('frBook').value||null,is_favourite:editFRId?(fullRecipes.find(r=>r.id===editFRId)?.is_favourite||false):false,rating:editFRId?(fullRecipes.find(r=>r.id===editFRId)?.rating||0):0};
+  const ingEls=document.querySelectorAll('#frIngRows .ing-form-row');
+  const ings=[];let iSort=0;
+  ingEls.forEach(row=>{const n=row.id.replace('ingr','');const ing=document.getElementById('ii'+n)?.value.trim();if(ing)ings.push({amount:document.getElementById('iq'+n)?.value.trim()||null,unit:document.getElementById('iu'+n)?.value.trim()||null,ingredient:ing,notes:document.getElementById('in'+n)?.value.trim()||null,sort_order:iSort++});});
+  const stepEls=document.querySelectorAll('#frStepRows .step-form-row');
+  const stps=[];let sSort=0;
+  stepEls.forEach(row=>{const n=row.id.replace('stepr','');const txt=document.getElementById('st'+n)?.value.trim();if(txt)stps.push({step_text:txt,sort_order:sSort++});});
+  try{
+    setSS('syncing');let savedId;
+    if(editFRId){
+      await sbf(`${SB('full_recipes')}?id=eq.${editFRId}`,{method:'PATCH',body:JSON.stringify(row)});savedId=editFRId;
+      await sbf(`${SB('recipe_ingredients')}?recipe_id=eq.${savedId}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      await sbf(`${SB('recipe_steps')}?recipe_id=eq.${savedId}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      fullRecipes=fullRecipes.map(r=>r.id===editFRId?{...r,...row}:r);
+    }else{
+      const saved=await sbf(SB('full_recipes'),{method:'POST',body:JSON.stringify(row)});savedId=saved[0].id;fullRecipes.unshift({...row,id:savedId});
+    }
+    if(ings.length){const savedIngs=await sbf(SB('recipe_ingredients'),{method:'POST',body:JSON.stringify(ings.map(i=>({...i,recipe_id:savedId})))});recipeIngredients=recipeIngredients.filter(i=>i.recipe_id!==savedId).concat(savedIngs||[]);}
+    if(stps.length){const savedSteps=await sbf(SB('recipe_steps'),{method:'POST',body:JSON.stringify(stps.map(s=>({...s,recipe_id:savedId})))});recipeSteps=recipeSteps.filter(s=>s.recipe_id!==savedId).concat(savedSteps||[]);}
+    localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves,fullRecipes,recipeIngredients,recipeSteps,rCollections,rColItems}));
+    setSS('ok');closeM('addFRM');renderMyRecipes();toast(editFRId?'Recipe updated':'Recipe saved');
+  }catch(err){setSS('err');toast('Save failed');console.error(err);}
+  btn.disabled=false;btn.textContent='Save Recipe';
+}
+async function deleteFR(id){
+  if(!confirm('Delete this recipe?'))return;
+  try{
+    await sbf(`${SB('full_recipes')}?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    fullRecipes=fullRecipes.filter(r=>r.id!==id);recipeIngredients=recipeIngredients.filter(i=>i.recipe_id!==id);recipeSteps=recipeSteps.filter(s=>s.recipe_id!==id);
+    localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves,fullRecipes,recipeIngredients,recipeSteps,rCollections,rColItems}));
+    closeM('frDetailM');renderMyRecipes();toast('Recipe deleted');
+  }catch(err){toast('Delete failed');}
+}
+async function saveRCol(){
+  const nm=document.getElementById('rcolName').value.trim();if(!nm){toast('Please enter a name');return;}
+  try{const row={name:nm,description:document.getElementById('rcolDesc').value.trim()||null,emoji:document.getElementById('rcolEmoji').value.trim()||'&#x1F4DA;',sort_order:rCollections.length};const saved=await sbf(SB('recipe_collections'),{method:'POST',body:JSON.stringify(row)});rCollections.push(saved[0]);closeM('addRColM');toast('Collection created');}
+  catch(err){toast('Save failed');}
+}
+async function importFromURL(){
+  const url=document.getElementById('frImportURL').value.trim();
+  const el=document.getElementById('urlImportSt');
+  if(!url){el.className='st2 err';el.textContent='Please enter a URL';return;}
+  el.className='st2 loading';el.innerHTML='<span class="spin"></span>Fetching recipe...';
+  try{
+    const proxyUrl='https://api.allorigins.win/get?url='+encodeURIComponent(url);
+    const resp=await fetch(proxyUrl);const data=await resp.json();
+    if(!data.contents){el.className='st2 err';el.textContent='Could not fetch page - try entering manually';return;}
+    const txt=data.contents.replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,8000);
+    el.innerHTML='<span class="spin"></span>Parsing with AI...';
+    const aiResp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:'Extract the recipe from this webpage and return ONLY valid JSON (no markdown, no backticks):\n{"title":"","description":"","serves":"","prep_time":null,"cook_time":null,"difficulty":"","course":"","cuisine":"","dietary":"","ingredients":[{"amount":"","unit":"","ingredient":"","notes":""}],"steps":["..."],"notes":""}\n\nText:\n'+txt}]})});
+    const aiData=await aiResp.json();
+    const recipe=JSON.parse(aiData.content[0].text.trim());
+    if(recipe.title)document.getElementById('frTitle').value=recipe.title;
+    if(recipe.description)document.getElementById('frDesc').value=recipe.description;
+    if(recipe.serves)document.getElementById('frServes').value=recipe.serves;
+    if(recipe.prep_time)document.getElementById('frPrep').value=recipe.prep_time;
+    if(recipe.cook_time)document.getElementById('frCook').value=recipe.cook_time;
+    if(recipe.difficulty)document.getElementById('frDiff').value=recipe.difficulty;
+    if(recipe.course)document.getElementById('frCourse').value=recipe.course;
+    if(recipe.cuisine)document.getElementById('frCuisine').value=recipe.cuisine;
+    if(recipe.dietary)document.getElementById('frDietary').value=recipe.dietary;
+    if(recipe.notes)document.getElementById('frNotes').value=recipe.notes;
+    document.getElementById('frIngRows').innerHTML='';frIngRowN=0;
+    (recipe.ingredients||[]).forEach(i=>addIngRow(i.amount||'',i.unit||'',i.ingredient||'',i.notes||''));
+    if(!(recipe.ingredients||[]).length){addIngRow();addIngRow();}
+    document.getElementById('frStepRows').innerHTML='';frStepRowN=0;
+    (recipe.steps||[]).forEach(s=>addStepRow(typeof s==='string'?s:s.text||''));
+    if(!(recipe.steps||[]).length){addStepRow();}
+    el.className='st2 ok';el.textContent='Recipe imported! Check and save.';
+  }catch(err){console.error(err);el.className='st2 err';el.textContent='Could not parse - please fill in manually';}
+}
+function popBookSel(){
+  const sel=document.getElementById('frBook');if(!sel)return;
+  sel.innerHTML='<option value="">-- Not linked to a book --</option>'+books.map(b=>`<option value="${b.id}">${e(b.title)}</option>`).join('');
+}
+function renderGS(){
+  const q=(document.getElementById('gsrch').value||'').toLowerCase().trim();
+  if(!q){document.getElementById('gsres').innerHTML='';document.getElementById('gsct').textContent='';return;}
+  let br=[],rr=[],frr=[];
+  if(stypes.books)br=books.filter(b=>[b.title,b.author,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase().includes(q));
+  if(stypes.recipes)rr=recipes.filter(r=>[r.name,r.cuisine,r.course,r.main_protein,r.dietary].join(' ').toLowerCase().includes(q));
+  if(stypes.fullrecipes)frr=fullRecipes.filter(r=>{const ings=recipeIngredients.filter(i=>i.recipe_id===r.id).map(i=>i.ingredient).join(' ');return[r.title,r.description,r.cuisine,r.course,ings].join(' ').toLowerCase().includes(q);});
+  const tot=br.length+rr.length+frr.length;
+  document.getElementById('gsct').textContent=`${tot} result${tot!==1?'s':''} for "${q}"`;
+  let h='';
+  if(br.length)h+=`<div class="dsh" style="padding-top:8px;">Books (${br.length})</div><div class="lst">`+br.map(b=>bkList(b)).join('')+'</div>';
+  if(rr.length)h+=`<div class="dsh" style="padding-top:8px;">Recipe Index (${rr.length})</div>`+rr.map(r=>rcpCard(r,books.find(b=>b.id===r.book_id))).join('');
+  if(frr.length)h+=`<div class="dsh" style="padding-top:8px;">My Recipes (${frr.length})</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">`+frr.map(r=>frGridCard(r)).join('')+'</div>';
+  document.getElementById('gsres').innerHTML=h||'<div class="empty"><div class="emico">&#x1F50D;</div><h3>No results</h3></div>';
+}
+function renderHome(){
+  document.getElementById('sbooks').textContent=books.length;
+  document.getElementById('srcps').textContent=fullRecipes.length+recipes.length;
+  document.getElementById('scols').textContent=shelves.length;
+  const sr=document.getElementById('homeshelf');
+  if(shelves.length){sr.innerHTML=shelves.slice(0,8).map(s=>{const ct=books.filter(b=>b.shelfId===s.id).length;return`<div class="scube" onclick="showShelfDetail('${s.id}')"><div class="scubei">${s.emoji||'&#x1F4DA;'}</div><div class="scuben">${e(s.name)}</div><div class="scubec">${ct} book${ct!==1?'s':''}</div></div>`;}).join('');document.getElementById('shct').textContent=shelves.length+' shelves';}
+  else{sr.innerHTML='<div style="font-size:14px;color:var(--t3);padding:8px 0;">No shelves yet</div>';}
+}
+// ── UI HELPERS ────────────────────────────────────────────────
+const TABTITLES={home:'My Cookbook Library',library:'My Library',recipes:'Recipe Index',myrecipes:'My Recipes',shelves:'My Shelves',search:'Search'};
+function swTab(name,el){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tp-'+name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';
+}
+function togFab(){const o=document.getElementById('fabo');const open=o.classList.toggle('open');document.getElementById('fabBtn').textContent=open?'X':'+';}
+function closeFab(){document.getElementById('fabo').classList.remove('open');document.getElementById('fabBtn').textContent='+';}
+function openScanM(){closeFab();stopScn();document.getElementById('scnISBN').value='';document.getElementById('scnst').innerHTML='';document.getElementById('scnstm').innerHTML='';openM('scanM');}
+function openOwnM(){closeFab();stopOwnScn();document.getElementById('ownIn').value='';document.getElementById('ownres').innerHTML='';openM('ownM');}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');if(id==='scanM')stopScn();if(id==='ownM')stopOwnScn();}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
+function e(s){var x=String(s||'');x=x.replace(/&/g,'&amp;');x=x.replace(/</g,'&lt;');x=x.replace(/>/g,'&gt;');x=x.replace(/["]/g,'&quot;');return x;}
 
 // ── DARK MODE ─────────────────────────────────────────────────
 function initTheme(){
