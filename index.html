@@ -1387,7 +1387,10 @@ function unlk(){
   document.getElementById('lock').style.display='none';
   document.getElementById('app').style.display='flex';
   if(!isGuest)document.getElementById('fabwrap').style.display='flex';
-  initApp();
+  try { initApp(); } catch(e) {
+    console.error('initApp failed:', e);
+    document.getElementById('app').innerHTML += '<div style="padding:20px;color:red;font-family:monospace;font-size:12px;">Init error: ' + e.message + '</div>';
+  }
 }
 function initAuth(){
   const s=sessionStorage.getItem('cb_auth');
@@ -1577,21 +1580,7 @@ function popShelfSel(){const s=document.getElementById('fShelf');if(!s)return;s.
 function togST(t,el){stypes[t]=!stypes[t];el.classList.toggle('sel',stypes[t]);renderGS();}
 
 // Update home to show full recipe count
-function renderHome(){
-  document.getElementById('sbooks').textContent=books.length;
-  document.getElementById('srcps').textContent=fullRecipes.length+recipes.length;
-  document.getElementById('scols').textContent=shelves.length;
-  const sr=document.getElementById('homeshelf');
-  if(shelves.length){
-    sr.innerHTML=shelves.slice(0,8).map(s=>{const ct=books.filter(b=>b.shelfId===s.id).length;return`<div class="scube" onclick="showShelfDetail('${s.id}')"><div class="scubei">${s.emoji||'&#x1F4DA;'}</div><div class="scuben">${e(s.name)}</div><div class="scubec">${ct} book${ct!==1?'s':''}</div></div>`;}).join('');
-    document.getElementById('shct').textContent=shelves.length+' shelves';
-  }else{sr.innerHTML='<div style="font-size:14px;color:var(--t3);padding:8px 0;">No shelves yet - create one in the Shelves tab</div>';}
-}
 
-// ── TAB TITLES UPDATE ─────────────────────────────────────────
-
-
-// ── MY RECIPES — RENDER ──────────────────────────────────────
 function setFRF(f,el){frFilter=f;document.querySelectorAll('#tp-myrecipes .chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderMyRecipes();}
 function setFRV(v,el){frView=v;renderMyRecipes();}
 
@@ -1885,9 +1874,20 @@ function silentRefresh(){
 }
 setInterval(silentRefresh, 60000);
 
+// ── GLOBAL ERROR HANDLER ─────────────────────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  console.error('App error:', msg, 'at line', line);
+  // Show error to user so it's visible
+  const errDiv = document.createElement('div');
+  errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 16px;font-size:13px;z-index:99999;font-family:monospace;';
+  errDiv.textContent = 'Error: ' + msg + ' (line ' + line + ')';
+  document.body.appendChild(errDiv);
+  return false;
+};
+
 // ── START ─────────────────────────────────────────────────────
 initTheme();
-renderAll();
+try { renderAll(); } catch(e) { console.error('renderAll failed:', e); }
 initAuth();
 </script>
 </body>
