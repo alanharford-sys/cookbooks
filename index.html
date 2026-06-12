@@ -5,923 +5,1030 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="My Cookbooks">
+<meta name="apple-mobile-web-app-title" content="My Cookbook Library">
 <meta name="theme-color" content="#ffffff">
 <title>My Cookbook Library</title>
 <link rel="manifest" href="manifest.json">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; overflow-x: hidden; }
-
-  #lockScreen { position: fixed; inset: 0; background: #f5f5f0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .lock-card { background: #fff; border-radius: 20px; padding: 36px 28px; width: 100%; max-width: 340px; text-align: center; border: 1px solid #e8e8e0; }
-  .lock-icon { font-size: 52px; margin-bottom: 16px; }
-  .lock-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .lock-subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
-  .lock-input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 12px 16px; font-size: 18px; text-align: center; letter-spacing: 3px; outline: none; -webkit-appearance: none; margin-bottom: 12px; font-family: inherit; }
-  .lock-input:focus { border-color: #2d6a4f; }
-  .lock-input.shake { animation: shake 0.4s ease; border-color: #c0392b; }
-  .lock-btn { width: 100%; background: #2d6a4f; color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
-  .lock-error { font-size: 13px; color: #c0392b; min-height: 18px; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
-
-  header { background: #fff; border-bottom: 1px solid #e8e8e0; padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 20px; font-weight: 700; flex: 1; }
-  .header-actions { display: flex; gap: 8px; align-items: center; }
-  .sync-dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; flex-shrink: 0; transition: background 0.3s; cursor: help; }
-  .sync-dot.syncing { background: #f0a500; animation: pulse 1s infinite; }
-  .sync-dot.ok { background: #2d6a4f; }
-  .sync-dot.err { background: #c0392b; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  .btn { border: none; border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; -webkit-appearance: none; font-family: inherit; }
-  .btn-primary { background: #2d6a4f; color: #fff; }
-  .btn-primary:active { background: #235a42; }
-  .btn-outline { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
-  .btn-outline:active { background: #f5f5f0; }
-  .btn-danger { background: #c0392b; color: #fff; }
-  .btn-sm { padding: 6px 12px; font-size: 13px; }
-  .btn-block { width: 100%; justify-content: center; }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .sync-banner { background: #fff8e1; border-bottom: 1px solid #ffe082; padding: 9px 16px; font-size: 13px; color: #7a5800; display: none; align-items: center; gap: 8px; }
-  .sync-banner.show { display: flex; }
-
-  .search-bar { padding: 10px 16px; background: #fff; border-bottom: 1px solid #e8e8e0; display: flex; gap: 8px; }
-  .search-bar input { flex: 1; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 9px 14px; font-size: 15px; background: #f8f8f5; outline: none; -webkit-appearance: none; font-family: inherit; }
-  .search-bar input:focus { border-color: #2d6a4f; background: #fff; }
-
-  .filters { padding: 10px 16px; display: flex; gap: 8px; overflow-x: auto; background: #fff; border-bottom: 1px solid #e8e8e0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .filters::-webkit-scrollbar { display: none; }
-  .filter-chip { border: 1.5px solid #e0e0e0; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; background: #fff; color: #555; font-weight: 500; flex-shrink: 0; font-family: inherit; }
-  .filter-chip.active { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
-
-  .stats-bar { padding: 10px 16px; display: flex; align-items: center; }
-  .stats-bar span { font-size: 13px; color: #777; }
-  .stats-bar strong { color: #1a1a1a; }
-  .view-toggle { margin-left: auto; display: flex; gap: 4px; }
-  .view-btn { background: none; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 16px; color: #777; }
-  .view-btn.active { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
-
-  .grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; padding: 14px 16px; }
-  .list-view { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; }
-
-  .book-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e8e8e0; cursor: pointer; }
-  .book-card:active { opacity: 0.85; }
-  .book-cover { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: #e8e8e0; }
-  .cover-placeholder { width: 100%; aspect-ratio: 2/3; background: linear-gradient(135deg, #2d6a4f, #52b788); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36px; }
-  .book-info { padding: 8px 10px; }
-  .book-title { font-size: 13px; font-weight: 600; line-height: 1.3; margin-bottom: 2px; }
-  .book-author { font-size: 11px; color: #888; margin-bottom: 5px; }
-  .book-tags { display: flex; flex-wrap: wrap; gap: 3px; }
-
-  .tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-  .tag-cuisine { background: #fff3e0; color: #b85c00; }
-  .tag-style { background: #e8f5e9; color: #2d6a4f; }
-  .tag-ingredient { background: #e3f2fd; color: #0d47a1; }
-
-  .book-list-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e0; padding: 12px; display: flex; gap: 12px; cursor: pointer; }
-  .book-list-card:active { background: #f5f5f0; }
-  .book-list-cover { width: 54px; height: 80px; object-fit: cover; border-radius: 6px; background: #e8e8e0; flex-shrink: 0; }
-  .list-cover-placeholder { width: 54px; height: 80px; border-radius: 6px; background: linear-gradient(135deg, #2d6a4f, #52b788); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; flex-shrink: 0; }
-  .book-list-info { flex: 1; min-width: 0; }
-  .book-list-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .book-list-author { font-size: 13px; color: #888; margin-bottom: 6px; }
-  .book-list-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-
-  .empty-state { text-align: center; padding: 60px 24px; grid-column: 1/-1; }
-  .empty-icon { font-size: 64px; margin-bottom: 16px; }
-  .empty-state h2 { font-size: 20px; font-weight: 600; color: #555; margin-bottom: 8px; }
-  .empty-state p { font-size: 15px; line-height: 1.5; color: #888; max-width: 300px; margin: 0 auto; }
-  .no-results { text-align: center; padding: 40px 24px; grid-column: 1/-1; color: #aaa; }
-  .loading-state { text-align: center; padding: 60px 24px; grid-column: 1/-1; }
-  .big-spinner { width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: #2d6a4f; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #fff; border-radius: 24px 24px 0 0; padding: 20px; padding-bottom: max(20px, env(safe-area-inset-bottom)); width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .modal-handle { width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 16px; }
-  .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-  .modal-title { font-size: 18px; font-weight: 700; flex: 1; }
-  .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-  .form-group { margin-bottom: 14px; }
-  .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
-  .form-input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 16px; outline: none; -webkit-appearance: none; background: #fff; font-family: inherit; }
-  .form-input:focus { border-color: #2d6a4f; }
-  textarea.form-input { resize: vertical; min-height: 80px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .scan-section { background: #f0f7f4; border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1.5px dashed #b7dfce; }
-  .scan-section p { font-size: 13px; color: #555; margin-bottom: 10px; text-align: center; font-weight: 500; }
-  .isbn-row { display: flex; gap: 8px; }
-  .isbn-row input { flex: 1; }
-
-  .tag-input-area { display: flex; flex-wrap: wrap; gap: 6px; border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 8px 10px; min-height: 46px; cursor: text; background: #fff; }
-  .tag-input-area:focus-within { border-color: #2d6a4f; }
-  .tag-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-  .tag-pill-remove { background: none; border: none; cursor: pointer; font-size: 15px; line-height: 1; padding: 0; opacity: 0.6; }
-  .tag-pill-remove:hover { opacity: 1; }
-  .tag-input-field { border: none; outline: none; font-size: 14px; min-width: 100px; flex: 1; background: transparent; font-family: inherit; padding: 2px 0; }
-  .quick-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
-  .quick-tag { background: #f0f0ec; border: none; border-radius: 20px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: #444; font-weight: 500; font-family: inherit; }
-  .quick-tag:active { background: #e0e0dc; }
-
-  .detail-cover-wrap { text-align: center; margin-bottom: 16px; }
-  .detail-cover-img { max-height: 200px; max-width: 140px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-  .detail-cover-placeholder { width: 120px; height: 160px; background: linear-gradient(135deg, #2d6a4f, #52b788); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 48px; }
-  .detail-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; line-height: 1.2; }
-  .detail-author { font-size: 16px; color: #777; margin-bottom: 12px; }
-  .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-  .detail-tag { font-size: 13px; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
-  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .meta-item { background: #f8f8f5; border-radius: 10px; padding: 10px 12px; }
-  .meta-label { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
-  .meta-value { font-size: 14px; font-weight: 500; }
-  .section-heading { font-size: 12px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 14px; }
-  .section-body { font-size: 15px; color: #333; line-height: 1.6; }
-  .detail-actions { display: flex; gap: 8px; margin-top: 20px; }
-
-  .status-msg { font-size: 13px; margin-top: 8px; min-height: 20px; }
-  .status-ok { color: #2d6a4f; }
-  .status-err { color: #c0392b; }
-  .status-loading { color: #777; display: flex; align-items: center; gap: 6px; }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: #2d6a4f; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
-
-  .import-area { border: 2px dashed #ddd; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; color: #888; font-size: 14px; }
-  .import-area:hover { border-color: #2d6a4f; color: #2d6a4f; }
-
-  .fab-wrap { position: fixed; bottom: 28px; right: 20px; z-index: 150; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
-  .fab-main { width: 58px; height: 58px; border-radius: 50%; background: #e07c3a; border: none; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 4px 18px rgba(224,124,58,0.45); display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .fab-main:active { transform: scale(0.94); }
-  .fab-options { display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
-  .fab-options.open { display: flex; }
-  .fab-row { display: flex; align-items: center; gap: 10px; }
-  .fab-label { background: rgba(26,26,26,0.85); color: #fff; font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
-  .fab-mini { width: 46px; height: 46px; border-radius: 50%; border: none; color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
-  .fab-mini:active { transform: scale(0.94); }
-
-  .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); background: rgba(26,26,26,0.92); color: #fff; padding: 10px 20px; border-radius: 12px; font-size: 14px; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
-  .toast.show { opacity: 1; }
-
-  .camera-btn-label { display: inline-flex; align-items: center; gap: 10px; background: #2d6a4f; color: #fff; border-radius: 14px; padding: 14px 28px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 16px; font-family: inherit; }
-
-  @media (min-width: 640px) {
-    .modal { border-radius: 24px; margin-bottom: 40px; }
-  }
+:root{--g:#2d6a4f;--gl:#52b788;--o:#e07c3a;--cr:#f8f6f0;--cd:#ffffff;--br:#e8e4dc;--t1:#1a1a1a;--t2:#6b6560;--t3:#9e9890;--r:14px;--tbh:64px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--cr);color:var(--t1);}
+/* LOCK */
+#lock{position:fixed;inset:0;background:var(--cr);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;}
+.lc{background:var(--cd);border-radius:24px;padding:40px 28px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.12);}
+.li{font-size:56px;margin-bottom:16px;}
+.lt{font-size:24px;font-weight:700;margin-bottom:6px;}
+.ls{font-size:14px;color:var(--t2);margin-bottom:28px;}
+.lpw{width:100%;border:1.5px solid var(--br);border-radius:12px;padding:14px 16px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;-webkit-appearance:none;margin-bottom:12px;font-family:inherit;background:var(--cr);}
+.lpw:focus{border-color:var(--g);background:#fff;}
+.lpw.shake{animation:shk .4s ease;border-color:#c0392b;}
+.lbtn{width:100%;background:var(--g);color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px;font-family:inherit;}
+.lerr{font-size:13px;color:#c0392b;min-height:18px;}
+.lrst{font-size:13px;color:var(--t3);cursor:pointer;text-decoration:underline;margin-top:8px;display:inline-block;}
+@keyframes shk{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+/* APP SHELL */
+#app{display:flex;flex-direction:column;height:100%;}
+.hdr{background:var(--cd);border-bottom:1px solid var(--br);padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.hdr h1{font-size:18px;font-weight:700;flex:1;}
+.hdr-r{display:flex;align-items:center;gap:8px;}
+.sdot{width:12px;height:12px;border-radius:50%;background:#ccc;transition:background .3s;flex-shrink:0;}
+.sdot.ok{background:var(--g);}.sdot.syncing{background:#f0a500;animation:pls 1s infinite;}.sdot.err{background:#c0392b;}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+.sb{background:#fff8e1;border-bottom:1px solid #ffe082;padding:8px 16px;font-size:13px;color:#7a5800;display:none;align-items:center;gap:8px;flex-shrink:0;}
+.sb.show{display:flex;}
+.tc{flex:1;overflow:hidden;position:relative;}
+.tp{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
+.tp.active{display:block;}
+.tbar{background:var(--cd);border-top:1px solid var(--br);height:var(--tbh);display:flex;padding-bottom:env(safe-area-inset-bottom);flex-shrink:0;}
+.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;padding:6px 0;font-family:inherit;color:var(--t3);}
+.ti.active{color:var(--g);}
+.ticon{font-size:22px;line-height:1;}
+.tlbl{font-size:10px;font-weight:600;}
+/* BUTTONS */
+.btn{border:none;border-radius:10px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;}
+.btn:active{opacity:.75;}
+.bp{background:var(--g);color:#fff;}
+.bo{background:var(--cd);color:var(--t1);border:1.5px solid var(--br);}
+.bd{background:#c0392b;color:#fff;}
+.bsm{padding:6px 12px;font-size:13px;}
+.bblk{width:100%;justify-content:center;padding:13px;font-size:15px;border-radius:12px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+/* SEARCH */
+.sw{padding:10px 16px;background:var(--cd);border-bottom:1px solid var(--br);}
+.siw{position:relative;}
+.siw input{width:100%;border:1.5px solid var(--br);border-radius:12px;padding:10px 16px 10px 40px;font-size:15px;background:var(--cr);outline:none;-webkit-appearance:none;font-family:inherit;}
+.siw input:focus{border-color:var(--g);background:#fff;}
+.sico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;}
+/* CHIPS */
+.cw{padding:10px 16px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;background:var(--cd);border-bottom:1px solid var(--br);-webkit-overflow-scrolling:touch;}
+.cw::-webkit-scrollbar{display:none;}
+.chip{border:1.5px solid var(--br);border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;white-space:nowrap;background:var(--cd);color:var(--t2);font-weight:500;flex-shrink:0;font-family:inherit;}
+.chip.active{background:var(--g);color:#fff;border-color:var(--g);}
+.chip.sea{background:#e8f5e9;color:var(--g);border-color:var(--gl);}
+.chip.sea.active{background:var(--g);color:#fff;}
+/* SECTION HDR */
+.sh{padding:14px 16px 8px;display:flex;align-items:center;justify-content:space-between;}
+.st{font-size:13px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;}
+/* GRID/LIST */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:0 16px 100px;}
+.bkcard{background:var(--cd);border-radius:var(--r);overflow:hidden;border:1px solid var(--br);cursor:pointer;}
+.bkcard:active{opacity:.8;}
+.bkcov{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:var(--br);}
+.bkph{width:100%;aspect-ratio:2/3;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;color:#fff;font-size:36px;}
+.bkinfo{padding:8px 10px 10px;}
+.bktit{font-size:12px;font-weight:700;line-height:1.3;margin-bottom:2px;}
+.bkaut{font-size:11px;color:var(--t2);margin-bottom:5px;}
+.bktags{display:flex;flex-wrap:wrap;gap:3px;}
+.lst{display:flex;flex-direction:column;gap:8px;padding:0 16px 100px;}
+.lcard{background:var(--cd);border-radius:var(--r);border:1px solid var(--br);padding:12px;display:flex;gap:12px;cursor:pointer;}
+.lcard:active{background:var(--cr);}
+.lcov{width:52px;height:76px;object-fit:cover;border-radius:8px;background:var(--br);flex-shrink:0;}
+.lph{width:52px;height:76px;border-radius:8px;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0;}
+.linfo{flex:1;min-width:0;}
+.ltit{font-size:15px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.laut{font-size:13px;color:var(--t2);margin-bottom:6px;}
+/* TAGS */
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;}
+.tc{background:#fff3e0;color:#b85c00;}
+.ts{background:#e8f5e9;color:var(--g);}
+.ting{background:#e3f2fd;color:#0d47a1;}
+/* RECIPE CARDS */
+.rc{background:var(--cd);border-radius:var(--r);border:1px solid var(--br);padding:14px;cursor:pointer;margin-bottom:8px;}
+.rc:active{background:var(--cr);}
+.rn{font-size:15px;font-weight:700;margin-bottom:4px;}
+.rbk{font-size:12px;color:var(--t2);margin-bottom:6px;}
+.rm{display:flex;flex-wrap:wrap;gap:5px;}
+.rb{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600;background:var(--cr);color:var(--t2);}
+.rb.g{background:#e8f5e9;color:var(--g);}
+.rb.o{background:#fff3e0;color:#b85c00;}
+.rb.b{background:#e3f2fd;color:#0d47a1;}
+/* HOME */
+.hero{background:linear-gradient(135deg,var(--g),var(--gl));padding:24px 20px;color:#fff;}
+.hero h2{font-size:26px;font-weight:800;margin-bottom:4px;}
+.hero p{font-size:14px;opacity:.85;}
+.srow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px;}
+.sc{background:var(--cd);border-radius:var(--r);padding:14px 12px;text-align:center;border:1px solid var(--br);}
+.sn{font-size:28px;font-weight:800;color:var(--g);line-height:1;}
+.sl{font-size:11px;color:var(--t3);margin-top:4px;font-weight:600;}
+.seac{margin:0 16px 16px;background:var(--cd);border-radius:var(--r);border:1px solid var(--br);overflow:hidden;}
+.seah{background:linear-gradient(135deg,#2d6a4f,#52b788);padding:14px 16px;color:#fff;}
+.seah h3{font-size:16px;font-weight:700;}
+.seah p{font-size:13px;opacity:.85;}
+.seai{padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;}
+.seat{background:#e8f5e9;color:var(--g);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #b7dfce;}
+.seat:active{background:var(--g);color:#fff;}
+.qs{margin:0 16px 16px;}
+.qs input{width:100%;border:1.5px solid var(--br);border-radius:12px;padding:12px 16px;font-size:16px;outline:none;-webkit-appearance:none;font-family:inherit;background:var(--cd);}
+.qs input:focus{border-color:var(--g);}
+.shelfscrl{display:flex;gap:10px;overflow-x:auto;padding:0 16px 16px;scrollbar-width:none;}
+.shelfscrl::-webkit-scrollbar{display:none;}
+.scube{background:var(--cd);border-radius:var(--r);border:1px solid var(--br);padding:14px 12px;min-width:120px;cursor:pointer;flex-shrink:0;text-align:center;}
+.scube:active{background:var(--cr);}
+.scubei{font-size:28px;margin-bottom:6px;}
+.scuben{font-size:12px;font-weight:700;line-height:1.3;margin-bottom:3px;}
+.scubec{font-size:11px;color:var(--t3);}
+/* COLLECTIONS GRID */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 16px 100px;}
+.ccube{background:var(--cd);border-radius:var(--r);border:1px solid var(--br);padding:16px 12px;text-align:center;cursor:pointer;}
+.ccube:active{background:var(--cr);}
+.ccei{font-size:32px;margin-bottom:8px;}
+.ccen{font-size:14px;font-weight:700;margin-bottom:3px;line-height:1.3;}
+.ccem{font-size:12px;color:var(--t3);}
+.cceloc{font-size:11px;color:#6a1b9a;font-weight:600;margin-top:4px;}
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+.mo.open{display:flex;}
+.modal{background:var(--cd);border-radius:24px 24px 0 0;width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;}
+.mhw{padding:12px 0 0;flex-shrink:0;}
+.mh{width:40px;height:4px;background:var(--br);border-radius:2px;margin:0 auto;}
+.mhdr{padding:12px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--br);flex-shrink:0;}
+.mtit{font-size:18px;font-weight:700;flex:1;}
+.mcls{background:#f0f0ec;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mbody{padding:16px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding-bottom:max(20px,env(safe-area-inset-bottom));}
+/* FORMS */
+.fg{margin-bottom:14px;}
+.fl{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--t2);}
+.fi{width:100%;border:1.5px solid var(--br);border-radius:10px;padding:10px 12px;font-size:16px;outline:none;-webkit-appearance:none;background:var(--cd);font-family:inherit;}
+.fi:focus{border-color:var(--g);}
+textarea.fi{resize:vertical;min-height:80px;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.irow{display:flex;gap:8px;}
+.irow .fi{flex:1;}
+.ibox{background:#f0f7f4;border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px dashed #b7dfce;}
+.iboxt{font-size:13px;font-weight:700;color:var(--g);margin-bottom:10px;text-align:center;}
+/* TAG INPUT */
+.ta{display:flex;flex-wrap:wrap;gap:6px;border:1.5px solid var(--br);border-radius:10px;padding:8px 10px;min-height:46px;cursor:text;background:var(--cd);}
+.ta:focus-within{border-color:var(--g);}
+.tpill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 10px;border-radius:20px;font-size:13px;font-weight:600;}
+.tpx{background:none;border:none;cursor:pointer;font-size:15px;line-height:1;padding:0;opacity:.6;}
+.tfield{border:none;outline:none;font-size:14px;min-width:80px;flex:1;background:transparent;font-family:inherit;}
+.qtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.qtag{background:#f0f0ec;border:none;border-radius:20px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--t1);font-weight:500;font-family:inherit;}
+/* BTN GROUP */
+.bg2{display:flex;flex-wrap:wrap;gap:6px;}
+.bopt{border:1.5px solid var(--br);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;background:var(--cd);color:var(--t2);font-family:inherit;font-weight:500;}
+.bopt.sel{background:var(--g);color:#fff;border-color:var(--g);}
+/* DETAIL */
+.dhero{display:flex;gap:16px;margin-bottom:20px;}
+.dcov{width:120px;height:170px;object-fit:cover;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);flex-shrink:0;}
+.dcovph{width:120px;height:170px;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;flex-shrink:0;}
+.dhi{flex:1;min-width:0;padding-top:4px;}
+.dtit{font-size:20px;font-weight:800;line-height:1.2;margin-bottom:4px;}
+.daut{font-size:15px;color:var(--t2);margin-bottom:10px;}
+.dtags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.dtag{font-size:12px;padding:4px 10px;border-radius:6px;font-weight:600;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.mi{background:var(--cr);border-radius:10px;padding:10px 12px;}
+.ml{font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+.mv{font-size:14px;font-weight:600;}
+.dsh{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;margin-top:16px;}
+.dsb{font-size:15px;color:var(--t2);line-height:1.6;}
+.dacts{display:flex;gap:8px;margin-top:20px;}
+.locbadge{display:inline-flex;align-items:center;gap:6px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;margin-bottom:12px;}
+/* SCANNER */
+.scnwrap{position:relative;width:100%;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:16px;display:none;}
+.scnwrap video{width:100%;height:100%;object-fit:cover;display:block;}
+.scnov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.scnbox{width:65%;aspect-ratio:3/1;border:3px solid var(--gl);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);}
+.scnline{position:absolute;width:65%;height:2px;background:var(--gl);animation:scl 2s ease-in-out infinite;}
+@keyframes scl{0%,100%{top:27%}50%{top:71%}}
+/* STATUS */
+.st2{font-size:13px;margin-top:8px;min-height:20px;}
+.st2.ok{color:var(--g);}.st2.err{color:#c0392b;}
+.st2.loading{color:var(--t2);display:flex;align-items:center;gap:6px;}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--br);border-top-color:var(--g);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* OWN RESULT */
+.own{border-radius:14px;padding:16px;margin-top:12px;text-align:center;}
+.own-y{background:#e8f5e9;border:1.5px solid var(--gl);}
+.own-n{background:#fff3e0;border:1.5px solid #ffcc80;}
+/* RECIPE ROWS */
+.rrow{background:var(--cr);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;}
+.rrown{font-size:13px;color:var(--t3);font-weight:700;padding-top:10px;min-width:20px;}
+.rrowf{flex:1;display:flex;gap:8px;flex-wrap:wrap;}
+.rrowf input{flex:1;min-width:120px;border:1.5px solid var(--br);border-radius:8px;padding:8px 10px;font-size:14px;outline:none;font-family:inherit;background:var(--cd);}
+.rrowf input:focus{border-color:var(--g);}
+.rrowd{background:none;border:none;font-size:18px;cursor:pointer;color:var(--t3);padding:8px 0;}
+/* FAB */
+.fabwrap{position:fixed;bottom:calc(var(--tbh)+16px+env(safe-area-inset-bottom));right:20px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.fab{width:56px;height:56px;border-radius:50%;background:var(--o);border:none;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(224,124,58,.5);display:flex;align-items:center;justify-content:center;font-family:inherit;}
+.fab:active{transform:scale(.92);}
+.fabo{display:none;flex-direction:column;align-items:flex-end;gap:8px;}
+.fabo.open{display:flex;}
+.fabrow{display:flex;align-items:center;gap:8px;}
+.fablbl{background:rgba(26,26,26,.88);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:10px;white-space:nowrap;}
+.fabmini{width:44px;height:44px;border-radius:50%;border:none;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
+.fabmini:active{transform:scale(.92);}
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--tbh)+12px+env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:rgba(26,26,26,.92);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:500;z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+/* EMPTY */
+.empty{text-align:center;padding:60px 24px;}
+.emico{font-size:56px;margin-bottom:14px;}
+.empty h3{font-size:20px;font-weight:700;margin-bottom:8px;}
+.empty p{font-size:15px;color:var(--t2);line-height:1.5;max-width:280px;margin:0 auto 20px;}
+.imparea{border:2px dashed var(--br);border-radius:12px;padding:24px;text-align:center;cursor:pointer;color:var(--t2);font-size:14px;}
+@media(min-width:640px){.modal{border-radius:24px;margin-bottom:40px;max-height:85vh;}.mo{align-items:center;}}
 </style>
 </head>
 <body>
-
-<!-- Lock screen -->
-<div id="lockScreen">
-  <div class="lock-card">
-    <div class="lock-icon">📚</div>
-    <div class="lock-title">My Cookbook Library</div>
-    <div class="lock-subtitle">Enter your password to continue</div>
-    <input type="password" id="lockInput" class="lock-input" placeholder="••••••" maxlength="30"
-      onkeydown="if(event.key==='Enter')checkPassword()" autocomplete="current-password">
-    <button class="lock-btn" onclick="checkPassword()">Unlock</button>
-    <div class="lock-error" id="lockError"></div>
+<!-- LOCK -->
+<div id="lock">
+  <div class="lc">
+    <div class="li">📚</div>
+    <div class="lt">My Cookbook Library</div>
+    <div class="ls">Enter your password to continue</div>
+    <input type="password" id="lpw" class="lpw" placeholder="••••••" maxlength="30" onkeydown="if(event.key==='Enter')chkPw()" autocomplete="current-password">
+    <button class="lbtn" onclick="chkPw()">Unlock</button>
+    <div class="lerr" id="lerr"></div>
+    <span class="lrst" onclick="openM('resetM')">Forgot password?</span>
   </div>
 </div>
 
-<header>
-  <h1>📚 My Cookbooks</h1>
-  <div class="header-actions">
-    <span class="sync-dot" id="syncDot" title="Sync status"></span>
-    <button class="btn btn-outline btn-sm" onclick="openModal('ioModal')">⬆⬇</button>
-    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add</button>
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="hdr">
+    <h1 id="hdrtit">📚 My Cookbook Library</h1>
+    <div class="hdr-r">
+      <span class="sdot" id="sdot"></span>
+      <button class="btn bo bsm" onclick="openM('ioM')">⬆⬇</button>
+    </div>
   </div>
-</header>
+  <div class="sb" id="sban"><span class="spin"></span><span id="smsg">Loading…</span></div>
+  <div class="tc">
 
-<div class="sync-banner" id="syncBanner">
-  <span class="spinner"></span>
-  <span id="syncMsg">Loading your library…</span>
-</div>
+    <!-- HOME TAB -->
+    <div class="tp active" id="tp-home">
+      <div class="hero"><h2>Good <span id="tgreet"></span></h2><p>Your culinary bible</p></div>
+      <div class="srow">
+        <div class="sc"><div class="sn" id="sbooks">0</div><div class="sl">Books</div></div>
+        <div class="sc"><div class="sn" id="srcps">0</div><div class="sl">Recipes</div></div>
+        <div class="sc"><div class="sn" id="scols">0</div><div class="sl">Shelves</div></div>
+      </div>
+      <div class="seac">
+        <div class="seah"><h3>🌱 In Season Now</h3><p id="seamth"></p></div>
+        <div class="seai" id="seai"></div>
+      </div>
+      <div class="qs"><input type="search" placeholder="🔍 Search recipes by ingredient…" oninput="qsearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+      <div id="qres"></div>
+      <div class="sh"><span class="st">Your Shelves</span><span style="font-size:13px;color:var(--t3)" id="shct"></span></div>
+      <div class="shelfscrl" id="homeshelf"></div>
+    </div>
 
-<div class="search-bar">
-  <input type="search" id="searchInput" placeholder="Search title, author, cuisine, ingredient…"
-    oninput="renderBooks()" autocomplete="off" autocorrect="off" spellcheck="false">
-</div>
+    <!-- LIBRARY TAB -->
+    <div class="tp" id="tp-library">
+      <div class="sw"><div class="siw"><span class="sico">🔍</span><input type="search" placeholder="Search books…" oninput="renderLib()" id="libsrch" autocomplete="off" autocorrect="off" spellcheck="false"></div></div>
+      <div class="cw">
+        <button class="chip active" onclick="setLF('all',this)">All</button>
+        <button class="chip" onclick="setLF('cuisine',this)">🌍 Cuisine</button>
+        <button class="chip" onclick="setLF('style',this)">👨‍🍳 Style</button>
+        <button class="chip" onclick="setLF('ingredient',this)">🥦 Ingredient</button>
+      </div>
+      <div class="sh"><span class="st" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)" id="vgb">⊞</button><button class="btn bo bsm" onclick="setLV('list',this)" id="vlb">☰</button></div></div>
+      <div id="libgrid"></div>
+    </div>
 
-<div class="filters">
-  <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
-  <button class="filter-chip" onclick="setFilter('cuisine',this)">🌍 Cuisine</button>
-  <button class="filter-chip" onclick="setFilter('style',this)">👨‍🍳 Style</button>
-  <button class="filter-chip" onclick="setFilter('ingredient',this)">🥦 Ingredient</button>
-</div>
+    <!-- RECIPES TAB -->
+    <div class="tp" id="tp-recipes">
+      <div class="sw"><div class="siw"><span class="sico">🍽️</span><input type="search" placeholder="Search by ingredient, recipe name…" oninput="renderRcps()" id="rcpsrch" autocomplete="off" autocorrect="off" spellcheck="false"></div></div>
+      <div class="cw">
+        <button class="chip active" onclick="setRF('all',this)">All</button>
+        <button class="chip sea" onclick="setRF('season',this)">🌱 In Season</button>
+        <button class="chip" onclick="setRF('starter',this)">Starter</button>
+        <button class="chip" onclick="setRF('main',this)">Main</button>
+        <button class="chip" onclick="setRF('dessert',this)">Dessert</button>
+        <button class="chip" onclick="setRF('side',this)">Side</button>
+        <button class="chip" onclick="setRF('easy',this)">Easy</button>
+        <button class="chip" onclick="setRF('for1',this)">For 1</button>
+        <button class="chip" onclick="setRF('for2',this)">For 2</button>
+        <button class="chip" onclick="setRF('for4',this)">For 4</button>
+        <button class="chip" onclick="setRF('crowd',this)">Crowd</button>
+        <button class="chip" onclick="setRF('veg',this)">Vegetarian</button>
+        <button class="chip" onclick="setRF('vegan',this)">Vegan</button>
+        <button class="chip" onclick="setRF('gf',this)">Gluten-free</button>
+      </div>
+      <div class="sh"><span class="st" id="rcpct"></span></div>
+      <div style="padding:0 16px 100px" id="rcplist"></div>
+    </div>
 
-<div class="stats-bar">
-  <span id="bookCount"></span>
-  <div class="view-toggle">
-    <button class="view-btn active" onclick="setView('grid',this)">⊞</button>
-    <button class="view-btn" onclick="setView('list',this)">☰</button>
+    <!-- SHELVES TAB -->
+    <div class="tp" id="tp-shelves">
+      <div class="sh"><span class="st">Your Shelves</span><button class="btn bp bsm" onclick="openM('addShelfM')">+ New Shelf</button></div>
+      <div class="cgrid" id="shelfgrid"></div>
+    </div>
+
+    <!-- SEARCH TAB -->
+    <div class="tp" id="tp-search">
+      <div class="sw"><div class="siw"><span class="sico">🔍</span><input type="search" placeholder="Search everything…" oninput="renderGS()" id="gsrch" autocomplete="off" autocorrect="off" spellcheck="false"></div></div>
+      <div style="padding:12px 16px 0;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="bopt sel" onclick="togST('books',this)">📚 Books</button>
+        <button class="bopt sel" onclick="togST('recipes',this)">🍽️ Recipes</button>
+      </div>
+      <div class="sh"><span class="st" id="gsct"></span></div>
+      <div id="gsres" style="padding:0 16px 100px;"></div>
+    </div>
+  </div>
+
+  <div class="tbar">
+    <button class="ti active" onclick="swTab('home',this)"><span class="ticon">🏠</span><span class="tlbl">Home</span></button>
+    <button class="ti" onclick="swTab('library',this)"><span class="ticon">📚</span><span class="tlbl">Library</span></button>
+    <button class="ti" onclick="swTab('recipes',this)"><span class="ticon">🍽️</span><span class="tlbl">Recipes</span></button>
+    <button class="ti" onclick="swTab('shelves',this)"><span class="ticon">🔖</span><span class="tlbl">Shelves</span></button>
+    <button class="ti" onclick="swTab('search',this)"><span class="ticon">🔍</span><span class="tlbl">Search</span></button>
   </div>
 </div>
-
-<div id="bookGrid" class="grid-view"></div>
 
 <!-- FAB -->
-<div class="fab-wrap">
-  <div class="fab-options" id="fabOptions">
-    <div class="fab-row">
-      <span class="fab-label">Scan barcode</span>
-      <button class="fab-mini" style="background:#2d6a4f" onclick="openScanModal()">📷</button>
-    </div>
-    <div class="fab-row">
-      <span class="fab-label">Enter ISBN</span>
-      <button class="fab-mini" style="background:#5c6bc0" onclick="openAddModal(true)">🔢</button>
-    </div>
-    <div class="fab-row">
-      <span class="fab-label">Add manually</span>
-      <button class="fab-mini" style="background:#888" onclick="openAddModal(false)">✏️</button>
-    </div>
+<div class="fabwrap" id="fabwrap" style="display:none">
+  <div class="fabo" id="fabo">
+    <div class="fabrow"><span class="fablbl">Scan barcode</span><button class="fabmini" style="background:var(--g)" onclick="openScanM()">📷</button></div>
+    <div class="fabrow"><span class="fablbl">Enter ISBN</span><button class="fabmini" style="background:#5c6bc0" onclick="openAddBk(true)">🔢</button></div>
+    <div class="fabrow"><span class="fablbl">Add manually</span><button class="fabmini" style="background:#888" onclick="openAddBk(false)">✏️</button></div>
+    <div class="fabrow"><span class="fablbl">Do I own this?</span><button class="fabmini" style="background:#e91e63" onclick="openOwnM()">🤔</button></div>
   </div>
-  <button class="fab-main" id="fabBtn" onclick="toggleFab()">+</button>
+  <button class="fab" id="fabBtn" onclick="togFab()">+</button>
 </div>
-
 <div class="toast" id="toast"></div>
-
-<!-- ADD / EDIT MODAL -->
-<div class="modal-overlay" id="addModal" onclick="overlayClose(event,'addModal')">
+<!-- ADD/EDIT BOOK MODAL -->
+<div class="mo" id="addBkM" onclick="if(event.target===this)closeM('addBkM')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <span class="modal-title" id="addModalTitle">Add cookbook</span>
-      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
-    </div>
-    <div id="isbnSection" class="scan-section">
-      <p>Look up book by ISBN</p>
-      <div class="isbn-row">
-        <input type="text" id="isbnInput" class="form-input" placeholder="e.g. 9781234567890" inputmode="numeric" autocomplete="off">
-        <button class="btn btn-primary" onclick="lookupISBN()">Look up</button>
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit" id="addBkTit">Add cookbook</span><button class="mcls" onclick="closeM('addBkM')">✕</button></div>
+    <div class="mbody">
+      <div class="ibox"><div class="iboxt">Look up by ISBN</div>
+        <div class="irow"><input type="text" id="isbnIn" class="fi" placeholder="e.g. 9781234567890" inputmode="numeric" autocomplete="off"><button class="btn bp" onclick="doISBN()">Look up</button></div>
+        <div class="st2" id="isbnSt"></div>
       </div>
-      <div class="status-msg" id="lookupStatus"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Title *</label>
-      <input type="text" id="fTitle" class="form-input" placeholder="Book title" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Author(s)</label>
-      <input type="text" id="fAuthor" class="form-input" placeholder="Author name" autocomplete="off">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Publisher</label>
-        <input type="text" id="fPublisher" class="form-input" autocomplete="off">
+      <div class="fg"><label class="fl">Title *</label><input type="text" id="fT" class="fi" autocomplete="off"></div>
+      <div class="fg"><label class="fl">Author(s)</label><input type="text" id="fA" class="fi" autocomplete="off"></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Publisher</label><input type="text" id="fPub" class="fi" autocomplete="off"></div>
+        <div class="fg"><label class="fl">Year</label><input type="text" id="fYr" class="fi" inputmode="numeric"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Year</label>
-        <input type="text" id="fYear" class="form-input" placeholder="2024" inputmode="numeric">
+      <div class="fr">
+        <div class="fg"><label class="fl">Pages</label><input type="text" id="fPg" class="fi" inputmode="numeric"></div>
+        <div class="fg"><label class="fl">ISBN</label><input type="text" id="fISBN" class="fi" autocomplete="off"></div>
       </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Pages</label>
-        <input type="text" id="fPages" class="form-input" placeholder="320" inputmode="numeric">
+      <div class="fg"><label class="fl">🌍 Cuisine</label><div class="ta" id="cArea" onclick="focusTA('cArea')"></div><div class="qtags" id="cQ"></div></div>
+      <div class="fg"><label class="fl">👨‍🍳 Style</label><div class="ta" id="sArea" onclick="focusTA('sArea')"></div><div class="qtags" id="sQ"></div></div>
+      <div class="fg"><label class="fl">🥦 Key Ingredients</label><div class="ta" id="iArea" onclick="focusTA('iArea')"></div><div class="qtags" id="iQ"></div></div>
+      <div class="fg"><label class="fl">Shelf / Collection</label><select id="fShelf" class="fi"><option value="">-- Assign to shelf --</option></select></div>
+      <div class="fg"><label class="fl">Notes</label><textarea id="fN" class="fi" placeholder="Personal notes…"></textarea></div>
+      <div style="display:flex;gap:8px;padding-top:4px;">
+        <button class="btn bo" onclick="closeM('addBkM')" style="flex:1">Cancel</button>
+        <button class="btn bp" onclick="saveBk()" style="flex:2" id="saveBkBtn">Save to library</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">ISBN</label>
-        <input type="text" id="fISBN" class="form-input" autocomplete="off">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">🌍 Cuisine</label>
-      <div class="tag-input-area" id="cuisineArea" onclick="focusLast('cuisineArea')"></div>
-      <div class="quick-tags" id="cuisineQuick"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">👨‍🍳 Cooking style</label>
-      <div class="tag-input-area" id="styleArea" onclick="focusLast('styleArea')"></div>
-      <div class="quick-tags" id="styleQuick"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">🥦 Key ingredients / themes</label>
-      <div class="tag-input-area" id="ingredientArea" onclick="focusLast('ingredientArea')"></div>
-      <div class="quick-tags" id="ingredientQuick"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Personal notes</label>
-      <textarea id="fNotes" class="form-input" placeholder="Favourite recipes, where you got it, special memories…"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;padding-top:4px;">
-      <button class="btn btn-outline" onclick="closeModal('addModal')" style="flex:1">Cancel</button>
-      <button class="btn btn-primary" onclick="saveBook()" style="flex:2" id="saveBtn">Save to library</button>
     </div>
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
-<div class="modal-overlay" id="detailModal" onclick="overlayClose(event,'detailModal')">
-  <div class="modal" onclick="event.stopPropagation()" id="detailContent"></div>
+<!-- BOOK DETAIL MODAL -->
+<div class="mo" id="bkDetailM" onclick="if(event.target===this)closeM('bkDetailM')">
+  <div class="modal" onclick="event.stopPropagation()" id="bkDetailCont"></div>
 </div>
 
 <!-- SCAN MODAL -->
-<div class="modal-overlay" id="scanModal" onclick="overlayClose(event,'scanModal')">
+<div class="mo" id="scanM" onclick="if(event.target===this)closeM('scanM')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <span class="modal-title">📷 Scan barcode</span>
-      <button class="modal-close" onclick="closeModal('scanModal')">✕</button>
-    </div>
-    <div style="text-align:center;padding:8px 0 20px;">
-      <div style="font-size:48px;margin-bottom:12px">📷</div>
-      <p style="font-size:16px;font-weight:600;margin-bottom:8px;">Point your camera at the barcode</p>
-      <p style="font-size:14px;color:#777;margin-bottom:20px;line-height:1.5;">Tap the button below to open your iPhone camera. Point it at the barcode on the back of the book.</p>
-      <label class="camera-btn-label">
-        📸 Open Camera to Scan
-        <input type="file" accept="image/*" capture="environment" id="barcodeImageInput" style="display:none" onchange="processBarcodeScan(event)">
-      </label>
-      <div class="status-msg" id="scanStatus" style="margin-bottom:12px;min-height:22px;text-align:center;"></div>
-    </div>
-    <div style="border-top:1px solid #eee;padding-top:16px;">
-      <p style="font-size:13px;color:#999;text-align:center;margin-bottom:10px;">Or type / paste the ISBN manually</p>
-      <div class="isbn-row">
-        <input type="text" id="scanISBN" class="form-input" placeholder="e.g. 9781234567890" inputmode="numeric" autocomplete="off">
-        <button class="btn btn-primary" onclick="lookupFromScan()">Look up</button>
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit">📷 Scan Barcode</span><button class="mcls" onclick="closeM('scanM')">✕</button></div>
+    <div class="mbody">
+      <div class="scnwrap" id="scnwrap"><video id="scnvid" autoplay playsinline muted></video><div class="scnov"><div class="scnbox"></div><div class="scnline"></div></div></div>
+      <div id="scnstart" style="text-align:center;padding:8px 0 16px;">
+        <div style="font-size:48px;margin-bottom:12px">📷</div>
+        <p style="font-size:16px;font-weight:700;margin-bottom:8px;">Live barcode scanner</p>
+        <p style="font-size:14px;color:var(--t2);margin-bottom:20px;line-height:1.5;">Tap Start Scanner then point your camera at the barcode on the back of the book.</p>
+        <button class="btn bp bblk" onclick="startScn()">📷 Start Scanner</button>
       </div>
-      <div class="status-msg" id="scanStatusManual" style="margin-top:6px;"></div>
+      <div id="scnactive" style="display:none;text-align:center;padding-bottom:12px;">
+        <div class="st2" id="scnst" style="margin-bottom:12px;text-align:center;font-size:14px;"></div>
+        <button class="btn bo bblk" onclick="stopScn()">Stop Scanner</button>
+      </div>
+      <div style="border-top:1px solid var(--br);padding-top:16px;margin-top:4px;">
+        <p style="font-size:13px;color:var(--t3);text-align:center;margin-bottom:10px;">Or enter ISBN manually</p>
+        <div class="irow"><input type="text" id="scnISBN" class="fi" placeholder="e.g. 9781234567890" inputmode="numeric" autocomplete="off"><button class="btn bp" onclick="scnLookup()">Look up</button></div>
+        <div class="st2" id="scnstm" style="margin-top:6px;"></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- IMPORT / EXPORT MODAL -->
-<div class="modal-overlay" id="ioModal" onclick="overlayClose(event,'ioModal')">
+<!-- DO I OWN THIS MODAL -->
+<div class="mo" id="ownM" onclick="if(event.target===this)closeM('ownM')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <span class="modal-title">Import / Export</span>
-      <button class="modal-close" onclick="closeModal('ioModal')">✕</button>
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit">🤔 Do I Own This?</span><button class="mcls" onclick="closeM('ownM')">✕</button></div>
+    <div class="mbody">
+      <div class="scnwrap" id="ownwrap"><video id="ownvid" autoplay playsinline muted></video><div class="scnov"><div class="scnbox"></div><div class="scnline"></div></div></div>
+      <div id="ownstart" style="text-align:center;padding:8px 0 16px;">
+        <div style="font-size:48px;margin-bottom:12px">📚</div>
+        <p style="font-size:16px;font-weight:700;margin-bottom:8px;">Check your library</p>
+        <p style="font-size:14px;color:var(--t2);margin-bottom:20px;line-height:1.5;">Scan the barcode or type the ISBN/title to instantly check if you own this book.</p>
+        <button class="btn bp bblk" onclick="startOwnScn()">📷 Scan to Check</button>
+      </div>
+      <div id="ownactive" style="display:none;text-align:center;padding-bottom:12px;">
+        <div class="st2" id="ownst" style="margin-bottom:12px;text-align:center;"></div>
+        <button class="btn bo bblk" onclick="stopOwnScn()">Stop Scanner</button>
+      </div>
+      <div style="border-top:1px solid var(--br);padding-top:16px;margin-top:4px;">
+        <div class="irow"><input type="text" id="ownIn" class="fi" placeholder="Enter ISBN or book title…" autocomplete="off"><button class="btn bp" onclick="chkOwn()">Check</button></div>
+      </div>
+      <div id="ownres"></div>
     </div>
-    <p style="font-size:14px;color:#666;margin-bottom:16px;line-height:1.5;">Export your full library as a spreadsheet or backup file.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-      <button class="btn btn-primary btn-block" onclick="exportCSV()">⬇ Export as CSV (Excel / Numbers)</button>
-      <button class="btn btn-outline btn-block" onclick="exportJSON()">⬇ Export as JSON backup</button>
-    </div>
-    <div class="section-heading">Import JSON backup</div>
-    <div class="import-area" onclick="document.getElementById('importFile').click()">
-      Tap to choose a JSON backup file
-      <span style="font-size:12px;color:#bbb;margin-top:4px;display:block;">Previously exported from this app</span>
-    </div>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-    <div class="status-msg" id="ioStatus" style="margin-top:10px;"></div>
   </div>
 </div>
 
+<!-- ADD RECIPES MODAL -->
+<div class="mo" id="addRcpM" onclick="if(event.target===this)closeM('addRcpM')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit" id="addRcpTit">Add Recipes</span><button class="mcls" onclick="closeM('addRcpM')">✕</button></div>
+    <div class="mbody">
+      <p style="font-size:14px;color:var(--t2);margin-bottom:14px;line-height:1.5;">Enter recipe names and page numbers. Set defaults below — they apply to all entries unless you change them individually later.</p>
+      <div id="rcprows"></div>
+      <button class="btn bo bblk" onclick="addRrow()" style="margin-bottom:16px;">+ Add another recipe</button>
+      <div class="fg"><label class="fl">Course</label><div class="bg2" id="bCourse">
+        <button class="bopt" onclick="setBV('course','Starter',this)">Starter</button>
+        <button class="bopt sel" onclick="setBV('course','Main',this)">Main</button>
+        <button class="bopt" onclick="setBV('course','Side',this)">Side</button>
+        <button class="bopt" onclick="setBV('course','Dessert',this)">Dessert</button>
+        <button class="bopt" onclick="setBV('course','Bread',this)">Bread</button>
+        <button class="bopt" onclick="setBV('course','Snack',this)">Snack</button>
+        <button class="bopt" onclick="setBV('course','Sauce',this)">Sauce</button>
+        <button class="bopt" onclick="setBV('course','Drink',this)">Drink</button>
+      </div></div>
+      <div class="fg"><label class="fl">Serves</label><div class="bg2" id="bServes">
+        <button class="bopt" onclick="setBV('serves','1',this)">1</button>
+        <button class="bopt" onclick="setBV('serves','2',this)">2</button>
+        <button class="bopt sel" onclick="setBV('serves','4',this)">4</button>
+        <button class="bopt" onclick="setBV('serves','6',this)">6</button>
+        <button class="bopt" onclick="setBV('serves','8',this)">8</button>
+        <button class="bopt" onclick="setBV('serves','Crowd',this)">Crowd (10+)</button>
+      </div></div>
+      <div class="fg"><label class="fl">Difficulty</label><div class="bg2" id="bDiff">
+        <button class="bopt sel" onclick="setBV('difficulty','Easy',this)">Easy</button>
+        <button class="bopt" onclick="setBV('difficulty','Medium',this)">Medium</button>
+        <button class="bopt" onclick="setBV('difficulty','Challenging',this)">Challenging</button>
+        <button class="bopt" onclick="setBV('difficulty','Weekend project',this)">Weekend project</button>
+      </div></div>
+      <div class="fg"><label class="fl">Occasion</label><div class="bg2" id="bOcc">
+        <button class="bopt sel" onclick="setBV('occasion','Weeknight',this)">Weeknight</button>
+        <button class="bopt" onclick="setBV('occasion','Weekend',this)">Weekend</button>
+        <button class="bopt" onclick="setBV('occasion','Dinner party',this)">Dinner party</button>
+        <button class="bopt" onclick="setBV('occasion','Christmas',this)">Christmas</button>
+        <button class="bopt" onclick="setBV('occasion','BBQ',this)">BBQ</button>
+        <button class="bopt" onclick="setBV('occasion','Brunch',this)">Brunch</button>
+        <button class="bopt" onclick="setBV('occasion','Packed lunch',this)">Packed lunch</button>
+      </div></div>
+      <div class="fg"><label class="fl">Dietary (tick all that apply)</label><div class="bg2" id="bDiet">
+        <button class="bopt" onclick="togDiet('Vegetarian',this)">Vegetarian</button>
+        <button class="bopt" onclick="togDiet('Vegan',this)">Vegan</button>
+        <button class="bopt" onclick="togDiet('Gluten-free',this)">Gluten-free</button>
+        <button class="bopt" onclick="togDiet('Dairy-free',this)">Dairy-free</button>
+        <button class="bopt" onclick="togDiet('Pescatarian',this)">Pescatarian</button>
+        <button class="bopt" onclick="togDiet('Nut-free',this)">Nut-free</button>
+      </div></div>
+      <div style="display:flex;gap:8px;padding-top:4px;">
+        <button class="btn bo" onclick="closeM('addRcpM')" style="flex:1">Cancel</button>
+        <button class="btn bp" onclick="saveRcps()" style="flex:2" id="saveRcpBtn">Save Recipes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SHELF MODAL -->
+<div class="mo" id="addShelfM" onclick="if(event.target===this)closeM('addShelfM')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit">New Shelf</span><button class="mcls" onclick="closeM('addShelfM')">✕</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="fl">Name *</label><input type="text" id="snm" class="fi" placeholder="e.g. Italian, Ottolenghi, BBQ"></div>
+      <div class="fg"><label class="fl">Description</label><input type="text" id="sds" class="fi" placeholder="Optional description"></div>
+      <div class="fg"><label class="fl">Emoji</label><input type="text" id="sem" class="fi" placeholder="🇮🇹" maxlength="4"></div>
+      <div class="fg"><label class="fl">Physical location on your KALLAX shelves</label>
+        <div class="fr">
+          <div><label class="fl">Row (1–4)</label><input type="number" id="srow" class="fi" min="1" max="4" placeholder="1"></div>
+          <div><label class="fl">Column (1–6)</label><input type="number" id="scol" class="fi" min="1" max="6" placeholder="1"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;padding-top:4px;">
+        <button class="btn bo" onclick="closeM('addShelfM')" style="flex:1">Cancel</button>
+        <button class="btn bp" onclick="saveShelf()" style="flex:2">Save Shelf</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHELF DETAIL MODAL -->
+<div class="mo" id="shelfDetailM" onclick="if(event.target===this)closeM('shelfDetailM')">
+  <div class="modal" onclick="event.stopPropagation()" id="shelfDetailCont"></div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="mo" id="resetM" onclick="if(event.target===this)closeM('resetM')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit">🔑 Reset Password</span><button class="mcls" onclick="closeM('resetM')">✕</button></div>
+    <div class="mbody">
+      <p style="font-size:14px;color:var(--t2);margin-bottom:16px;line-height:1.5;">Enter the master reset code, then set a new password.</p>
+      <div class="fg"><label class="fl">Master Reset Code</label><input type="password" id="rcode" class="fi" placeholder="Reset code"></div>
+      <div class="fg"><label class="fl">Which password?</label><div class="bg2">
+        <button class="bopt sel" id="rtO" onclick="setRT('owner',this)">Owner login</button>
+        <button class="bopt" id="rtG" onclick="setRT('guest',this)">Guest (MargateCooks)</button>
+      </div></div>
+      <div class="fg"><label class="fl">New Password</label><input type="password" id="rnew" class="fi" placeholder="New password"></div>
+      <div class="fg"><label class="fl">Confirm New Password</label><input type="password" id="rconf" class="fi" placeholder="Confirm password"></div>
+      <div class="st2" id="rst" style="margin-bottom:12px;"></div>
+      <button class="btn bp bblk" onclick="doReset()">Reset Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT/EXPORT MODAL -->
+<div class="mo" id="ioM" onclick="if(event.target===this)closeM('ioM')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhw"><div class="mh"></div></div>
+    <div class="mhdr"><span class="mtit">Import / Export</span><button class="mcls" onclick="closeM('ioM')">✕</button></div>
+    <div class="mbody">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+        <button class="btn bp bblk" onclick="expCSV()">⬇ Export Books as CSV</button>
+        <button class="btn bo bblk" onclick="expJSON()">⬇ Export Full Backup (JSON)</button>
+      </div>
+      <div class="dsh">Import JSON backup</div>
+      <div class="imparea" onclick="document.getElementById('impFile').click()">Tap to choose a JSON backup file<span style="font-size:12px;color:var(--t3);margin-top:4px;display:block;">Previously exported from this app</span></div>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="impJSON(event)">
+      <div class="st2" id="ioSt" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.21.3/zxing-browser.min.js" crossorigin="anonymous"></script>
 <script>
-// ═══════════════════════════════════════════════
-// SUPABASE CONFIG
-// ═══════════════════════════════════════════════
-const SB_URL     = 'https://sraoxgdgffxdydesrhyu.supabase.co';
-const SB_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYW94Z2RnZmZ4ZHlkZXNyaHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTAsImV4cCI6MjA5Njc0NTY1MH0.46i2-AOEcsx5w2vFYtJgofAUVOU77nw6mAkzfk6g1NM';
-const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
-const SB_TABLE   = `${SB_URL}/rest/v1/books`;
-// ═══════════════════════════════════════════════
+// ── SUPABASE ──────────────────────────────────────────────────
+const SB_URL='https://sraoxgdgffxdydesrhyu.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYW94Z2RnZmZ4ZHlkZXNyaHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTAsImV4cCI6MjA5Njc0NTY1MH0.46i2-AOEcsx5w2vFYtJgofAUVOU77nw6mAkzfk6g1NM';
+const SBH={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+const SB=t=>`${SB_URL}/rest/v1/${t}`;
 
-// ── State ──────────────────────────────────────
-let books = [];
-let editingId = null;
-let currentFilter = 'all';
-let currentView = 'grid';
-let fabOpen = false;
-let pendingCover = '';
-let pendingDesc = '';
-let currentTags = { cuisine:[], style:[], ingredient:[] };
+// ── PASSWORDS ─────────────────────────────────────────────────
+const RESET_CODE='CookbookReset2024';
+function hsh(s){let h=5381;for(let i=0;i<s.length;i++)h=(h*33)^s.charCodeAt(i);return(h>>>0).toString(16);}
+let OWNER=localStorage.getItem('pw_owner')||hsh('Tasha1');
+let GUEST=localStorage.getItem('pw_guest')||hsh('MargateCooks');
+let isGuest=false,rtType='owner';
 
-const QUICK = {
-  cuisine:    ['Italian','French','British','Asian','Japanese','Chinese','Indian','Mexican','Thai','Greek','Spanish','Middle Eastern','Mediterranean','American','Vietnamese','Korean','Turkish','Moroccan','Caribbean','Scandinavian','German','Portuguese'],
-  style:      ['Baking','Pastry','Bread','BBQ & Grilling','One-pot','Quick & Easy','Fine Dining','Street Food','Fermentation','Slow Cooking','Preserving','Comfort Food','Meal Prep','Sous Vide','Chocolate','Vegetarian','Vegan'],
-  ingredient: ['Seafood','Fish','Meat','Chicken','Lamb','Pork','Beef','Game','Pasta','Vegetables','Pulses','Bread','Chocolate','Cheese','Eggs','Fruit','Mushrooms','Spices','Gluten-free','Dairy-free']
+// ── UK SEASONAL ───────────────────────────────────────────────
+const SEA={
+  0:{n:'January',   i:['Leeks','Jerusalem artichokes','Parsnips','Swede','Kale','Celeriac','Venison','Mussels','Clementines','Beetroot']},
+  1:{n:'February',  i:['Purple sprouting broccoli','Celeriac','Blood oranges','Seville oranges','Oysters','Leeks','Kale','Venison','Rhubarb']},
+  2:{n:'March',     i:['Spring greens','Watercress','Sea trout','Purple sprouting broccoli','Leeks','Rhubarb','Morels']},
+  3:{n:'April',     i:['Asparagus','Jersey Royals','Spring lamb','Crab','Wild garlic','Morels','Rhubarb','Sea trout']},
+  4:{n:'May',       i:['Asparagus','Broad beans','Radishes','Sea bass','Elderflower','Strawberries','Wild garlic','Crab']},
+  5:{n:'June',      i:['Strawberries','Peas','Courgettes','Samphire','Mackerel','Elderflower','Sea trout','Broad beans','Raspberries']},
+  6:{n:'July',      i:['Tomatoes','Runner beans','Sweetcorn','Raspberries','Blackcurrants','Lobster','Crab','Sea bass','Courgettes']},
+  7:{n:'August',    i:['Tomatoes','Sweetcorn','Plums','Blackberries','Sea bass','Grouse','Damsons','Runner beans']},
+  8:{n:'September', i:['Blackberries','Damsons','Pears','Wild mushrooms','Pheasant','Partridge','Oysters','Pumpkin','Apples','Quince']},
+  9:{n:'October',   i:['Pumpkin','Squash','Wild mushrooms','Pheasant','Partridge','Apples','Quince','Mussels','Venison','Chestnuts']},
+  10:{n:'November', i:['Parsnips','Brussels sprouts','Chestnuts','Venison','Pheasant','Clementines','Cranberries','Celeriac','Leeks']},
+  11:{n:'December', i:['Brussels sprouts','Goose','Turkey','Chestnuts','Clementines','Pears','Oysters','Dates','Parsnips','Venison']}
 };
-const TAG_COLORS = {
-  cuisine:    { bg:'#fff3e0', text:'#b85c00' },
-  style:      { bg:'#e8f5e9', text:'#2d6a4f' },
-  ingredient: { bg:'#e3f2fd', text:'#0d47a1' }
+
+// ── STATE ─────────────────────────────────────────────────────
+let books=[],recipes=[],shelves=[];
+let libF='all',libV='grid',rcpF='all';
+let stypes={books:true,recipes:true};
+let editBkId=null,addRcpBkId=null;
+let bv={course:'Main',serves:'4',difficulty:'Easy',occasion:'Weeknight',dietary:[]};
+let ctags={cuisine:[],style:[],ingredient:[]};
+let pCover='',pDesc='';
+let scnR=null,ownScnR=null;
+let rcpRowN=0;
+
+const QUICK={
+  cuisine:['Italian','French','British','Asian','Japanese','Chinese','Indian','Mexican','Thai','Greek','Spanish','Middle Eastern','Mediterranean','American','Vietnamese','Korean','Turkish','Moroccan','Caribbean','Scandinavian','German','Portuguese'],
+  style:['Baking','Pastry','Bread','BBQ & Grilling','One-pot','Quick & Easy','Fine Dining','Street Food','Fermentation','Slow Cooking','Preserving','Comfort Food','Meal Prep','Sous Vide','Chocolate','Vegetarian','Vegan'],
+  ingredient:['Seafood','Fish','Meat','Chicken','Lamb','Pork','Beef','Game','Pasta','Vegetables','Pulses','Bread','Chocolate','Cheese','Eggs','Fruit','Mushrooms','Spices','Gluten-free','Dairy-free']
 };
+const TC={cuisine:{bg:'#fff3e0',c:'#b85c00'},style:{bg:'#e8f5e9',c:'#2d6a4f'},ingredient:{bg:'#e3f2fd',c:'#0d47a1'}};
 
-// ── Password ───────────────────────────────────
-function hashStr(s) {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
-  return (h >>> 0).toString(16);
+// ── AUTH ──────────────────────────────────────────────────────
+function chkPw(){
+  const v=document.getElementById('lpw').value,el=document.getElementById('lpw'),er=document.getElementById('lerr');
+  if(hsh(v)===OWNER){isGuest=false;sessionStorage.setItem('cb_auth','owner');unlk();}
+  else if(hsh(v)===GUEST){isGuest=true;sessionStorage.setItem('cb_auth','guest');unlk();}
+  else{er.textContent='Incorrect password';el.classList.add('shake');el.value='';setTimeout(()=>{el.classList.remove('shake');er.textContent='';},1500);}
 }
-const CORRECT = hashStr('Tasha1');
+function unlk(){
+  document.getElementById('lock').style.display='none';
+  document.getElementById('app').style.display='flex';
+  if(!isGuest)document.getElementById('fabwrap').style.display='flex';
+  initApp();
+}
+function initAuth(){
+  const s=sessionStorage.getItem('cb_auth');
+  if(s==='owner'||s==='guest'){isGuest=s==='guest';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='flex';if(!isGuest)document.getElementById('fabwrap').style.display='flex';initApp();}
+  else setTimeout(()=>document.getElementById('lpw').focus(),150);
+}
+function setRT(t,el){rtType=t;document.querySelectorAll('#resetM .bopt').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function doReset(){
+  const code=document.getElementById('rcode').value.trim(),np=document.getElementById('rnew').value.trim(),cf=document.getElementById('rconf').value.trim(),st=document.getElementById('rst');
+  if(code!==RESET_CODE){st.className='st2 err';st.textContent='Incorrect reset code';return;}
+  if(!np){st.className='st2 err';st.textContent='Please enter a new password';return;}
+  if(np!==cf){st.className='st2 err';st.textContent='Passwords do not match';return;}
+  if(rtType==='owner'){OWNER=hsh(np);localStorage.setItem('pw_owner',OWNER);}
+  else{GUEST=hsh(np);localStorage.setItem('pw_guest',GUEST);}
+  st.className='st2 ok';st.textContent='✓ Password updated successfully';
+  setTimeout(()=>closeM('resetM'),1500);
+}
 
-function checkPassword() {
-  const val   = document.getElementById('lockInput').value;
-  const input = document.getElementById('lockInput');
-  const err   = document.getElementById('lockError');
-  if (hashStr(val) === CORRECT) {
-    sessionStorage.setItem('cb_auth', CORRECT);
-    document.getElementById('lockScreen').style.display = 'none';
-    loadBooks();
-  } else {
-    err.textContent = 'Incorrect password — try again';
-    input.classList.add('shake');
-    input.value = '';
-    setTimeout(() => { input.classList.remove('shake'); err.textContent = ''; }, 1500);
+// ── SUPABASE HELPERS ──────────────────────────────────────────
+function setSS(s){document.getElementById('sdot').className='sdot'+(s?' '+s:'');}
+function showBan(m){document.getElementById('smsg').textContent=m;document.getElementById('sban').classList.add('show');}
+function hideBan(){document.getElementById('sban').classList.remove('show');}
+async function sbf(url,opts={}){
+  const r=await fetch(url,{...opts,headers:{...SBH,...(opts.headers||{})}});
+  if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+
+// ── DATA LOAD ─────────────────────────────────────────────────
+async function loadAll(){
+  setSS('syncing');showBan('Loading your library…');
+  try{
+    const[b,r,c]=await Promise.all([
+      sbf(`${SB('books')}?order=added_at.desc&limit=2000`),
+      sbf(`${SB('recipes')}?order=added_at.desc&limit=50000`),
+      sbf(`${SB('collections')}?order=sort_order.asc&limit=500`)
+    ]);
+    books=(b||[]).map(r2b);recipes=r||[];shelves=c||[];
+    localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves}));
+    setSS('ok');hideBan();renderAll();
+  }catch(e){
+    console.error(e);setSS('err');
+    try{const c=JSON.parse(localStorage.getItem('cbc')||'{}');books=c.books||[];recipes=c.recipes||[];shelves=c.shelves||[];}catch(x){}
+    showBan('⚠️ Using cached data — check connection');setTimeout(hideBan,5000);renderAll();
   }
 }
+function r2b(r){return{id:r.id,title:r.title||'',author:r.author||'',publisher:r.publisher||'',year:r.year||'',pages:r.pages||'',isbn:r.isbn||'',cover:r.cover||'',description:r.description||'',notes:r.notes||'',addedAt:r.added_at||'',shelfId:r.collection_id||null,tags:{cuisine:r.cuisine?r.cuisine.split('|').map(s=>s.trim()).filter(Boolean):[],style:r.style?r.style.split('|').map(s=>s.trim()).filter(Boolean):[],ingredient:r.ingredients?r.ingredients.split('|').map(s=>s.trim()).filter(Boolean):[]}};}
+function b2r(b){return{title:b.title,author:b.author||'',publisher:b.publisher||'',year:b.year||'',pages:b.pages||'',isbn:b.isbn||'',cover:b.cover||'',description:b.description||'',cuisine:(b.tags?.cuisine||[]).join('|'),style:(b.tags?.style||[]).join('|'),ingredients:(b.tags?.ingredient||[]).join('|'),notes:b.notes||'',added_at:b.addedAt||new Date().toISOString(),collection_id:b.shelfId||null};}
 
-function initAuth() {
-  if (sessionStorage.getItem('cb_auth') === CORRECT) {
-    document.getElementById('lockScreen').style.display = 'none';
-    loadBooks();
-  } else {
-    setTimeout(() => document.getElementById('lockInput').focus(), 150);
-  }
+// ── INIT ──────────────────────────────────────────────────────
+function initApp(){
+  const h=new Date().getHours();
+  document.getElementById('tgreet').textContent=h<12?'morning':h<17?'afternoon':'evening';
+  const m=new Date().getMonth(),s=SEA[m];
+  document.getElementById('seamth').textContent='What\'s in season in '+s.n;
+  document.getElementById('seai').innerHTML=s.i.map(i=>`<span class="seat" onclick="goSeason('${i}')">${i}</span>`).join('');
+  loadAll();
 }
+function renderAll(){renderHome();renderLib();renderRcps();renderShelves();popShelfSel();}
+function getCurrSea(){return SEA[new Date().getMonth()].i.map(s=>s.toLowerCase());}
+function goSeason(i){swTab('recipes',document.querySelector('.ti:nth-child(3)'));document.getElementById('rcpsrch').value=i;renderRcps();}
 
-// ── Supabase helpers ───────────────────────────
-function setSyncStatus(state) {
-  document.getElementById('syncDot').className = 'sync-dot' + (state ? ' '+state : '');
+// ── HOME ──────────────────────────────────────────────────────
+function renderHome(){
+  document.getElementById('sbooks').textContent=books.length;
+  document.getElementById('srcps').textContent=recipes.length;
+  document.getElementById('scols').textContent=shelves.length;
+  const sr=document.getElementById('homeshelf');
+  if(shelves.length){
+    sr.innerHTML=shelves.slice(0,8).map(s=>{const ct=books.filter(b=>b.shelfId===s.id).length;return`<div class="scube" onclick="showShelfDetail('${s.id}')"><div class="scubei">${s.emoji||'📚'}</div><div class="scuben">${e(s.name)}</div><div class="scubec">${ct} book${ct!==1?'s':''}</div></div>`;}).join('');
+    document.getElementById('shct').textContent=shelves.length+' shelves';
+  }else{sr.innerHTML='<div style="font-size:14px;color:var(--t3);padding:8px 0;">No shelves yet — create one in the Shelves tab</div>';}
 }
-function showBanner(msg) {
-  document.getElementById('syncMsg').textContent = msg;
-  document.getElementById('syncBanner').classList.add('show');
-}
-function hideBanner() {
-  document.getElementById('syncBanner').classList.remove('show');
-}
-
-async function sbFetch(url, options={}) {
-  const res = await fetch(url, { ...options, headers: { ...SB_HEADERS, ...(options.headers||{}) } });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`${res.status}: ${txt}`);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-}
-
-// ── Load all books ─────────────────────────────
-async function loadBooks() {
-  setSyncStatus('syncing');
-  showBanner('Loading your library…');
-  // Show cached data immediately while fetching
-  try { books = JSON.parse(localStorage.getItem('cb_cache') || '[]'); } catch(e) { books = []; }
-  renderBooks();
-  try {
-    const data = await sbFetch(`${SB_TABLE}?order=added_at.desc&limit=1000`);
-    books = (data || []).map(rowToBook);
-    localStorage.setItem('cb_cache', JSON.stringify(books));
-    setSyncStatus('ok');
-    hideBanner();
-    renderBooks();
-  } catch(e) {
-    console.error('Load error:', e);
-    setSyncStatus('err');
-    showBanner('⚠️ Could not reach database — showing cached data');
-    setTimeout(hideBanner, 5000);
-  }
+function qsearch(q){
+  const el=document.getElementById('qres');
+  if(!q.trim()){el.innerHTML='';return;}
+  const m=recipes.filter(r=>(r.name||'').toLowerCase().includes(q.toLowerCase())||(r.main_protein||'').toLowerCase().includes(q.toLowerCase()));
+  if(!m.length){el.innerHTML=`<div style="padding:8px 16px;font-size:14px;color:var(--t3)">No recipes found for "${q}"</div>`;return;}
+  el.innerHTML=`<div style="padding:4px 16px 0;font-size:13px;font-weight:700;color:var(--t3);text-transform:uppercase;">${m.length} recipe${m.length!==1?'s':''} found</div><div style="padding:8px 16px 0;">`+m.slice(0,6).map(r=>rcpCard(r,books.find(b=>b.id===r.book_id))).join('')+'</div>';
 }
 
-// ── Convert DB row ↔ app book ──────────────────
-function rowToBook(r) {
-  return {
-    id:          r.id,
-    title:       r.title || '',
-    author:      r.author || '',
-    publisher:   r.publisher || '',
-    year:        r.year || '',
-    pages:       r.pages || '',
-    isbn:        r.isbn || '',
-    cover:       r.cover || '',
-    description: r.description || '',
-    notes:       r.notes || '',
-    addedAt:     r.added_at || '',
-    tags: {
-      cuisine:    r.cuisine     ? r.cuisine.split('|').map(s=>s.trim()).filter(Boolean) : [],
-      style:      r.style       ? r.style.split('|').map(s=>s.trim()).filter(Boolean) : [],
-      ingredient: r.ingredients ? r.ingredients.split('|').map(s=>s.trim()).filter(Boolean) : []
-    }
-  };
+// ── LIBRARY ───────────────────────────────────────────────────
+function setLF(f,el){libF=f;document.querySelectorAll('#tp-library .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderLib();}
+function setLV(v,el){libV=v;renderLib();}
+function renderLib(){
+  const q=(document.getElementById('libsrch').value||'').toLowerCase().trim();
+  const list=books.filter(b=>{const t=[b.title,b.author,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase();return(!q||t.includes(q))&&(libF==='all'||(b.tags?.[libF]?.length>0));});
+  document.getElementById('libct').textContent=`${list.length}${books.length!==list.length?' of '+books.length:''} book${list.length!==1?'s':''}`;
+  const el=document.getElementById('libgrid');
+  if(!books.length){el.innerHTML='<div class="empty"><div class="emico">📚</div><h3>Your library awaits</h3><p>Tap the orange + button to add your first cookbook.</p></div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty"><div class="emico">🔍</div><h3>No results</h3><p>Try a different search.</p></div>';return;}
+  if(libV==='grid')el.innerHTML=`<div class="grid">${list.map(b=>bkGrid(b)).join('')}</div>`;
+  else el.innerHTML=`<div class="lst">${list.map(b=>bkList(b)).join('')}</div>`;
+}
+function cimg(b,ic,pc){if(b.cover)return`<img class="${ic}" src="${b.cover}" alt="" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="${pc}" style="display:none">📖</div>`;return`<div class="${pc}">📖</div>`;}
+function bkGrid(b){return`<div class="bkcard" onclick="showBkDetail('${b.id}')">${cimg(b,'bkcov','bkph')}<div class="bkinfo"><div class="bktit">${e(b.title)}</div><div class="bkaut">${e(b.author||'')}</div><div class="bktags">${(b.tags?.cuisine||[]).slice(0,1).map(t=>`<span class="tag tc">${e(t)}</span>`).join('')}${(b.tags?.style||[]).slice(0,1).map(t=>`<span class="tag ts">${e(t)}</span>`).join('')}</div></div></div>`;}
+function bkList(b){const rc=recipes.filter(r=>r.book_id===b.id).length;const sh=shelves.find(s=>s.id===b.shelfId);return`<div class="lcard" onclick="showBkDetail('${b.id}')">${cimg(b,'lcov','lph')}<div class="linfo"><div class="ltit">${e(b.title)}</div><div class="laut">${e(b.author||'')}${b.year?' · '+b.year:''}</div><div class="bktags">${(b.tags?.cuisine||[]).slice(0,2).map(t=>`<span class="tag tc">${e(t)}</span>`).join('')}${(b.tags?.style||[]).slice(0,1).map(t=>`<span class="tag ts">${e(t)}</span>`).join('')}</div>${rc?`<div style="font-size:11px;color:var(--t3);margin-top:5px;">📖 ${rc} recipe${rc!==1?'s':''} indexed</div>`:''}${sh?`<div style="font-size:11px;color:#6a1b9a;font-weight:600;margin-top:3px;">📍 ${e(sh.name)}</div>`:''}</div></div>`;}
+
+// ── BOOK DETAIL ───────────────────────────────────────────────
+function showBkDetail(id){
+  const b=books.find(x=>x.id===id);if(!b)return;
+  const br=recipes.filter(r=>r.book_id===id);
+  const sh=shelves.find(s=>s.id===b.shelfId);
+  const tags=[...(b.tags?.cuisine||[]).map(t=>`<span class="dtag tc">${e(t)}</span>`),...(b.tags?.style||[]).map(t=>`<span class="dtag ts">${e(t)}</span>`),...(b.tags?.ingredient||[]).map(t=>`<span class="dtag ting">${e(t)}</span>`)].join('');
+  const meta=[b.publisher&&`<div class="mi"><div class="ml">Publisher</div><div class="mv">${e(b.publisher)}</div></div>`,b.year&&`<div class="mi"><div class="ml">Year</div><div class="mv">${e(b.year)}</div></div>`,b.pages&&`<div class="mi"><div class="ml">Pages</div><div class="mv">${e(b.pages)}</div></div>`,b.isbn&&`<div class="mi"><div class="ml">ISBN</div><div class="mv" style="font-size:12px">${e(b.isbn)}</div></div>`].filter(Boolean).join('');
+  const covH=b.cover?`<img class="dcov" src="${b.cover}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="dcovph" style="display:none">📖</div>`:`<div class="dcovph">📖</div>`;
+  const rH=br.length?`<div class="dsh">Recipes (${br.length})</div>`+br.map(r=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br);font-size:14px;"><span>${e(r.name)}</span><span style="color:var(--t3);font-weight:600;">${r.page?'p.'+e(r.page):'—'}</span></div>`).join(''):`<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>`;
+  const acts=!isGuest?`<button class="btn bo" style="flex:1" onclick="editBk('${b.id}')">✏️ Edit</button><button class="btn bp" style="flex:1" onclick="openAddRcp('${b.id}')">📖 Add Recipes</button><button class="btn bd bsm" onclick="delBk('${b.id}')">🗑</button>`:'';
+  document.getElementById('bkDetailCont').innerHTML=`<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM('bkDetailM')">✕</button></div><div class="mbody"><div class="dhero">${covH}<div class="dhi"><div class="dtit">${e(b.title)}</div><div class="daut">${e(b.author||'Unknown author')}</div>${sh?`<div class="locbadge">📍 ${e(sh.name)}${sh.shelf_row?' · Row '+sh.shelf_row+', Col '+sh.shelf_col:''}</div>`:''}<div class="dtags">${tags}</div></div></div>${meta?`<div class="mgrid">${meta}</div>`:''}${b.description&&!isGuest?`<div class="dsh">About</div><div class="dsb">${e(b.description).slice(0,400)}${b.description.length>400?'…':''}</div>`:''}${b.notes&&!isGuest?`<div class="dsh">My Notes</div><div class="dsb">${e(b.notes)}</div>`:''}<div class="dsh">Recipe Index</div>${rH}${!isGuest?`<div class="dacts">${acts}</div>`:''}</div>`;
+  openM('bkDetailM');
 }
 
-function bookToRow(b) {
-  return {
-    title:       b.title,
-    author:      b.author || '',
-    publisher:   b.publisher || '',
-    year:        b.year || '',
-    pages:       b.pages || '',
-    isbn:        b.isbn || '',
-    cover:       b.cover || '',
-    description: b.description || '',
-    cuisine:     (b.tags?.cuisine || []).join('|'),
-    style:       (b.tags?.style || []).join('|'),
-    ingredients: (b.tags?.ingredient || []).join('|'),
-    notes:       b.notes || '',
-    added_at:    b.addedAt || new Date().toISOString()
-  };
-}
-
-// ── Render books ───────────────────────────────
-function renderBooks() {
-  const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  const list = books.filter(b => {
-    const text = [b.title,b.author,b.publisher,b.notes,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase();
-    return (!q || text.includes(q)) && (currentFilter==='all' || (b.tags?.[currentFilter]?.length > 0));
+// ── RECIPES ───────────────────────────────────────────────────
+function setRF(f,el){rcpF=f;document.querySelectorAll('#tp-recipes .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderRcps();}
+function renderRcps(){
+  const q=(document.getElementById('rcpsrch').value||'').toLowerCase().trim();
+  const si=getCurrSea();
+  const list=recipes.filter(r=>{
+    const t=[r.name,r.cuisine,r.course,r.main_protein,r.dietary,r.occasion].join(' ').toLowerCase();
+    const mq=!q||t.includes(q);
+    let mf=true;
+    if(rcpF==='season')mf=si.some(s=>t.includes(s));
+    else if(rcpF==='starter')mf=(r.course||'').toLowerCase()==='starter';
+    else if(rcpF==='main')mf=(r.course||'').toLowerCase()==='main';
+    else if(rcpF==='dessert')mf=(r.course||'').toLowerCase()==='dessert';
+    else if(rcpF==='side')mf=(r.course||'').toLowerCase()==='side';
+    else if(rcpF==='easy')mf=(r.difficulty||'').toLowerCase()==='easy';
+    else if(rcpF==='for1')mf=r.serves==='1';
+    else if(rcpF==='for2')mf=r.serves==='2';
+    else if(rcpF==='for4')mf=r.serves==='4';
+    else if(rcpF==='crowd')mf=(r.serves||'').toLowerCase()==='crowd';
+    else if(rcpF==='veg')mf=(r.dietary||'').toLowerCase().includes('vegetarian');
+    else if(rcpF==='vegan')mf=(r.dietary||'').toLowerCase().includes('vegan');
+    else if(rcpF==='gf')mf=(r.dietary||'').toLowerCase().includes('gluten');
+    return mq&&mf;
   });
-  const total = books.length;
-  document.getElementById('bookCount').innerHTML = total === 0 ? '' :
-    `<strong>${list.length}</strong>${total!==list.length?' of <strong>'+total+'</strong>':''} book${list.length!==1?'s':''}`;
-  const grid = document.getElementById('bookGrid');
-  grid.className = currentView==='grid' ? 'grid-view' : 'list-view';
-  if (total === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📚</div><h2>Your library awaits</h2><p>Tap the orange + button to add your first cookbook — scan a barcode, enter an ISBN, or fill in manually.</p></div>`;
-    return;
-  }
-  if (list.length === 0) {
-    grid.innerHTML = `<div class="no-results"><div style="font-size:40px;margin-bottom:10px">🔍</div><p>No cookbooks match.<br>Try a different search.</p></div>`;
-    return;
-  }
-  grid.innerHTML = list.map(b => currentView==='grid' ? gridCard(b) : listCard(b)).join('');
+  document.getElementById('rcpct').textContent=`${list.length} recipe${list.length!==1?'s':''}${q?' for "'+q+'"':''}`;
+  const el=document.getElementById('rcplist');
+  if(!recipes.length){el.innerHTML='<div class="empty"><div class="emico">🍽️</div><h3>No recipes yet</h3><p>Open a book and tap "Add Recipes" to start building your index.</p></div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty"><div class="emico">🔍</div><h3>No matches</h3><p>Try a different search or filter.</p></div>';return;}
+  el.innerHTML=list.slice(0,200).map(r=>rcpCard(r,books.find(b=>b.id===r.book_id))).join('');
+}
+function rcpCard(r,bk){
+  const badges=[r.course&&`<span class="rb g">${e(r.course)}</span>`,r.serves&&`<span class="rb">${e(r.serves==='1'?'For 1':r.serves==='Crowd'?'Crowd':'Serves '+r.serves)}</span>`,r.difficulty&&`<span class="rb o">${e(r.difficulty)}</span>`,r.main_protein&&`<span class="rb b">${e(r.main_protein)}</span>`,r.dietary&&`<span class="rb">${e(r.dietary)}</span>`].filter(Boolean).join('');
+  return`<div class="rc" onclick="showBkDetail('${r.book_id||''}')"><div class="rn">${e(r.name)}</div>${bk?`<div class="rbk">📚 ${e(bk.title)}${r.page?' · p.'+e(r.page):''}</div>`:''}<div class="rm">${badges}</div></div>`;
 }
 
-function coverImg(b, imgCls, phCls) {
-  if (b.cover) return `<img class="${imgCls}" src="${b.cover}" alt="" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="${phCls}" style="display:none">📖</div>`;
-  return `<div class="${phCls}">📖</div>`;
+// ── SHELVES ───────────────────────────────────────────────────
+function renderShelves(){
+  const el=document.getElementById('shelfgrid');
+  if(!shelves.length){el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="emico">🔖</div><h3>No shelves yet</h3><p>Create shelves to organise your books — Italian, BBQ, Ottolenghi, Bread and more.</p><button class="btn bp" onclick="openM('addShelfM')">+ Create first shelf</button></div>`;return;}
+  el.innerHTML=shelves.map(s=>{const ct=books.filter(b=>b.shelfId===s.id).length;const loc=s.shelf_row?`Row ${s.shelf_row}, Col ${s.shelf_col}`:'';return`<div class="ccube" onclick="showShelfDetail('${s.id}')"><div class="ccei">${s.emoji||'📚'}</div><div class="ccen">${e(s.name)}</div><div class="ccem">${ct} book${ct!==1?'s':''}</div>${loc?`<div class="cceloc">📍 ${loc}</div>`:''}</div>`;}).join('');
 }
-function tagHtml(type, vals, limit) {
-  return (vals||[]).slice(0,limit||999).map(t=>`<span class="tag tag-${type}">${esc(t)}</span>`).join('');
+function showShelfDetail(id){
+  const s=shelves.find(x=>x.id===id);if(!s)return;
+  const sb=books.filter(b=>b.shelfId===id);
+  document.getElementById('shelfDetailCont').innerHTML=`<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">${s.emoji||'📚'} ${e(s.name)}</span><button class="mcls" onclick="closeM('shelfDetailM')">✕</button></div><div class="mbody">${s.shelf_row?`<div class="locbadge">📍 Row ${s.shelf_row}, Column ${s.shelf_col}</div><br>`:''} ${s.description?`<p style="font-size:14px;color:var(--t2);margin-bottom:16px;">${e(s.description)}</p>`:''}<div class="dsh">${sb.length} book${sb.length!==1?'s':''} on this shelf</div>${sb.length?`<div class="lst">`+sb.map(b=>bkList(b)).join('')+'</div>':`<div style="font-size:14px;color:var(--t3);">No books assigned yet.</div>`}${!isGuest?`<div style="margin-top:16px;"><button class="btn bd bsm" onclick="delShelf('${s.id}')">Delete shelf</button></div>`:''}</div>`;
+  openM('shelfDetailM');
 }
-function gridCard(b) {
-  return `<div class="book-card" onclick="showDetail('${b.id}')">
-    ${coverImg(b,'book-cover','cover-placeholder')}
-    <div class="book-info">
-      <div class="book-title">${esc(b.title)}</div>
-      <div class="book-author">${esc(b.author||'')}</div>
-      <div class="book-tags">${tagHtml('cuisine',b.tags?.cuisine,2)}${tagHtml('style',b.tags?.style,1)}</div>
-    </div></div>`;
+async function saveShelf(){
+  const nm=document.getElementById('snm').value.trim();if(!nm){toast('Please enter a name');return;}
+  const row={name:nm,description:document.getElementById('sds').value.trim(),emoji:document.getElementById('sem').value.trim()||'📚',shelf_row:parseInt(document.getElementById('srow').value)||null,shelf_col:parseInt(document.getElementById('scol').value)||null,sort_order:shelves.length};
+  try{setSS('syncing');const d=await sbf(SB('collections'),{method:'POST',body:JSON.stringify(row)});shelves.push(d[0]);setSS('ok');closeM('addShelfM');renderAll();toast('✓ Shelf created');}
+  catch(err){setSS('err');toast('Save failed');console.error(err);}
 }
-function listCard(b) {
-  return `<div class="book-list-card" onclick="showDetail('${b.id}')">
-    ${coverImg(b,'book-list-cover','list-cover-placeholder')}
-    <div class="book-list-info">
-      <div class="book-list-title">${esc(b.title)}</div>
-      <div class="book-list-author">${esc(b.author||'')}${b.year?' · '+b.year:''}</div>
-      <div class="book-list-tags">${tagHtml('cuisine',b.tags?.cuisine,2)}${tagHtml('style',b.tags?.style,2)}${tagHtml('ingredient',b.tags?.ingredient,2)}</div>
-    </div></div>`;
+async function delShelf(id){
+  if(!confirm('Delete this shelf? Books will not be deleted.'))return;
+  try{await sbf(`${SB('collections')}?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});shelves=shelves.filter(s=>s.id!==id);books=books.map(b=>b.shelfId===id?{...b,shelfId:null}:b);closeM('shelfDetailM');renderAll();toast('Shelf deleted');}
+  catch(e){toast('Delete failed');}
 }
+function popShelfSel(){const s=document.getElementById('fShelf');if(!s)return;s.innerHTML='<option value="">-- Assign to shelf --</option>'+shelves.map(sh=>`<option value="${sh.id}">${sh.emoji||'📚'} ${e(sh.name)}</option>`).join('');}
 
-// ── Detail view ────────────────────────────────
-function showDetail(id) {
-  const b = books.find(x=>x.id===id); if (!b) return;
-  const allTags = [
-    ...(b.tags?.cuisine||[]).map(t=>`<span class="detail-tag tag-cuisine">${esc(t)}</span>`),
-    ...(b.tags?.style||[]).map(t=>`<span class="detail-tag tag-style">${esc(t)}</span>`),
-    ...(b.tags?.ingredient||[]).map(t=>`<span class="detail-tag tag-ingredient">${esc(t)}</span>`)
-  ].join('');
-  const meta = [
-    b.publisher&&`<div class="meta-item"><div class="meta-label">Publisher</div><div class="meta-value">${esc(b.publisher)}</div></div>`,
-    b.year&&`<div class="meta-item"><div class="meta-label">Year</div><div class="meta-value">${esc(b.year)}</div></div>`,
-    b.pages&&`<div class="meta-item"><div class="meta-label">Pages</div><div class="meta-value">${esc(b.pages)}</div></div>`,
-    b.isbn&&`<div class="meta-item"><div class="meta-label">ISBN</div><div class="meta-value" style="font-size:12px">${esc(b.isbn)}</div></div>`
-  ].filter(Boolean).join('');
-  document.getElementById('detailContent').innerHTML = `
-    <div class="modal-handle"></div>
-    <div class="modal-header"><span class="modal-title">Book details</span><button class="modal-close" onclick="closeModal('detailModal')">✕</button></div>
-    <div class="detail-cover-wrap">${b.cover
-      ?`<img class="detail-cover-img" src="${b.cover}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='inline-flex'"><span class="detail-cover-placeholder" style="display:none">📖</span>`
-      :`<span class="detail-cover-placeholder">📖</span>`}</div>
-    <div class="detail-title">${esc(b.title)}</div>
-    <div class="detail-author">${esc(b.author||'Unknown author')}</div>
-    ${allTags?`<div class="detail-tags">${allTags}</div>`:''}
-    ${meta?`<div class="meta-grid">${meta}</div>`:''}
-    ${b.description?`<div class="section-heading">About</div><div class="section-body">${esc(b.description).slice(0,400)}${b.description.length>400?'…':''}</div>`:''}
-    ${b.notes?`<div class="section-heading">My notes</div><div class="section-body">${esc(b.notes)}</div>`:''}
-    <div class="detail-actions">
-      <button class="btn btn-outline" style="flex:1" onclick="editBook('${b.id}')">✏️ Edit</button>
-      <button class="btn btn-danger" onclick="deleteBook('${b.id}')">🗑 Remove</button>
-    </div>`;
-  openModal('detailModal');
+// ── GLOBAL SEARCH ─────────────────────────────────────────────
+function togST(t,el){stypes[t]=!stypes[t];el.classList.toggle('sel',stypes[t]);renderGS();}
+function renderGS(){
+  const q=(document.getElementById('gsrch').value||'').toLowerCase().trim();
+  if(!q){document.getElementById('gsres').innerHTML='';document.getElementById('gsct').textContent='';return;}
+  let br=[],rr=[];
+  if(stypes.books)br=books.filter(b=>[b.title,b.author,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase().includes(q));
+  if(stypes.recipes)rr=recipes.filter(r=>[r.name,r.cuisine,r.course,r.main_protein,r.dietary].join(' ').toLowerCase().includes(q));
+  const tot=br.length+rr.length;
+  document.getElementById('gsct').textContent=`${tot} result${tot!==1?'s':''} for "${q}"`;
+  let h='';
+  if(br.length)h+=`<div class="dsh" style="padding-top:8px;">📚 Books (${br.length})</div><div class="lst">`+br.map(b=>bkList(b)).join('')+'</div>';
+  if(rr.length)h+=`<div class="dsh" style="padding-top:8px;">🍽️ Recipes (${rr.length})</div>`+rr.map(r=>rcpCard(r,books.find(b=>b.id===r.book_id))).join('');
+  document.getElementById('gsres').innerHTML=h||'<div class="empty"><div class="emico">🔍</div><h3>No results</h3></div>';
 }
 
-// ── Add / Edit ─────────────────────────────────
-function openAddModal(focusISBN) {
-  closeFab(); editingId=null; pendingCover=''; pendingDesc='';
-  document.getElementById('addModalTitle').textContent = 'Add cookbook';
-  ['fTitle','fAuthor','fPublisher','fYear','fPages','fISBN','fNotes','isbnInput'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('lookupStatus').innerHTML='';
-  document.getElementById('isbnSection').style.display='block';
-  currentTags={cuisine:[],style:[],ingredient:[]};
-  renderTagAreas();
-  openModal('addModal');
-  if (focusISBN) setTimeout(()=>document.getElementById('isbnInput').focus(),400);
+// ── ADD / EDIT BOOK ───────────────────────────────────────────
+function openAddBk(fi){
+  closeFab();editBkId=null;pCover='';pDesc='';
+  document.getElementById('addBkTit').textContent='Add cookbook';
+  ['fT','fA','fPub','fYr','fPg','fISBN','fN','isbnIn'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('isbnSt').innerHTML='';
+  document.getElementById('fShelf').value='';
+  ctags={cuisine:[],style:[],ingredient:[]};renderTAs();openM('addBkM');
+  if(fi)setTimeout(()=>document.getElementById('isbnIn').focus(),400);
+}
+function editBk(id){
+  const b=books.find(x=>x.id===id);if(!b)return;
+  closeM('bkDetailM');editBkId=id;pCover=b.cover||'';pDesc=b.description||'';
+  document.getElementById('addBkTit').textContent='Edit cookbook';
+  document.getElementById('fT').value=b.title||'';document.getElementById('fA').value=b.author||'';
+  document.getElementById('fPub').value=b.publisher||'';document.getElementById('fYr').value=b.year||'';
+  document.getElementById('fPg').value=b.pages||'';document.getElementById('fISBN').value=b.isbn||'';
+  document.getElementById('fN').value=b.notes||'';document.getElementById('isbnIn').value=b.isbn||'';
+  document.getElementById('isbnSt').innerHTML='';document.getElementById('fShelf').value=b.shelfId||'';
+  ctags={cuisine:[...(b.tags?.cuisine||[])],style:[...(b.tags?.style||[])],ingredient:[...(b.tags?.ingredient||[])]};
+  renderTAs();openM('addBkM');
+}
+async function saveBk(){
+  const title=document.getElementById('fT').value.trim();if(!title){alert('Please enter a title.');return;}
+  const btn=document.getElementById('saveBkBtn');btn.disabled=true;btn.textContent='Saving…';
+  const shelfId=document.getElementById('fShelf').value||null;
+  const bk={title,author:document.getElementById('fA').value.trim(),publisher:document.getElementById('fPub').value.trim(),year:document.getElementById('fYr').value.trim(),pages:document.getElementById('fPg').value.trim(),isbn:document.getElementById('fISBN').value.trim().replace(/[^0-9X]/gi,''),notes:document.getElementById('fN').value.trim(),cover:pCover,description:pDesc,tags:{cuisine:[...ctags.cuisine],style:[...ctags.style],ingredient:[...ctags.ingredient]},addedAt:editBkId?(books.find(b=>b.id===editBkId)?.addedAt||new Date().toISOString()):new Date().toISOString(),shelfId};
+  try{
+    setSS('syncing');let saved;
+    if(editBkId){const r=await sbf(`${SB('books')}?id=eq.${editBkId}`,{method:'PATCH',body:JSON.stringify(b2r(bk))});saved=r2b(r[0]);books=books.map(b=>b.id===editBkId?saved:b);}
+    else{const r=await sbf(SB('books'),{method:'POST',body:JSON.stringify(b2r(bk))});saved=r2b(r[0]);books.unshift(saved);}
+    localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves}));
+    setSS('ok');closeM('addBkM');renderAll();toast(editBkId?'✓ Book updated':'✓ Added to library');
+  }catch(err){setSS('err');toast('Save failed — check connection');console.error(err);}
+  btn.disabled=false;btn.textContent='Save to library';
+}
+async function delBk(id){
+  if(!confirm('Remove this book from your library?'))return;
+  try{await sbf(`${SB('books')}?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});books=books.filter(b=>b.id!==id);recipes=recipes.filter(r=>r.book_id!==id);localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves}));closeM('bkDetailM');renderAll();toast('Book removed');}
+  catch(e){toast('Delete failed');}
 }
 
-function editBook(id) {
-  const b = books.find(x=>x.id===id); if (!b) return;
-  closeModal('detailModal');
-  editingId=id; pendingCover=b.cover||''; pendingDesc=b.description||'';
-  document.getElementById('addModalTitle').textContent='Edit cookbook';
-  document.getElementById('fTitle').value=b.title||'';
-  document.getElementById('fAuthor').value=b.author||'';
-  document.getElementById('fPublisher').value=b.publisher||'';
-  document.getElementById('fYear').value=b.year||'';
-  document.getElementById('fPages').value=b.pages||'';
-  document.getElementById('fISBN').value=b.isbn||'';
-  document.getElementById('fNotes').value=b.notes||'';
-  document.getElementById('isbnInput').value=b.isbn||'';
-  document.getElementById('lookupStatus').innerHTML='';
-  currentTags={cuisine:[...(b.tags?.cuisine||[])],style:[...(b.tags?.style||[])],ingredient:[...(b.tags?.ingredient||[])]};
-  renderTagAreas();
-  openModal('addModal');
+// ── RECIPE ENTRY ──────────────────────────────────────────────
+function openAddRcp(bookId){
+  addRcpBkId=bookId;const bk=books.find(b=>b.id===bookId);
+  document.getElementById('addRcpTit').textContent='Add Recipes'+(bk?' — '+bk.title:'');
+  document.getElementById('rcprows').innerHTML='';
+  bv={course:'Main',serves:'4',difficulty:'Easy',occasion:'Weeknight',dietary:[]};
+  document.querySelectorAll('#addRcpM .bopt').forEach(b=>b.classList.remove('sel'));
+  document.querySelector('#bCourse [onclick*="Main"]')?.classList.add('sel');
+  document.querySelector('#bServes [onclick*="\'4\'"]')?.classList.add('sel');
+  document.querySelector('#bDiff [onclick*="Easy"]')?.classList.add('sel');
+  document.querySelector('#bOcc [onclick*="Weeknight"]')?.classList.add('sel');
+  rcpRowN=0;addRrow();addRrow();addRrow();
+  closeM('bkDetailM');openM('addRcpM');
+}
+function addRrow(){
+  rcpRowN++;const n=rcpRowN;
+  const d=document.createElement('div');d.className='rrow';
+  d.innerHTML=`<div class="rrown">${n}</div><div class="rrowf"><input type="text" placeholder="Recipe name" id="rn${n}" class="rnm" style="flex:2;" autocomplete="off" autocorrect="off"><input type="text" placeholder="Page" id="rp${n}" class="rpg" style="flex:0.5;min-width:60px;" inputmode="numeric"><input type="text" placeholder="Main protein / ingredient" id="ri${n}" class="rprot" style="flex:1.5;" autocomplete="off"></div><button class="rrowd" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('rcprows').appendChild(d);
+  document.getElementById('rn'+n).focus();
+}
+function setBV(f,v,el){bv[f]=v;el.closest('.bg2').querySelectorAll('.bopt').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function togDiet(v,el){if(bv.dietary.includes(v)){bv.dietary=bv.dietary.filter(x=>x!==v);el.classList.remove('sel');}else{bv.dietary.push(v);el.classList.add('sel');}}
+async function saveRcps(){
+  const rows=document.querySelectorAll('.rrow'),toSave=[];
+  const bk=books.find(b=>b.id===addRcpBkId);
+  rows.forEach(row=>{const nm=row.querySelector('.rnm')?.value.trim(),pg=row.querySelector('.rpg')?.value.trim(),pr=row.querySelector('.rprot')?.value.trim();if(nm)toSave.push({book_id:addRcpBkId,name:nm,page:pg||null,main_protein:pr||null,course:bv.course,serves:bv.serves,difficulty:bv.difficulty,occasion:bv.occasion,dietary:bv.dietary.join(', ')||null,cuisine:(bk?.tags?.cuisine||[])[0]||null,added_at:new Date().toISOString()});});
+  if(!toSave.length){toast('No recipes to save');return;}
+  const btn=document.getElementById('saveRcpBtn');btn.disabled=true;btn.textContent='Saving…';
+  try{setSS('syncing');const saved=await sbf(SB('recipes'),{method:'POST',body:JSON.stringify(toSave)});recipes=[...recipes,...(saved||[])];localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves}));setSS('ok');closeM('addRcpM');renderAll();toast(`✓ ${toSave.length} recipe${toSave.length!==1?'s':''} added`);}
+  catch(err){setSS('err');toast('Save failed');console.error(err);}
+  btn.disabled=false;btn.textContent='Save Recipes';
 }
 
-async function saveBook() {
-  const title = document.getElementById('fTitle').value.trim();
-  if (!title) { alert('Please enter a title.'); return; }
-  const btn = document.getElementById('saveBtn');
-  btn.disabled=true; btn.textContent='Saving…';
-  const book = {
-    id: editingId,
-    title,
-    author:      document.getElementById('fAuthor').value.trim(),
-    publisher:   document.getElementById('fPublisher').value.trim(),
-    year:        document.getElementById('fYear').value.trim(),
-    pages:       document.getElementById('fPages').value.trim(),
-    isbn:        document.getElementById('fISBN').value.trim().replace(/[^0-9X]/gi,''),
-    notes:       document.getElementById('fNotes').value.trim(),
-    cover:       pendingCover,
-    description: pendingDesc,
-    tags:        {cuisine:[...currentTags.cuisine],style:[...currentTags.style],ingredient:[...currentTags.ingredient]},
-    addedAt:     editingId ? (books.find(b=>b.id===editingId)?.addedAt||new Date().toISOString()) : new Date().toISOString()
-  };
-  try {
-    setSyncStatus('syncing');
-    let saved;
-    if (editingId) {
-      const rows = await sbFetch(`${SB_TABLE}?id=eq.${editingId}`, { method:'PATCH', body: JSON.stringify(bookToRow(book)) });
-      saved = rowToBook(rows[0]);
-      books = books.map(b=>b.id===editingId ? saved : b);
-    } else {
-      const rows = await sbFetch(SB_TABLE, { method:'POST', body: JSON.stringify(bookToRow(book)) });
-      saved = rowToBook(rows[0]);
-      books.unshift(saved);
-    }
-    localStorage.setItem('cb_cache', JSON.stringify(books));
-    setSyncStatus('ok');
-    closeModal('addModal');
-    renderBooks();
-    toast(editingId ? '✓ Book updated' : '✓ Saved to your library');
-  } catch(e) {
-    console.error('Save error:', e);
-    setSyncStatus('err');
-    toast('⚠️ Save failed — check connection');
-  }
-  btn.disabled=false; btn.textContent='Save to library';
+// ── ISBN LOOKUP ───────────────────────────────────────────────
+async function fetchBk(isbn){
+  let ol=null,gb=null;
+  const[or,gr]=await Promise.allSettled([fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`).then(r=>r.json()),fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1`).then(r=>r.json())]);
+  if(or.status==='fulfilled'){const b=or.value[`ISBN:${isbn}`];if(b&&b.title)ol=b;}
+  if(gr.status==='fulfilled'){gb=gr.value?.items?.[0]?.volumeInfo||null;}
+  if(!ol&&!gb)return null;
+  const title=ol?.title||gb?.title||'',author=ol?(ol.authors||[]).map(a=>a.name).join(', '):(gb?.authors||[]).join(', '),publisher=ol?(ol.publishers||[]).map(p=>p.name).join(', '):(gb?.publisher||''),year=ol?.publish_date?.match(/\d{4}/)?.[0]||gb?.publishedDate?.slice(0,4)||'',pages=String(ol?.number_of_pages||gb?.pageCount||''),desc=gb?.description||ol?.excerpts?.[0]?.text||'';
+  let cov='';if(ol?.cover?.large)cov=ol.cover.large;else if(gb?.imageLinks)cov=(gb.imageLinks.extraLarge||gb.imageLinks.large||gb.imageLinks.thumbnail||'').replace('http:','https:').replace('zoom=1','zoom=3').replace('&edge=curl','');if(!cov)cov=`https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
+  const subs=[...(ol?(ol.subjects||[]).map(s=>typeof s==='string'?s:s.name):[]),...(gb?.categories||[])];
+  return{title,author,publisher,year,pages,cover:cov,description:desc,subjects:subs,th:title.toLowerCase(),dh:desc.toLowerCase().slice(0,500)};
+}
+function popForm(data,isbn){
+  document.getElementById('fT').value=data.title;document.getElementById('fA').value=data.author;document.getElementById('fPub').value=data.publisher;document.getElementById('fYr').value=data.year;document.getElementById('fPg').value=data.pages;document.getElementById('fISBN').value=isbn;pCover=data.cover||'';pDesc=data.description||'';
+  const corp=[...(data.subjects||[]),data.th||'',data.dh||''].join(' ').toLowerCase();
+  const CM=[['Italian',['italian','italy','pasta','risotto','pizza','sicilian','tuscan']],['French',['french','france','provençal','provencal','bistro','brasserie']],['British',['british','english cooking','scottish','welsh','irish','pub food']],['Asian',['asian','east asian']],['Japanese',['japanese','japan','sushi','ramen','tempura','izakaya']],['Chinese',['chinese','china','cantonese','sichuan','dim sum']],['Indian',['indian','india','curry','tandoor','bengali','punjabi']],['Mexican',['mexican','mexico','taco','enchilada','salsa']],['Thai',['thai','thailand','tom yum']],['Greek',['greek','greece','hellenic']],['Spanish',['spanish','spain','tapas','paella','catalan']],['Middle Eastern',['middle eastern','persian','lebanese','iranian','arabic','mezze']],['Mediterranean',['mediterranean']],['American',['american','southern cooking','soul food','cajun']],['Vietnamese',['vietnamese','vietnam','pho']],['Korean',['korean','korea','kimchi']],['Turkish',['turkish','turkey']],['Moroccan',['moroccan','morocco','tagine']],['Caribbean',['caribbean','jamaican']],['Scandinavian',['scandinavian','nordic','swedish','norwegian']],['German',['german','germany','austrian']],['Portuguese',['portuguese','portugal']]];
+  const SM=[['Baking',['baking','baked goods','cake','cakes','cookies','scones','tarts']],['Pastry',['pastry','patisserie','croissant']],['Bread',['bread','sourdough','loaf','baguette']],['BBQ & Grilling',['barbecue','bbq','grilling','smoker']],['Chocolate',['chocolate','cocoa','ganache']],['Fermentation',['ferment','fermented','pickling','kombucha']],['Slow Cooking',['slow cook','braise','casserole','stew']],['One-pot',['one pot','sheet pan','traybake']],['Quick & Easy',['quick','easy recipes','weeknight']],['Fine Dining',['fine dining','michelin','gourmet']],['Vegetarian',['vegetarian','meat-free']],['Vegan',['vegan','plant-based']],['Preserving',['preserving','jam','chutney','pickle']],['Comfort Food',['comfort food','hearty','homestyle']]];
+  const IM=[['Seafood',['seafood','shellfish','lobster','crab','prawn','scallop','oyster']],['Fish',['fish recipes','salmon','cod','tuna','sea bass','trout']],['Meat',['meat','beef','pork','lamb','veal']],['Chicken',['chicken','poultry','duck','turkey']],['Game',['game','venison','rabbit','pheasant','grouse']],['Pasta',['pasta','noodle','gnocchi','ravioli']],['Vegetables',['vegetables','veg','greens']],['Cheese',['cheese','fromage']],['Eggs',['egg recipes','omelette','frittata']],['Mushrooms',['mushroom','fungi','truffle']],['Fruit',['fruit','berry','stone fruit']],['Spices',['spice','herb','masala']],['Chocolate',['chocolate','cocoa']],['Gluten-free',['gluten-free','coeliac']],['Dairy-free',['dairy-free','lactose']]];
+  const aim=(map,type)=>map.forEach(([l,kws])=>{if(!ctags[type].includes(l)&&kws.some(kw=>corp.includes(kw)))ctags[type].push(l);});
+  aim(CM,'cuisine');aim(SM,'style');aim(IM,'ingredient');
+  const ss=shelves.find(s=>corp.includes(s.name.toLowerCase())||ctags.cuisine.some(t=>s.name.toLowerCase().includes(t.toLowerCase())));
+  if(ss)document.getElementById('fShelf').value=ss.id;
+  renderTAs();
+}
+async function doISBN(){
+  const isbn=document.getElementById('isbnIn').value.trim().replace(/[^0-9X]/gi,''),el=document.getElementById('isbnSt');
+  if(!isbn){el.className='st2 err';el.textContent='Please enter an ISBN first';return;}
+  el.className='st2 loading';el.innerHTML='<span class="spin"></span>Looking up…';
+  const d=await fetchBk(isbn);
+  if(d){popForm(d,isbn);el.className='st2 ok';el.innerHTML=`✓ Found: <em>${e(d.title)}</em> — check tags then save`;}
+  else{el.className='st2 err';el.textContent='Not found — please fill in manually';}
+}
+async function scnLookup(){
+  const isbn=document.getElementById('scnISBN').value.trim().replace(/[^0-9X]/gi,''),el=document.getElementById('scnstm');
+  if(!isbn){el.className='st2 err';el.textContent='Please enter an ISBN first';return;}
+  el.className='st2 loading';el.innerHTML='<span class="spin"></span>Looking up…';
+  const d=await fetchBk(isbn);
+  if(d){closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=isbn;popForm(d,isbn);document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').innerHTML=`✓ Found: <em>${e(d.title)}</em>`;}
+  else{el.className='st2 err';el.textContent='Not found — try adding manually';}
 }
 
-async function deleteBook(id) {
-  if (!confirm('Remove this book from your library?')) return;
-  try {
-    setSyncStatus('syncing');
-    await sbFetch(`${SB_TABLE}?id=eq.${id}`, { method:'DELETE', headers:{'Prefer':'return=minimal'} });
-    books = books.filter(b=>b.id!==id);
-    localStorage.setItem('cb_cache', JSON.stringify(books));
-    setSyncStatus('ok');
-    closeModal('detailModal');
-    renderBooks();
-    toast('Book removed');
-  } catch(e) {
-    setSyncStatus('err');
-    toast('⚠️ Delete failed — check connection');
-  }
+// ── SCANNER ───────────────────────────────────────────────────
+async function startScn(){
+  document.getElementById('scnstart').style.display='none';document.getElementById('scnactive').style.display='block';document.getElementById('scnwrap').style.display='block';
+  const el=document.getElementById('scnst');el.className='st2 ok';el.textContent='📷 Point at the barcode on the back of the book…';
+  try{
+    scnR=new window.ZXingBrowser.BrowserMultiFormatReader();
+    await scnR.decodeFromConstraints({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}},document.getElementById('scnvid'),async(result)=>{
+      if(result){const isbn=result.getText().replace(/[^0-9X]/gi,'');if(isbn.length>=10){stopScn();el.className='st2 loading';el.innerHTML='<span class="spin"></span>Found! Looking up…';document.getElementById('scnactive').style.display='block';const d=await fetchBk(isbn);if(d){closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=isbn;popForm(d,isbn);document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').innerHTML=`✓ Found: <em>${e(d.title)}</em>`;}else{el.className='st2 err';el.textContent=`Read (${isbn}) but not found — enter manually`;document.getElementById('scnISBN').value=isbn;}}}
+    });
+  }catch(err){stopScn();document.getElementById('scnst').className='st2 err';document.getElementById('scnst').textContent='Camera access denied — use manual entry below';document.getElementById('scnstart').style.display='block';document.getElementById('scnactive').style.display='none';}
+}
+function stopScn(){if(scnR){try{scnR.reset();}catch(e){}scnR=null;}document.getElementById('scnwrap').style.display='none';document.getElementById('scnactive').style.display='none';document.getElementById('scnstart').style.display='block';}
+
+async function startOwnScn(){
+  document.getElementById('ownstart').style.display='none';document.getElementById('ownactive').style.display='block';document.getElementById('ownwrap').style.display='block';
+  const el=document.getElementById('ownst');el.className='st2 ok';el.textContent='📷 Point at the barcode…';
+  try{
+    ownScnR=new window.ZXingBrowser.BrowserMultiFormatReader();
+    await ownScnR.decodeFromConstraints({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}},document.getElementById('ownvid'),async(result)=>{
+      if(result){const isbn=result.getText().replace(/[^0-9X]/gi,'');if(isbn.length>=10){stopOwnScn();document.getElementById('ownIn').value=isbn;chkOwn();}}
+    });
+  }catch(err){stopOwnScn();document.getElementById('ownst').className='st2 err';document.getElementById('ownst').textContent='Camera access denied — use manual entry below';document.getElementById('ownstart').style.display='block';}
+}
+function stopOwnScn(){if(ownScnR){try{ownScnR.reset();}catch(e){}ownScnR=null;}document.getElementById('ownwrap').style.display='none';document.getElementById('ownactive').style.display='none';document.getElementById('ownstart').style.display='block';}
+
+async function chkOwn(){
+  const val=document.getElementById('ownIn').value.trim();const el=document.getElementById('ownres');if(!val){el.innerHTML='';return;}
+  const isbn=val.replace(/[^0-9X]/gi,'');
+  let found=isbn.length>=10?books.find(b=>b.isbn&&b.isbn===isbn):null;
+  if(!found)found=books.find(b=>b.title.toLowerCase().includes(val.toLowerCase()));
+  if(found){const sh=shelves.find(s=>s.id===found.shelfId);el.innerHTML=`<div class="own own-y"><div style="font-size:36px;margin-bottom:8px">✅</div><div style="font-size:17px;font-weight:700;margin-bottom:4px;">Yes! You own this book</div><div style="font-size:13px;color:var(--t2)"><strong>${e(found.title)}</strong><br>${e(found.author||'')}${found.year?' ('+found.year+')':''}</div>${sh?`<div style="margin-top:8px;font-size:13px;color:var(--g);font-weight:600;">📍 Located on: ${e(sh.name)}${sh.shelf_row?', Row '+sh.shelf_row+' Col '+sh.shelf_col:''}</div>`:''}</div>`;}
+  else{let title='Unknown book';if(isbn.length>=10){const d=await fetchBk(isbn);if(d)title=d.title;}el.innerHTML=`<div class="own own-n"><div style="font-size:36px;margin-bottom:8px">❌</div><div style="font-size:17px;font-weight:700;margin-bottom:4px;">Not in your library</div><div style="font-size:13px;color:var(--t2)">${title!=='Unknown book'?`<strong>${e(title)}</strong><br>`:''}This book is not in your collection yet.</div></div>`;}
 }
 
-// ── ISBN / barcode lookup ──────────────────────
-async function fetchBook(isbn) {
-  let olData=null, gbData=null;
-  const [olRes,gbRes] = await Promise.allSettled([
-    fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`).then(r=>r.json()),
-    fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1`).then(r=>r.json())
-  ]);
-  if (olRes.status==='fulfilled') { const b=olRes.value[`ISBN:${isbn}`]; if (b&&b.title) olData=b; }
-  if (gbRes.status==='fulfilled') { gbData=gbRes.value?.items?.[0]?.volumeInfo||null; }
-  if (!olData&&!gbData) return null;
-  const title  = olData?.title||gbData?.title||'';
-  const author = olData?(olData.authors||[]).map(a=>a.name).join(', '):(gbData?.authors||[]).join(', ');
-  const publisher = olData?(olData.publishers||[]).map(p=>p.name).join(', '):(gbData?.publisher||'');
-  const year   = olData?.publish_date?.match(/\d{4}/)?.[0]||gbData?.publishedDate?.slice(0,4)||'';
-  const pages  = String(olData?.number_of_pages||gbData?.pageCount||'');
-  const description = gbData?.description||olData?.excerpts?.[0]?.text||olData?.notes?.value||'';
-  let cover='';
-  if (olData?.cover?.large) cover=olData.cover.large;
-  else if (gbData?.imageLinks) cover=(gbData.imageLinks.extraLarge||gbData.imageLinks.large||gbData.imageLinks.thumbnail||'').replace('http:','https:').replace('zoom=1','zoom=3').replace('&edge=curl','');
-  if (!cover) cover=`https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
-  const subjects=[...(olData?(olData.subjects||[]).map(s=>typeof s==='string'?s:s.name):[]),(gbData?.categories||[])];
-  return {title,author,publisher,year,pages,cover,description,subjects,titleHint:title.toLowerCase(),descHint:description.toLowerCase().slice(0,500)};
-}
-
-function populateForm(data, isbn) {
-  document.getElementById('fTitle').value=data.title;
-  document.getElementById('fAuthor').value=data.author;
-  document.getElementById('fPublisher').value=data.publisher;
-  document.getElementById('fYear').value=data.year;
-  document.getElementById('fPages').value=data.pages;
-  document.getElementById('fISBN').value=isbn;
-  pendingCover=data.cover||''; pendingDesc=data.description||'';
-
-  const corpus=[...(data.subjects||[]),data.titleHint||'',data.descHint||''].join(' ').toLowerCase();
-
-  const CUISINE_MAP=[
-    ['Italian',       ['italian','italy','pasta','risotto','pizza','sicilian','venetian','tuscan','roman']],
-    ['French',        ['french','france','provençal','provencal','bistro','brasserie','normand','burgundy']],
-    ['British',       ['british','english cooking','scottish','welsh','irish','pub food','great british']],
-    ['Asian',         ['asian','east asian','southeast asian','pan-asian']],
-    ['Japanese',      ['japanese','japan','sushi','ramen','tempura','izakaya','washoku','bento']],
-    ['Chinese',       ['chinese','china','cantonese','sichuan','szechuan','dim sum','wok']],
-    ['Indian',        ['indian','india','curry','tandoor','moghal','mughal','bengali','punjabi','spices of india']],
-    ['Mexican',       ['mexican','mexico','taco','enchilada','salsa','tex-mex']],
-    ['Thai',          ['thai','thailand','tom yum','pad thai']],
-    ['Greek',         ['greek','greece','hellenic','mediterranean greek']],
-    ['Spanish',       ['spanish','spain','tapas','paella','catalan','basque']],
-    ['Middle Eastern',['middle eastern','persian','lebanese','iranian','arabic','mezze','levantine','ottoman']],
-    ['Mediterranean', ['mediterranean','levant']],
-    ['American',      ['american','southern cooking','soul food','cajun','creole','new england']],
-    ['Vietnamese',    ['vietnamese','vietnam','pho','banh mi']],
-    ['Korean',        ['korean','korea','kimchi','bibimbap']],
-    ['Turkish',       ['turkish','turkey','anatolian']],
-    ['Moroccan',      ['moroccan','morocco','tagine','north african']],
-    ['Caribbean',     ['caribbean','jamaican','trinidadian','west indian']],
-    ['Scandinavian',  ['scandinavian','nordic','swedish','norwegian','danish','new nordic']],
-    ['German',        ['german','germany','austrian','bavarian']],
-    ['Portuguese',    ['portuguese','portugal']],
-  ];
-  const STYLE_MAP=[
-    ['Baking',       ['baking','baked goods','cake','cakes','cookies','muffins','scones','tarts','sponge']],
-    ['Pastry',       ['pastry','pâtisserie','patisserie','croissant','choux','puff pastry']],
-    ['Bread',        ['bread','sourdough','loaf','loaves','baguette','focaccia','artisan bread']],
-    ['BBQ & Grilling',['barbecue','bbq','grilling','grill','smoker','pitmaster','smoke']],
-    ['Chocolate',    ['chocolate','cocoa','confection','bonbon','ganache','praline']],
-    ['Fermentation', ['ferment','fermented','pickling','preserved','kombucha','curing','kimchi']],
-    ['Slow Cooking', ['slow cook','slow-cook','braise','braised','casserole','stew','dutch oven','crockpot']],
-    ['One-pot',      ['one pot','one-pot','sheet pan','single pan','traybake','tray bake']],
-    ['Quick & Easy', ['quick','easy recipes','simple recipes','fast recipes','weeknight','30 minute','speedy']],
-    ['Fine Dining',  ['fine dining','michelin','restaurant cooking','gourmet','haute cuisine']],
-    ['Street Food',  ['street food','street eats','hawker','market food']],
-    ['Vegetarian',   ['vegetarian','meat-free','meatless','veggie recipes']],
-    ['Vegan',        ['vegan','plant-based','plant based']],
-    ['Preserving',   ['preserving','jam','jelly','chutney','pickle','canning','bottling']],
-    ['Meal Prep',    ['meal prep','batch cook','batch cooking','make ahead','meal planning']],
-    ['Comfort Food', ['comfort food','comfort cooking','hearty','homestyle','family cooking']],
-    ['Sous Vide',    ['sous vide','precision cooking','immersion circulator']],
-  ];
-  const INGREDIENT_MAP=[
-    ['Seafood',    ['seafood','shellfish','lobster','crab','prawn','shrimp','scallop','oyster','mussel','squid']],
-    ['Fish',       ['fish recipes','salmon','cod','tuna','sea bass','trout','mackerel','haddock','anchovy']],
-    ['Meat',       ['meat','beef','pork','lamb','veal','charcuterie','cured meat']],
-    ['Chicken',    ['chicken','poultry','duck','turkey','guinea fowl']],
-    ['Game',       ['game','venison','rabbit','pheasant','grouse','partridge','wild boar','deer']],
-    ['Pasta',      ['pasta','noodle','gnocchi','dumpling','ravioli','lasagne','spaghetti','pappardelle']],
-    ['Vegetables', ['vegetables','vegetable recipes','veg','greens','root vegetable','seasonal veg','garden']],
-    ['Cheese',     ['cheese','fromage','cheesemaking','dairy recipes']],
-    ['Eggs',       ['egg recipes','eggs','omelette','frittata','quiche','soufflé']],
-    ['Mushrooms',  ['mushroom','fungi','truffle','porcini','chanterelle','shiitake']],
-    ['Fruit',      ['fruit','berry','stone fruit','citrus','apple','strawberr','orchard']],
-    ['Spices',     ['spice','herb','seasoning','spice blend','masala','za\'atar']],
-    ['Chocolate',  ['chocolate','cocoa','cacao']],
-    ['Gluten-free',['gluten-free','gluten free','coeliac','celiac']],
-    ['Dairy-free', ['dairy-free','dairy free','lactose']],
-  ];
-
-  const addIfMatch=(map,type)=>{ map.forEach(([label,kws])=>{ if(!currentTags[type].includes(label)&&kws.some(kw=>corpus.includes(kw))) currentTags[type].push(label); }); };
-  addIfMatch(CUISINE_MAP,'cuisine');
-  addIfMatch(STYLE_MAP,'style');
-  addIfMatch(INGREDIENT_MAP,'ingredient');
-  renderTagAreas();
-}
-
-async function lookupISBN() {
-  const isbn=document.getElementById('isbnInput').value.trim().replace(/[^0-9X]/gi,'');
-  const el=document.getElementById('lookupStatus');
-  if (!isbn) { el.innerHTML='<span class="status-err">Please enter an ISBN first</span>'; return; }
-  el.innerHTML='<span class="status-loading"><span class="spinner"></span>Looking up…</span>';
-  const data=await fetchBook(isbn);
-  if (data) { populateForm(data,isbn); el.innerHTML=`<span class="status-ok">✓ Found: <em>${esc(data.title)}</em> — check tags below then save</span>`; }
-  else { el.innerHTML='<span class="status-err">Not found — please fill in manually</span>'; }
-}
-
-async function lookupFromScan() {
-  const isbn=document.getElementById('scanISBN').value.trim().replace(/[^0-9X]/gi,'');
-  const el=document.getElementById('scanStatusManual');
-  if (!isbn) { el.innerHTML='<span class="status-err">Please enter an ISBN first</span>'; return; }
-  el.innerHTML='<span class="status-loading"><span class="spinner"></span>Looking up…</span>';
-  const data=await fetchBook(isbn);
-  if (data) {
-    closeModal('scanModal'); openAddModal(false);
-    document.getElementById('isbnInput').value=isbn;
-    populateForm(data,isbn);
-    document.getElementById('lookupStatus').innerHTML=`<span class="status-ok">✓ Found: <em>${esc(data.title)}</em></span>`;
-  } else { el.innerHTML='<span class="status-err">Not found — try adding manually</span>'; }
-}
-
-async function processBarcodeScan(event) {
-  const file=event.target.files[0]; if (!file) return;
-  const el=document.getElementById('scanStatus');
-  el.innerHTML='<span class="status-loading"><span class="spinner"></span>Reading barcode…</span>';
-  if ('BarcodeDetector' in window) {
-    try {
-      const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
-      const img=await createImageBitmap(file);
-      const codes=await detector.detect(img);
-      if (codes.length>0) {
-        const isbn=codes[0].rawValue.replace(/[^0-9X]/gi,'');
-        el.innerHTML='<span class="status-loading"><span class="spinner"></span>Barcode found! Looking up book…</span>';
-        const data=await fetchBook(isbn);
-        if (data) {
-          closeModal('scanModal'); openAddModal(false);
-          document.getElementById('isbnInput').value=isbn;
-          populateForm(data,isbn);
-          document.getElementById('lookupStatus').innerHTML=`<span class="status-ok">✓ Found: <em>${esc(data.title)}</em></span>`;
-        } else {
-          el.innerHTML=`<span class="status-err">Barcode read (${isbn}) but book not found — paste below</span>`;
-          document.getElementById('scanISBN').value=isbn;
-        }
-        return;
-      }
-    } catch(e) { console.error('BarcodeDetector:', e); }
-    el.innerHTML='<span class="status-err">Could not read barcode from photo — try the manual entry below</span>';
-  } else {
-    // BarcodeDetector not available — extract ISBN from image filename or guide user
-    el.innerHTML='<span style="color:#7a5800;font-size:13px;display:block;text-align:center;">📱 Check the photo for the number below the barcode and type it in the manual box below.</span>';
-  }
-  event.target.value='';
-}
-
-// ── Tags ───────────────────────────────────────
-function renderTagAreas() {
+// ── TAG INPUTS ────────────────────────────────────────────────
+function renderTAs(){
   ['cuisine','style','ingredient'].forEach(type=>{
-    const area=document.getElementById(type+'Area');
-    const c=TAG_COLORS[type];
-    const pills=currentTags[type].map(t=>`<span class="tag-pill" style="background:${c.bg};color:${c.text}">${esc(t)}<button class="tag-pill-remove" onclick="removeTag('${type}','${esc(t)}')">×</button></span>`).join('');
-    area.innerHTML=pills+`<input type="text" class="tag-input-field" placeholder="${currentTags[type].length?'Add more…':'Type and press Enter…'}" onkeydown="tagKeydown(event,'${type}')">`;
-    const used=new Set(currentTags[type]);
-    document.getElementById(type+'Quick').innerHTML=QUICK[type].filter(t=>!used.has(t)).slice(0,12).map(t=>`<button class="quick-tag" onclick="addTag('${type}','${esc(t)}')">${t}</button>`).join('');
+    const area=document.getElementById(type[0].toUpperCase()===type[0]?type+'Area':type[0]+'Area');
+    const areaId=type==='cuisine'?'cArea':type==='style'?'sArea':'iArea';
+    const qId=type==='cuisine'?'cQ':type==='style'?'sQ':'iQ';
+    const a=document.getElementById(areaId);if(!a)return;
+    const c=TC[type];
+    a.innerHTML=ctags[type].map(t=>`<span class="tpill" style="background:${c.bg};color:${c.c}">${e(t)}<button class="tpx" onclick="rmTag('${type}','${e(t)}')">×</button></span>`).join('')+`<input type="text" class="tfield" placeholder="${ctags[type].length?'Add more…':'Type and press Enter…'}" onkeydown="tagKD(event,'${type}')">`;
+    const used=new Set(ctags[type]);
+    const q=document.getElementById(qId);if(!q)return;
+    q.innerHTML=QUICK[type].filter(t=>!used.has(t)).slice(0,12).map(t=>`<button class="qtag" onclick="addTag('${type}','${e(t)}')">${t}</button>`).join('');
   });
 }
-function addTag(type,val){val=val.trim();if(val&&!currentTags[type].includes(val)){currentTags[type].push(val);renderTagAreas();}}
-function removeTag(type,val){currentTags[type]=currentTags[type].filter(t=>t!==val);renderTagAreas();}
-function tagKeydown(e,type){if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.replace(/,$/,'').trim();if(v){addTag(type,v);e.target.value='';}}}
-function focusLast(areaId){const inp=document.getElementById(areaId).querySelector('input');if(inp)inp.focus();}
+function addTag(type,val){val=val.trim();if(val&&!ctags[type].includes(val)){ctags[type].push(val);renderTAs();}}
+function rmTag(type,val){ctags[type]=ctags[type].filter(t=>t!==val);renderTAs();}
+function tagKD(ev,type){if(ev.key==='Enter'||ev.key===','){ev.preventDefault();const v=ev.target.value.replace(/,$/,'').trim();if(v){addTag(type,v);ev.target.value='';}}}
+function focusTA(id){const el=document.getElementById(id);if(el){const inp=el.querySelector('input');if(inp)inp.focus();}}
 
-// ── Import / Export ────────────────────────────
-function exportCSV(){
+// ── IMPORT / EXPORT ───────────────────────────────────────────
+function expCSV(){
   if(!books.length){toast('No books to export');return;}
   const rows=[['Title','Author','Publisher','Year','Pages','ISBN','Cuisine','Style','Ingredients','Notes','Added']];
   books.forEach(b=>rows.push([b.title,b.author,b.publisher,b.year,b.pages,b.isbn,(b.tags?.cuisine||[]).join('|'),(b.tags?.style||[]).join('|'),(b.tags?.ingredient||[]).join('|'),b.notes,b.addedAt?.slice(0,10)].map(v=>`"${String(v||'').replace(/"/g,'""')}"`)));
-  dl('my-cookbooks.csv',rows.map(r=>r.join(',')).join('\n'),'text/csv');
-  toast('CSV exported');
+  dl('my-cookbooks.csv',rows.map(r=>r.join(',')).join('\n'),'text/csv');toast('CSV exported');
 }
-function exportJSON(){
+function expJSON(){
   if(!books.length){toast('No books to export');return;}
-  dl('my-cookbooks-backup.json',JSON.stringify(books,null,2),'application/json');
-  toast('JSON backup exported');
+  dl('my-cookbooks-backup.json',JSON.stringify({books,recipes,shelves},null,2),'application/json');toast('Backup exported');
 }
-async function importJSON(e){
-  const file=e.target.files[0];if(!file)return;
+async function impJSON(ev){
+  const file=ev.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=async ev=>{
+  reader.onload=async e=>{
     try{
-      const data=JSON.parse(ev.target.result);
-      if(!Array.isArray(data))throw new Error();
+      const data=JSON.parse(e.target.result);const bks=data.books||data;
+      if(!Array.isArray(bks))throw new Error();
       let added=0;
-      for(const b of data){
-        if(!b.title)continue;
-        try{
-          const rows=await sbFetch(SB_TABLE,{method:'POST',body:JSON.stringify(bookToRow(b))});
-          books.unshift(rowToBook(rows[0])); added++;
-        }catch(err){console.error('Import row error:',err);}
-      }
-      localStorage.setItem('cb_cache',JSON.stringify(books));
-      renderBooks();
-      document.getElementById('ioStatus').innerHTML=`<span class="status-ok">✓ Imported ${added} books</span>`;
-      toast(`Imported ${added} books`);
-    }catch(err){document.getElementById('ioStatus').innerHTML='<span class="status-err">Error reading file</span>';}
+      for(const b of bks){if(!b.title)continue;try{const r=await sbf(SB('books'),{method:'POST',body:JSON.stringify(b2r(b))});books.unshift(r2b(r[0]));added++;}catch(err){}}
+      localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves}));renderAll();
+      document.getElementById('ioSt').className='st2 ok';document.getElementById('ioSt').textContent=`✓ Imported ${added} books`;toast(`Imported ${added} books`);
+    }catch(err){document.getElementById('ioSt').className='st2 err';document.getElementById('ioSt').textContent='Error reading file';}
   };
-  reader.readAsText(file); e.target.value='';
+  reader.readAsText(file);ev.target.value='';
 }
-function dl(filename,content,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=filename;a.click();}
+function dl(fn,content,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=fn;a.click();}
 
-// ── UI helpers ─────────────────────────────────
-function setFilter(f,el){currentFilter=f;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderBooks();}
-function setView(v,el){currentView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderBooks();}
-function toggleFab(){fabOpen=!fabOpen;document.getElementById('fabOptions').classList.toggle('open',fabOpen);document.getElementById('fabBtn').textContent=fabOpen?'✕':'+';}
-function closeFab(){fabOpen=false;document.getElementById('fabOptions').classList.remove('open');document.getElementById('fabBtn').textContent='+';}
-function openScanModal(){closeFab();document.getElementById('scanISBN').value='';document.getElementById('scanStatus').innerHTML='';document.getElementById('scanStatusManual').innerHTML='';openModal('scanModal');}
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function overlayClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+// ── UI HELPERS ────────────────────────────────────────────────
+const TABTITLES={home:'📚 My Cookbook Library',library:'📚 My Library',recipes:'🍽️ Recipes',shelves:'🔖 My Shelves',search:'🔍 Search'};
+function swTab(name,el){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tp-'+name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';
+}
+function togFab(){const o=document.getElementById('fabo');const open=o.classList.toggle('open');document.getElementById('fabBtn').textContent=open?'✕':'+';}
+function closeFab(){document.getElementById('fabo').classList.remove('open');document.getElementById('fabBtn').textContent='+';}
+function openScanM(){closeFab();stopScn();document.getElementById('scnISBN').value='';document.getElementById('scnst').innerHTML='';document.getElementById('scnstm').innerHTML='';openM('scanM');}
+function openOwnM(){closeFab();stopOwnScn();document.getElementById('ownIn').value='';document.getElementById('ownres').innerHTML='';openM('ownM');}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');if(id==='scanM')stopScn();if(id==='ownM')stopOwnScn();}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ── Init ───────────────────────────────────────
-renderBooks();
+// ── START ─────────────────────────────────────────────────────
+renderAll();
 initAuth();
 </script>
 </body>
