@@ -933,17 +933,6 @@ function editBk(id){
 }
 async function saveBk(){
   const title=document.getElementById('fT').value.trim();if(!title){alert('Please enter a title.');return;}
-  // Final duplicate safety check before saving
-  if(!editBkId){
-    const isbn=document.getElementById('fISBN').value.trim().replace(/[^0-9X]/gi,'');
-    const isbnDup=isbn.length>=10?books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn):null;
-    const titleDup=books.find(b=>b.title.toLowerCase().trim()===title.toLowerCase().trim());
-    if(isbnDup){
-      if(!confirm('"'+isbnDup.title+'" is already in your library with this ISBN. Add it anyway?'))return;
-    } else if(titleDup){
-      if(!confirm('"'+titleDup.title+'" is already in your library with the same title. Add it anyway?'))return;
-    }
-  }
   const btn=document.getElementById('saveBkBtn');btn.disabled=true;btn.textContent='Saving…';
   const shelfId=document.getElementById('fShelf').value||null;
   const bk={title,author:document.getElementById('fA').value.trim(),publisher:document.getElementById('fPub').value.trim(),year:document.getElementById('fYr').value.trim(),pages:document.getElementById('fPg').value.trim(),isbn:document.getElementById('fISBN').value.trim().replace(/[^0-9X]/gi,''),notes:document.getElementById('fN').value.trim(),cover:pCover,description:pDesc,tags:{cuisine:[...ctags.cuisine],style:[...ctags.style],ingredient:[...ctags.ingredient]},addedAt:editBkId?(books.find(b=>b.id===editBkId)?.addedAt||new Date().toISOString()):new Date().toISOString(),shelfId};
@@ -1023,50 +1012,21 @@ function popForm(data,isbn){
 async function doISBN(){
   const isbn=document.getElementById('isbnIn').value.trim().replace(/[^0-9X]/gi,''),el=document.getElementById('isbnSt');
   if(!isbn){el.className='st2 err';el.textContent='Please enter an ISBN first';return;}
-  const dup=isbn.length>=10?books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn):null;
-  if(dup){
-    el.className='st2 err';
-    el.innerHTML='&#9888;&#65039; <strong>Already in your library!</strong> &ldquo;'+e(dup.title)+'&rdquo; added '+new Date(dup.addedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'. <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('addBkM');showBkDetail(''+dup.id+'')">View it →</span>';
-    return;
-  }
   el.className='st2 loading';el.innerHTML='<span class="spin"></span>Looking up…';
   const d=await fetchBk(isbn);
-  if(d){
-    const titleDup=books.find(b=>b.title.toLowerCase().trim()===d.title.toLowerCase().trim());
-    if(titleDup){
-      window._lastFetchData=d;
-      el.className='st2 err';
-      el.innerHTML='&#9888;&#65039; <strong>Possible duplicate!</strong> &ldquo;'+e(titleDup.title)+'&rdquo; is already in your library. <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('addBkM');showBkDetail(''+titleDup.id+'')">View it →</span> &nbsp;<span style="color:var(--text2);cursor:pointer;text-decoration:underline;" onclick="popForm(window._lastFetchData,''+isbn+'');document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').textContent='Added anyway'">Add anyway</span>';
-      return;
-    }
-    popForm(d,isbn);el.className='st2 ok';el.innerHTML='✓ Found: <em>'+e(d.title)+'</em> — check tags then save';
-  }
+  if(d){popForm(d,isbn);el.className='st2 ok';el.innerHTML=`✓ Found: <em>${e(d.title)}</em> — check tags then save`;}
   else{el.className='st2 err';el.textContent='Not found — please fill in manually';}
 }
-
 async function scnLookup(){
   const isbn=document.getElementById('scnISBN').value.trim().replace(/[^0-9X]/gi,''),el=document.getElementById('scnstm');
   if(!isbn){el.className='st2 err';el.textContent='Please enter an ISBN first';return;}
-  const dup=isbn.length>=10?books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn):null;
-  if(dup){
-    el.className='st2 err';
-    el.innerHTML='&#9888;&#65039; <strong>Already in your library!</strong> &ldquo;'+e(dup.title)+'&rdquo; <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+dup.id+'')">View it →</span>';
-    return;
-  }
   el.className='st2 loading';el.innerHTML='<span class="spin"></span>Looking up…';
   const d=await fetchBk(isbn);
-  if(d){
-    const titleDup=books.find(b=>b.title.toLowerCase().trim()===d.title.toLowerCase().trim());
-    if(titleDup){
-      el.className='st2 err';
-      el.innerHTML='&#9888;&#65039; <strong>Possible duplicate!</strong> &ldquo;'+e(titleDup.title)+'&rdquo; is already in your library. <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+titleDup.id+'')">View it →</span>';
-      return;
-    }
-    closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=isbn;popForm(d,isbn);document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').innerHTML='✓ Found: <em>'+e(d.title)+'</em>';
-  }
+  if(d){closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=isbn;popForm(d,isbn);document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').innerHTML=`✓ Found: <em>${e(d.title)}</em>`;}
   else{el.className='st2 err';el.textContent='Not found — try adding manually';}
 }
 
+// ── SCANNER ───────────────────────────────────────────────────
 // ── BARCODE SCANNING (QuaggaJS + iOS fallback) ───────────────
 function startScn(){
   document.getElementById('scnstart').style.display='none';
@@ -1101,26 +1061,11 @@ function startScn(){
     if(isbn.length>=10){
       stopScn();
       const el2=document.getElementById('scnst');
-      document.getElementById('scnactive').style.display='block';
-      // Check duplicate by ISBN first
-      const dup=books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn);
-      if(dup){
-        el2.className='st2 err';
-        el2.innerHTML='⚠️ <strong>Already in your library!</strong><br>"'+e(dup.title)+'"<br><span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+dup.id+'')">View this book →</span>';
-        return;
-      }
       el2.className='st2 loading';
       el2.innerHTML='<span class="spin"></span>Barcode detected! Looking up…';
+      document.getElementById('scnactive').style.display='block';
       const d=await fetchBk(isbn);
       if(d){
-        // Check duplicate by title+author
-        const titleDup=books.find(b=>b.title.toLowerCase().trim()===d.title.toLowerCase().trim());
-        if(titleDup){
-          el2.className='st2 err';
-          el2.innerHTML='⚠️ <strong>Possible duplicate!</strong><br>"'+e(titleDup.title)+'" is already in your library.<br><span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+titleDup.id+'')">View it →</span> &nbsp;<span style="color:var(--text2);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=''+isbn+'';popForm(window._lastFetchData,''+isbn+'')">Add anyway</span>';
-          window._lastFetchData=d;
-          return;
-        }
         closeM('scanM');openAddBk(false);
         document.getElementById('isbnIn').value=isbn;
         popForm(d,isbn);
