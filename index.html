@@ -1021,12 +1021,18 @@ function popForm(data,isbn){
   renderTAs();
 }
 async function doISBN(){
-  const isbn=document.getElementById('isbnIn').value.trim().replace(/[^0-9X]/gi,''),el=document.getElementById('isbnSt');
+  const isbn=document.getElementById('isbnIn').value.trim().replace(/[^0-9X]/gi,'');
+  const el=document.getElementById('isbnSt');
   if(!isbn){el.className='st2 err';el.textContent='Please enter an ISBN first';return;}
   const dup=isbn.length>=10?books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn):null;
   if(dup){
     el.className='st2 err';
-    el.innerHTML='&#9888;&#65039; <strong>Already in your library!</strong> &ldquo;'+e(dup.title)+'&rdquo; added '+new Date(dup.addedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'. <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('addBkM');showBkDetail(''+dup.id+'')">View it →</span>';
+    el.innerHTML='<b>Already in your library:</b> "'+e(dup.title)+'"';
+    const link=document.createElement('span');
+    link.textContent=' View it →';
+    link.style.cssText='color:var(--accent);cursor:pointer;text-decoration:underline;margin-left:6px;';
+    link.onclick=function(){closeM('addBkM');showBkDetail(dup.id);};
+    el.appendChild(link);
     return;
   }
   el.className='st2 loading';el.innerHTML='<span class="spin"></span>Looking up…';
@@ -1034,23 +1040,42 @@ async function doISBN(){
   if(d){
     const titleDup=books.find(b=>b.title.toLowerCase().trim()===d.title.toLowerCase().trim());
     if(titleDup){
-      window._lastFetchData=d;
+      window._lastFetchData=d;window._lastISBN=isbn;
       el.className='st2 err';
-      el.innerHTML='&#9888;&#65039; <strong>Possible duplicate!</strong> &ldquo;'+e(titleDup.title)+'&rdquo; is already in your library. <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('addBkM');showBkDetail(''+titleDup.id+'')">View it →</span> &nbsp;<span style="color:var(--text2);cursor:pointer;text-decoration:underline;" onclick="popForm(window._lastFetchData,''+isbn+'');document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').textContent='Added anyway'">Add anyway</span>';
+      el.textContent='Possible duplicate: "'+titleDup.title+'" is already in your library. ';
+      const vlink=document.createElement('span');
+      vlink.textContent='View it →';
+      vlink.style.cssText='color:var(--accent);cursor:pointer;text-decoration:underline;';
+      vlink.onclick=function(){closeM('addBkM');showBkDetail(titleDup.id);};
+      el.appendChild(vlink);
+      const sep=document.createElement('span');sep.textContent=' or ';sep.style.color='var(--text2)';el.appendChild(sep);
+      const alink=document.createElement('span');
+      alink.textContent='add anyway';
+      alink.style.cssText='color:var(--text2);cursor:pointer;text-decoration:underline;';
+      alink.onclick=function(){popForm(window._lastFetchData,window._lastISBN);el.className='st2 ok';el.textContent='✓ Found — adding anyway';};
+      el.appendChild(alink);
       return;
     }
-    popForm(d,isbn);el.className='st2 ok';el.innerHTML='✓ Found: <em>'+e(d.title)+'</em> — check tags then save';
+    popForm(d,isbn);
+    el.className='st2 ok';
+    el.innerHTML='✓ Found: <em>'+e(d.title)+'</em> — check tags then save';
+  } else {
+    el.className='st2 err';el.textContent='Not found — please fill in manually';
   }
-  else{el.className='st2 err';el.textContent='Not found — please fill in manually';}
 }
-
 async function scnLookup(){
-  const isbn=document.getElementById('scnISBN').value.trim().replace(/[^0-9X]/gi,''),el=document.getElementById('scnstm');
+  const isbn=document.getElementById('scnISBN').value.trim().replace(/[^0-9X]/gi,'');
+  const el=document.getElementById('scnstm');
   if(!isbn){el.className='st2 err';el.textContent='Please enter an ISBN first';return;}
   const dup=isbn.length>=10?books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn):null;
   if(dup){
     el.className='st2 err';
-    el.innerHTML='&#9888;&#65039; <strong>Already in your library!</strong> &ldquo;'+e(dup.title)+'&rdquo; <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+dup.id+'')">View it →</span>';
+    el.textContent='Already in your library: "'+dup.title+'" ';
+    const link=document.createElement('span');
+    link.textContent='View it →';
+    link.style.cssText='color:var(--accent);cursor:pointer;text-decoration:underline;';
+    link.onclick=function(){closeM('scanM');showBkDetail(dup.id);};
+    el.appendChild(link);
     return;
   }
   el.className='st2 loading';el.innerHTML='<span class="spin"></span>Looking up…';
@@ -1059,12 +1084,22 @@ async function scnLookup(){
     const titleDup=books.find(b=>b.title.toLowerCase().trim()===d.title.toLowerCase().trim());
     if(titleDup){
       el.className='st2 err';
-      el.innerHTML='&#9888;&#65039; <strong>Possible duplicate!</strong> &ldquo;'+e(titleDup.title)+'&rdquo; is already in your library. <span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+titleDup.id+'')">View it →</span>';
+      el.textContent='Possible duplicate: "'+titleDup.title+'" is already in your library. ';
+      const link=document.createElement('span');
+      link.textContent='View it →';
+      link.style.cssText='color:var(--accent);cursor:pointer;text-decoration:underline;';
+      link.onclick=function(){closeM('scanM');showBkDetail(titleDup.id);};
+      el.appendChild(link);
       return;
     }
-    closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=isbn;popForm(d,isbn);document.getElementById('isbnSt').className='st2 ok';document.getElementById('isbnSt').innerHTML='✓ Found: <em>'+e(d.title)+'</em>';
+    closeM('scanM');openAddBk(false);
+    document.getElementById('isbnIn').value=isbn;
+    popForm(d,isbn);
+    document.getElementById('isbnSt').className='st2 ok';
+    document.getElementById('isbnSt').innerHTML='✓ Found: <em>'+e(d.title)+'</em>';
+  } else {
+    el.className='st2 err';el.textContent='Not found — try adding manually';
   }
-  else{el.className='st2 err';el.textContent='Not found — try adding manually';}
 }
 
 // ── BARCODE SCANNING (QuaggaJS + iOS fallback) ───────────────
@@ -1102,23 +1137,31 @@ function startScn(){
       stopScn();
       const el2=document.getElementById('scnst');
       document.getElementById('scnactive').style.display='block';
-      // Check duplicate by ISBN first
       const dup=books.find(b=>b.isbn&&b.isbn.replace(/[^0-9X]/gi,'')===isbn);
       if(dup){
         el2.className='st2 err';
-        el2.innerHTML='⚠️ <strong>Already in your library!</strong><br>"'+e(dup.title)+'"<br><span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+dup.id+'')">View this book →</span>';
+        el2.textContent='Already in your library: "'+e(dup.title)+'" ';
+        const link=document.createElement('span');
+        link.textContent='View it →';
+        link.style.cssText='color:var(--accent);cursor:pointer;text-decoration:underline;';
+        link.onclick=function(){closeM('scanM');showBkDetail(dup.id);};
+        el2.appendChild(link);
         return;
       }
       el2.className='st2 loading';
       el2.innerHTML='<span class="spin"></span>Barcode detected! Looking up…';
       const d=await fetchBk(isbn);
       if(d){
-        // Check duplicate by title+author
         const titleDup=books.find(b=>b.title.toLowerCase().trim()===d.title.toLowerCase().trim());
         if(titleDup){
+          window._lastFetchData=d;window._lastISBN=isbn;
           el2.className='st2 err';
-          el2.innerHTML='⚠️ <strong>Possible duplicate!</strong><br>"'+e(titleDup.title)+'" is already in your library.<br><span style="color:var(--accent);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');showBkDetail(''+titleDup.id+'')">View it →</span> &nbsp;<span style="color:var(--text2);cursor:pointer;text-decoration:underline;" onclick="closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=''+isbn+'';popForm(window._lastFetchData,''+isbn+'')">Add anyway</span>';
-          window._lastFetchData=d;
+          el2.textContent='Possible duplicate: "'+e(titleDup.title)+'" is already in your library. ';
+          const vlink=document.createElement('span');vlink.textContent='View it →';vlink.style.cssText='color:var(--accent);cursor:pointer;text-decoration:underline;';vlink.onclick=function(){closeM('scanM');showBkDetail(titleDup.id);};el2.appendChild(vlink);
+          const sep=document.createElement('span');sep.innerHTML=' &nbsp;';el2.appendChild(sep);
+          const alink=document.createElement('span');alink.textContent='Add anyway';alink.style.cssText='color:var(--text2);cursor:pointer;text-decoration:underline;';
+          alink.onclick=function(){closeM('scanM');openAddBk(false);document.getElementById('isbnIn').value=window._lastISBN;popForm(window._lastFetchData,window._lastISBN);};
+          el2.appendChild(alink);
           return;
         }
         closeM('scanM');openAddBk(false);
@@ -1126,7 +1169,7 @@ function startScn(){
         popForm(d,isbn);
         document.getElementById('isbnSt').className='st2 ok';
         document.getElementById('isbnSt').innerHTML='✓ Found: <em>'+e(d.title)+'</em>';
-      }else{
+      } else {
         el2.className='st2 err';
         el2.textContent='Barcode read ('+isbn+') but not found — enter manually';
         document.getElementById('scnISBN').value=isbn;
@@ -1244,7 +1287,7 @@ function openOwnM(){closeFab();stopOwnScn();document.getElementById('ownIn').val
 function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');if(id==='scanM')stopScn();if(id==='ownM')stopOwnScn();}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
-function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function e(s){var x=String(s||'');x=x.replace(/&/g,'&amp;');x=x.replace(/</g,'&lt;');x=x.replace(/>/g,'&gt;');x=x.replace(/["]/g,'&quot;');return x;}
 
 // ── DARK MODE ─────────────────────────────────────────────────
 function initTheme(){
@@ -1255,7 +1298,7 @@ function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   localStorage.setItem('cb_theme',t);
   const btn=document.getElementById('themeBtn');
-  if(btn)btn.textContent=t==='dark'?'☀️':'🌙';
+  if(btn)btn.innerHTML=t==='dark'?'&#9728;&#65039;':'&#127769;';
 }
 function togTheme(){
   const curr=document.documentElement.getAttribute('data-theme')||'light';
