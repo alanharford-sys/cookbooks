@@ -84,15 +84,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI'
 .sdot.syncing { background: #F0A500; animation: pls 1.2s ease infinite; }
 .sdot.err { background: var(--red); }
 @keyframes pls { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.sban { background: #FFF8E1; border-bottom: 0.5px solid #FFE082; padding: 8px 16px; font-size: 13px; color: #7A5800; display: none; align-items: center; gap: 8px; flex-shrink: 0; }
-[data-theme="dark"] .sban { background: #2A2000; border-color: #4A3800; color: #FFD54F; }
-.sban.show { display: flex; }
+.sban { display: none; }
+.load-indicator { position: fixed; bottom: calc(var(--tbh) + 14px + env(safe-area-inset-bottom)); left: 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 12px; color: var(--text3); display: none; align-items: center; gap: 6px; box-shadow: var(--shadow); z-index: 400; font-weight: 500; }
+.load-indicator.show { display: flex; }
+[data-theme="dark"] .load-indicator { background: var(--surface2); }
+
 .tc { flex: 1; overflow: hidden; position: relative; }
 .tp { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; }
 .tp.active { display: block; }
 .tbar { background: var(--surface); border-top: 0.5px solid var(--border); height: var(--tbh); display: flex; padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
 .ti { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: none; padding: 6px 0; font-family: inherit; color: var(--text3); transition: color 0.15s; }
 .ti.active { color: var(--accent); }
+.ti-own { position: relative; }
+.ti-own .ticon { background: var(--accent); color: #fff; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 1px; }
 .ticon { font-size: 21px; line-height: 1; }
 .tlbl { font-size: 10px; font-weight: 600; letter-spacing: 0.1px; }
 
@@ -353,7 +357,8 @@ textarea.fi { resize: vertical; min-height: 80px; }
       <button class="theme-btn" id="themeBtn" onclick="togTheme()" title="Toggle dark mode">🌙</button><button class="btn bo bsm" onclick="openM('ioM')">⬆⬇</button>
     </div>
   </div>
-  <div class="sb" id="sban"><span class="spin"></span><span id="smsg">Loading…</span></div>
+  <div class="sban" id="sban"></div>
+  <div class="load-indicator" id="loadInd"><span class="spin"></span><span id="smsg">Syncing…</span></div>
   <div class="tc">
 
     <!-- HOME TAB -->
@@ -432,8 +437,8 @@ textarea.fi { resize: vertical; min-height: 80px; }
     <button class="ti active" onclick="swTab('home',this)"><span class="ticon">🏠</span><span class="tlbl">Home</span></button>
     <button class="ti" onclick="swTab('library',this)"><span class="ticon">📚</span><span class="tlbl">Library</span></button>
     <button class="ti" onclick="swTab('recipes',this)"><span class="ticon">🍽️</span><span class="tlbl">Recipes</span></button>
-    <button class="ti" onclick="swTab('shelves',this)"><span class="ticon">🔖</span><span class="tlbl">Shelves</span></button>
     <button class="ti" onclick="swTab('search',this)"><span class="ticon">🔍</span><span class="tlbl">Search</span></button>
+    <button class="ti ti-own" onclick="openOwnM()" title="Do I own this?"><span class="ticon">🤔</span><span class="tlbl">Own?</span></button>
   </div>
 </div>
 
@@ -741,8 +746,8 @@ function doReset(){
 
 // ── SUPABASE HELPERS ──────────────────────────────────────────
 function setSS(s){document.getElementById('sdot').className='sdot'+(s?' '+s:'');}
-function showBan(m){document.getElementById('smsg').textContent=m;document.getElementById('sban').classList.add('show');}
-function hideBan(){document.getElementById('sban').classList.remove('show');}
+function showBan(m){document.getElementById('smsg').textContent=m;document.getElementById('loadInd').classList.add('show');}
+function hideBan(){document.getElementById('loadInd').classList.remove('show');}
 async function sbf(url,opts={}){
   const r=await fetch(url,{...opts,headers:{...SBH,...(opts.headers||{})}});
   if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
@@ -1304,6 +1309,23 @@ function togTheme(){
   const curr=document.documentElement.getAttribute('data-theme')||'light';
   applyTheme(curr==='dark'?'light':'dark');
 }
+
+// ── AUTO REFRESH (silent background sync every 60s) ───────────
+function silentRefresh(){
+  fetch(`${SB('books')}?order=added_at.desc&limit=2000`,{headers:SBH})
+    .then(r=>r.ok?r.json():null)
+    .then(async b=>{
+      if(!b) return;
+      const [r,col] = await Promise.all([
+        fetch(`${SB('recipes')}?order=added_at.desc&limit=50000`,{headers:SBH}).then(x=>x.json()),
+        fetch(`${SB('collections')}?order=sort_order.asc&limit=500`,{headers:SBH}).then(x=>x.json())
+      ]);
+      books=b.map(r2b); recipes=r||[]; shelves=col||[];
+      localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves}));
+      setSS('ok'); renderAll();
+    }).catch(()=>{});
+}
+setInterval(silentRefresh, 60000);
 
 // ── START ─────────────────────────────────────────────────────
 initTheme();
