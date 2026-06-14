@@ -207,6 +207,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .week-nav-title{font-size:15px;font-weight:700;}
 .plan-shop-btn{margin:0 16px 12px;width:calc(100% - 32px);background:var(--g);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
 .theme-btn[title*="ON"] { color: var(--g); }
+.ai-toggle-btn { background: var(--cr); border: 1.5px solid var(--br); border-radius: 20px; padding: 5px 10px; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--t2); display: flex; align-items: center; gap: 4px; font-family: inherit; transition: all .2s; }
+.ai-toggle-btn.ai-on { background: rgba(45,106,79,.12); border-color: var(--g); color: var(--g); }
+.ai-toggle-btn.ai-off { background: var(--cr); border-color: var(--br); color: var(--t3); }
 @media(min-width:640px){.modal{border-radius:24px;margin-bottom:40px;max-height:85vh;}.mo{align-items:center;}}
 </style>
 </head>
@@ -231,7 +234,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
     <div class="hdr-r">
       <span class="sdot" id="sdot"></span>
       <button class="theme-btn" id="themeBtn" onclick="togTheme()">&#x1F319;</button>
-      <button class="theme-btn" id="aiToggleBtn" onclick="togAI()" title="Toggle AI Chef">&#x1F916;</button>
+      <button class="ai-toggle-btn" id="aiToggleBtn" onclick="togAI()">&#x1F916; <span id="aiToggleLabel">AI</span></button>
       <button class="btn bo bsm" onclick="openM('ioM')">&#x2B06;&#x2B07;</button>
     </div>
   </div>
@@ -1389,7 +1392,7 @@ function setAIMode(mode, el) {
 }
 
 async function askAI() {
-  if (!isAIEnabled()) { toast('AI Chef is disabled — tap ᾑ6 to enable'); return; }
+  if (!isAIEnabled()) { toast('AI Chef is disabled - tap the AI button to enable'); return; }
   const query = document.getElementById('aiInput').value.trim();
   const el = document.getElementById('aiStatus');
   const results = document.getElementById('aiResults');
@@ -1504,12 +1507,14 @@ function isAIEnabled() {
 }
 function applyAIState(enabled) {
   const btn = document.getElementById('aiToggleBtn');
+  const lbl = document.getElementById('aiToggleLabel');
   const onContent = document.getElementById('aiOnContent');
   const offMsg = document.getElementById('aiOffMsg');
   if (btn) {
-    btn.style.opacity = enabled ? '1' : '0.4';
-    btn.title = enabled ? 'AI Chef is ON — tap to disable' : 'AI Chef is OFF — tap to enable';
+    btn.className = enabled ? 'ai-toggle-btn ai-on' : 'ai-toggle-btn ai-off';
+    btn.title = enabled ? 'AI Chef is ON' : 'AI Chef is OFF';
   }
+  if (lbl) lbl.textContent = enabled ? 'ON' : 'OFF';
   if (onContent) onContent.style.display = enabled ? 'block' : 'none';
   if (offMsg) offMsg.style.display = enabled ? 'none' : 'block';
 }
