@@ -210,6 +210,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .ai-toggle-btn { background: var(--cr); border: 1.5px solid var(--br); border-radius: 20px; padding: 5px 10px; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--t2); display: flex; align-items: center; gap: 4px; font-family: inherit; transition: all .2s; }
 .ai-toggle-btn.ai-on { background: rgba(45,106,79,.12); border-color: var(--g); color: var(--g); }
 .ai-toggle-btn.ai-off { background: var(--cr); border-color: var(--br); color: var(--t3); }
+
+/* ── COOKING HISTORY & GOALS ─────────────────────────────────── */
+.goal-ring-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px 16px 10px; }
+.goal-ring { position: relative; width: 140px; height: 140px; }
+.goal-ring svg { transform: rotate(-90deg); }
+.goal-ring-bg { fill: none; stroke: var(--br); stroke-width: 10; }
+.goal-ring-fill { fill: none; stroke: var(--g); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.goal-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.goal-ring-num { font-size: 32px; font-weight: 800; color: var(--g); letter-spacing: -2px; line-height: 1; }
+.goal-ring-label { font-size: 11px; color: var(--t3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.goal-ring-sub { font-size: 13px; color: var(--t2); margin-top: 8px; text-align: center; }
+.goal-set-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.goal-set-row input { width: 80px; text-align: center; font-size: 20px; font-weight: 700; background: var(--cr); border: 0.5px solid var(--br); border-radius: 10px; padding: 8px; outline: none; font-family: inherit; color: var(--t1); }
+.cook-log-item { background: var(--cd); border-radius: 14px; border: 0.5px solid var(--br); padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.cook-log-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.cook-log-meta { font-size: 12px; color: var(--t3); display: flex; align-items: center; gap: 8px; }
+.cook-log-note { font-size: 13px; color: var(--t2); margin-top: 6px; font-style: italic; }
+.cook-log-photo { width: 100%; border-radius: 10px; margin-top: 8px; object-fit: cover; max-height: 180px; }
+.cook-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(45,106,79,.1); color: var(--g); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+.cooked-count { font-size: 11px; color: var(--g); font-weight: 600; margin-top: 4px; }
+/* Home goal widget */
+.home-goal { margin: 0 16px 14px; background: var(--cd); border-radius: 18px; border: 0.5px solid var(--br); box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
+.home-goal-header { background: linear-gradient(135deg, #1b4332, var(--g)); padding: 12px 16px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
+.home-goal-header h3 { font-size: 14px; font-weight: 700; }
+.home-goal-body { padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+.home-goal-mini-ring { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.home-goal-mini-ring svg { transform: rotate(-90deg); }
+.home-goal-mini-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--g); }
+.home-goal-info { flex: 1; }
+.home-goal-stat { font-size: 22px; font-weight: 800; color: var(--t1); letter-spacing: -0.5px; }
+.home-goal-sub { font-size: 13px; color: var(--t2); }
 @media(min-width:640px){.modal{border-radius:24px;margin-bottom:40px;max-height:85vh;}.mo{align-items:center;}}
 </style>
 </head>
@@ -248,6 +279,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
         <div class="sc sc-link" onclick="swTab('library',document.querySelector('.ti:nth-child(2)'))"><div class="sn" id="sbooks">0</div><div class="sl">Books</div><div class="sc-arr">&#8594;</div></div>
         <div class="sc sc-link" onclick="swTab('myrecipes',document.querySelector('.ti:nth-child(3)'))"><div class="sn" id="srcps">0</div><div class="sl">Recipes</div><div class="sc-arr">&#8594;</div></div>
         <div class="sc sc-link" onclick="swTab('shelves',document.querySelector('.ti:nth-child(4)'))"><div class="sn" id="scols">0</div><div class="sl">Shelves</div><div class="sc-arr">&#8594;</div></div>
+      </div>
+      <div class="home-goal" id="homeGoalWrap" style="display:none">
+        <div class="home-goal-header">
+          <h3>&#x1F373; Cooking Goal 2026</h3>
+          <button onclick="swTab('history',document.querySelector('.ti:nth-child(4)'))" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 10px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit;">View all &#x2192;</button>
+        </div>
+        <div class="home-goal-body">
+          <div class="home-goal-mini-ring">
+            <svg width="64" height="64"><circle class="goal-ring-bg" cx="32" cy="32" r="26"/><circle class="goal-ring-fill" id="homeGoalRing" cx="32" cy="32" r="26" stroke-dasharray="163" stroke-dashoffset="163"/></svg>
+            <div class="home-goal-mini-text" id="homeGoalPct">0%</div>
+          </div>
+          <div class="home-goal-info">
+            <div class="home-goal-stat"><span id="homeGoalCooked">0</span> cooked</div>
+            <div class="home-goal-sub">Goal: <span id="homeGoalTarget">100</span> recipes this year</div>
+          </div>
+        </div>
       </div>
       <div class="seac">
         <div class="seah"><h3>&#x1F331; In Season Now</h3><p id="seamth"></p></div>
@@ -357,6 +404,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
       <div class="week-grid" id="weekGrid"></div>
     </div>
 
+    <!-- COOKING HISTORY -->
+    <div class="tp" id="tp-history">
+      <div class="goal-ring-wrap">
+        <div class="goal-ring">
+          <svg width="140" height="140">
+            <circle class="goal-ring-bg" cx="70" cy="70" r="55"/>
+            <circle class="goal-ring-fill" id="goalRingFill" cx="70" cy="70" r="55" stroke-dasharray="346" stroke-dashoffset="346"/>
+          </svg>
+          <div class="goal-ring-text">
+            <div class="goal-ring-num" id="goalCooked">0</div>
+            <div class="goal-ring-label">cooked</div>
+          </div>
+        </div>
+        <div class="goal-ring-sub" id="goalSub">Set a goal to track your cooking</div>
+        <div class="goal-set-row">
+          <span style="font-size:13px;color:var(--t2);font-weight:600;">Goal:</span>
+          <input type="number" id="goalInput" placeholder="100" min="1" max="9999" inputmode="numeric">
+          <button class="btn bp bsm" onclick="saveGoal()">Set</button>
+        </div>
+      </div>
+      <div class="sech"><span class="sect">Cooking History</span><span style="font-size:13px;color:var(--t3)" id="cookLogCount"></span></div>
+      <div style="padding:0 16px 100px;" id="cookLogList"></div>
+    </div>
+
     <!-- SEARCH -->
     <div class="tp" id="tp-search">
       <div class="sw"><div class="siw"><span class="sico">&#x1F50D;</span><input type="search" placeholder="Search everything..." oninput="renderGS()" id="gsrch" autocomplete="off" autocorrect="off" spellcheck="false"></div></div>
@@ -375,8 +446,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
     <button class="ti active" onclick="swTab('home',this)"><span class="ticon">&#x1F3E0;</span><span class="tlbl">Home</span></button>
     <button class="ti" onclick="swTab('library',this)"><span class="ticon">&#x1F4DA;</span><span class="tlbl">Library</span></button>
     <button class="ti" onclick="swTab('myrecipes',this)"><span class="ticon">&#x1F9D1;&#x200D;&#x1F373;</span><span class="tlbl">Recipes</span></button>
+    <button class="ti" onclick="swTab('history',this)"><span class="ticon">&#x1F373;</span><span class="tlbl">History</span></button>
     <button class="ti" onclick="swTab('shopping',this)"><span class="ticon">&#x1F6D2;</span><span class="tlbl">Shop</span></button>
-    <button class="ti" onclick="swTab('ai',this)"><span class="ticon">&#x1F916;</span><span class="tlbl">AI Chef</span></button>
   </div>
 </div>
 
@@ -581,6 +652,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
   </div>
 </div></div>
 
+<!-- MARK AS COOKED MODAL -->
+<div class="mo" id="cookM" onclick="if(event.target===this)closeM('cookM')"><div class="modal" onclick="event.stopPropagation()">
+  <div class="mhw"><div class="mh"></div></div>
+  <div class="mhdr"><span class="mtit">&#x1F373; Mark as Cooked</span><button class="mcls" onclick="closeM('cookM')">&#x2715;</button></div>
+  <div class="mbody">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;" id="cookMRecipeName"></div>
+    <div class="fg"><label class="fl">How did it go? (optional note)</label><textarea id="cookMNote" class="fi" rows="3" placeholder="e.g. Added extra garlic, kids loved it..."></textarea></div>
+    <div class="fg"><label class="fl">Photo URL (optional)</label><input type="url" id="cookMPhoto" class="fi" placeholder="Paste a photo URL..."></div>
+    <div class="fg"><label class="fl">Rating</label>
+      <div style="display:flex;gap:8px;" id="cookMStars">
+        <span class="star" onclick="setCookRating(1)">&#x2B50;</span>
+        <span class="star" onclick="setCookRating(2)">&#x2B50;</span>
+        <span class="star" onclick="setCookRating(3)">&#x2B50;</span>
+        <span class="star" onclick="setCookRating(4)">&#x2B50;</span>
+        <span class="star" onclick="setCookRating(5)">&#x2B50;</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding-top:4px;">
+      <button class="btn bo" onclick="closeM('cookM')" style="flex:1">Cancel</button>
+      <button class="btn bp" onclick="saveCookLog()" style="flex:2" id="saveCookBtn">&#x2713; Mark as Cooked</button>
+    </div>
+  </div>
+</div></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js" crossorigin="anonymous"></script>
 <script>
 const SB_URL='https://sraoxgdgffxdydesrhyu.supabase.co';
@@ -712,6 +807,7 @@ function initApp(){
   loadAll();
   loadShopItems();
   loadMealPlan();
+  loadCookLog();
   setInterval(silentRefresh,60000);
 }
 function renderAll(){renderHome();renderLib();renderMyRecipes();renderShelves();popShelfSel();popBookSel();renderShopList();}
@@ -840,7 +936,7 @@ function showFRDetail(id){
   const starsHTML='<div class="star-row" id="frStars">'+[1,2,3,4,5].map(n=>'<span class="star'+((r.rating||0)>=n?' active':'')+'" onclick="setFRRating(\''+r.id+'\','+n+')">&#x2B50;</span>').join('')+'</div>';
   const ingHTML=ings.length?'<div class="section-block"><div class="section-block-title">Ingredients</div><div class="scale-row"><span class="scale-label">Adjust serving size</span><button class="scale-btn" onclick="scaleAdj(-1)">-</button><span class="scale-val" id="scaleVal">'+currentScaleServes+'</span><button class="scale-btn" onclick="scaleAdj(1)">+</button></div><div id="ingList">'+ings.map(i=>'<div class="ingredient-row" data-amount="'+(i.amount||'')+'" data-unit="'+(i.unit||'')+'"><span class="ing-amount" id="ia-'+i.id+'">'+scaleAmt(i.amount,currentScaleBase,currentScaleServes)+(i.unit?' '+i.unit:'')+'</span><span class="ing-name">'+e(i.ingredient)+'</span>'+(i.notes?'<span class="ing-note">'+e(i.notes)+'</span>':'')+'</div>').join('')+'</div></div>':'';
   const stepsHTML=steps.length?'<div class="section-block"><div class="section-block-title">Method</div>'+steps.map((s,i)=>'<div class="step-row"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+e(s.step_text)+'</div></div>').join('')+'</div>':'';
-  document.getElementById('frDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit" style="font-size:16px;">'+e(r.title)+'</span><button class="mcls" onclick="closeM(\'frDetailM\')">&#x2715;</button></div><div class="mbody" style="padding-top:0;">'+photoHTML+'<div style="padding-top:16px;">'+starsHTML+'<button class="fav-btn'+(r.is_favourite?' active':'')+'" onclick="togFRFav(\''+r.id+'\')">'+( r.is_favourite?'&#x2764;&#xFE0F; Favourited':'&#x1F90D; Add to favourites')+'</button> <button class="btn bo bsm" onclick="addRecipeToShopList(\''+r.id+'\')" style="margin-left:6px;">&#x1F6D2; Add to shopping</button>'+(srcBook?'<div style="margin-top:10px;font-size:13px;color:var(--t3);">&#x1F4DA; From: <strong>'+e(srcBook.title)+'</strong></div>':'')+(r.description?'<p style="font-size:15px;color:var(--t2);margin:12px 0;line-height:1.6;">'+e(r.description)+'</p>':'')+'<div class="meta-row">'+metaPills+'</div>'+ingHTML+stepsHTML+(r.notes?'<div class="section-block"><div class="section-block-title">Notes</div><div class="dsb">'+e(r.notes)+'</div></div>':'')+'</div></div>';
+  document.getElementById('frDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit" style="font-size:16px;">'+e(r.title)+'</span><button class="mcls" onclick="closeM(\'frDetailM\')">&#x2715;</button></div><div class="mbody" style="padding-top:0;">'+photoHTML+'<div style="padding-top:16px;">'+starsHTML+'<button class="fav-btn'+(r.is_favourite?' active':'')+'" onclick="togFRFav(\''+r.id+'\')">'+( r.is_favourite?'&#x2764;&#xFE0F; Favourited':'&#x1F90D; Add to favourites')+'</button> <button class="btn bo bsm" onclick="addRecipeToShopList(\''+r.id+'\')" style="margin-left:6px;">&#x1F6D2; Add to shopping</button> <button class="btn bp bsm" onclick="openCookModal(\''+r.id+'\',null)" style="margin-left:6px;">&#x1F373; Cooked it!</button>'+(cookCount(r.id)>0?'<div class="cooked-count">&#x2713; Cooked '+cookCount(r.id)+' time'+(cookCount(r.id)!==1?'s':'')+' &mdash; <span style="cursor:pointer;text-decoration:underline;" onclick="swTab(\'history\',document.querySelector(\'.ti:nth-child(4)\'))">view history</span></div>':'')+(srcBook?'<div style="margin-top:10px;font-size:13px;color:var(--t3);">&#x1F4DA; From: <strong>'+e(srcBook.title)+'</strong></div>':'')+(r.description?'<p style="font-size:15px;color:var(--t2);margin:12px 0;line-height:1.6;">'+e(r.description)+'</p>':'')+'<div class="meta-row">'+metaPills+'</div>'+ingHTML+stepsHTML+(r.notes?'<div class="section-block"><div class="section-block-title">Notes</div><div class="dsb">'+e(r.notes)+'</div></div>':'')+'</div></div>';
   openM('frDetailM');
 }
 function scaleAmt(amount,base,current){if(!amount||!base||base===current)return amount||'';const n=parseFloat(amount);if(isNaN(n))return amount;const sc=n*current/base;return sc%1===0?sc.toString():(Math.round(sc*4)/4).toString();}
@@ -1026,7 +1122,7 @@ async function impJSON(ev){const file=ev.target.files[0];if(!file)return;const r
 function dl(fn,content,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=fn;a.click();}
 
 // UI
-const TABTITLES={home:'My Cookbook Library',library:'My Library',myrecipes:'My Recipes',shelves:'My Shelves',search:'Search',shopping:'Shopping List',ai:'AI Chef',planner:'Meal Planner'};
+const TABTITLES={home:'My Cookbook Library',library:'My Library',myrecipes:'My Recipes',shelves:'My Shelves',search:'Search',shopping:'Shopping List',ai:'AI Chef',planner:'Meal Planner',history:'Cooking History'};
 function swTab(name,el){document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));document.getElementById('tp-'+name).classList.add('active');el.classList.add('active');document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';}
 function togFab(){const o=document.getElementById('fabo');const open=o.classList.toggle('open');document.getElementById('fabBtn').textContent=open?'X':'+';}
 function closeFab(){document.getElementById('fabo').classList.remove('open');document.getElementById('fabBtn').textContent='+';}
@@ -1488,6 +1584,175 @@ async function askAI() {
       results.innerHTML = '<div class="ai-wrap"><div class="ai-result">' + e(aiData.content[0].text) + '</div><div style="margin-top:12px;"><button class="btn bp bblk" onclick="swTab(\'planner\',document.querySelector(\'.ti:nth-child(4)\'))">&#x1F4C5; Open Meal Planner</button></div></div>';
     } catch(err) { el.className = 'st2 err'; el.textContent = 'AI unavailable - check connection'; }
   }
+}
+
+
+// ── COOKING HISTORY & GOALS ────────────────────────────────────
+let cookLog = [];
+let cookingGoal = null;
+let currentCookEntry = null;
+let cookRating = 0;
+
+async function loadCookLog() {
+  try {
+    const [log, goals] = await Promise.all([
+      sbf(SB('cook_log') + '?order=cooked_at.desc&limit=500'),
+      sbf(SB('cooking_goals') + '?order=year.desc&limit=1')
+    ]);
+    cookLog = log || [];
+    cookingGoal = (goals && goals.length) ? goals[0] : null;
+  } catch(e) {
+    cookLog = JSON.parse(localStorage.getItem('cookLog') || '[]');
+    cookingGoal = JSON.parse(localStorage.getItem('cookingGoal') || 'null');
+  }
+  renderCookHistory();
+  updateGoalWidgets();
+}
+
+function renderCookHistory() {
+  const el = document.getElementById('cookLogList');
+  const countEl = document.getElementById('cookLogCount');
+  if (!el) return;
+  if (countEl) countEl.textContent = cookLog.length + ' cook' + (cookLog.length !== 1 ? 's' : '');
+  if (!cookLog.length) {
+    el.innerHTML = '<div class="empty"><div class="emico">&#x1F373;</div><h3>No cooks logged yet</h3><p>Open any recipe and tap "Mark as cooked" to start building your history.</p></div>';
+    return;
+  }
+  el.innerHTML = cookLog.map(entry => {
+    const recipe = entry.recipe_id ? fullRecipes.find(r => r.id === entry.recipe_id) : null;
+    const bookRcp = entry.book_recipe_id ? recipes.find(r => r.id === entry.book_recipe_id) : null;
+    const name = recipe ? recipe.title : bookRcp ? bookRcp.name : 'Unknown recipe';
+    const book = bookRcp ? books.find(b => b.id === bookRcp.book_id) : recipe && recipe.book_id ? books.find(b => b.id === recipe.book_id) : null;
+    const date = new Date(entry.cooked_at);
+    const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const stars = entry.rating ? '&#x2B50;'.repeat(entry.rating) : '';
+    return '<div class="cook-log-item">'
+      + '<div class="cook-log-title">' + e(name) + '</div>'
+      + '<div class="cook-log-meta">'
+      + '<span>&#x1F4C5; ' + dateStr + '</span>'
+      + (book ? '<span>&#x1F4DA; ' + e(book.title) + '</span>' : '')
+      + (stars ? '<span>' + stars + '</span>' : '')
+      + '</div>'
+      + (entry.notes ? '<div class="cook-log-note">"' + e(entry.notes) + '"</div>' : '')
+      + (entry.photo ? '<img class="cook-log-photo" src="' + entry.photo + '" alt="" onerror="this.style.display=\'none\'">' : '')
+      + '</div>';
+  }).join('');
+}
+
+function updateGoalWidgets() {
+  const year = new Date().getFullYear();
+  const yearCooks = cookLog.filter(e => new Date(e.cooked_at).getFullYear() === year).length;
+  const target = cookingGoal ? cookingGoal.target : 0;
+  const pct = target > 0 ? Math.min(100, Math.round(yearCooks / target * 100)) : 0;
+
+  // Main goal ring
+  const fill = document.getElementById('goalRingFill');
+  if (fill) {
+    const circ = 346;
+    fill.style.strokeDashoffset = circ - (circ * pct / 100);
+  }
+  const goalCooked = document.getElementById('goalCooked');
+  if (goalCooked) goalCooked.textContent = yearCooks;
+
+  const goalSub = document.getElementById('goalSub');
+  if (goalSub) {
+    if (target > 0) {
+      const left = Math.max(0, target - yearCooks);
+      goalSub.textContent = pct + '% of ' + target + ' goal' + (left > 0 ? ' — ' + left + ' to go' : ' — Goal reached!');
+    } else {
+      goalSub.textContent = 'Set a goal to track your cooking this year';
+    }
+  }
+
+  const goalInput = document.getElementById('goalInput');
+  if (goalInput && target > 0) goalInput.value = target;
+
+  // Home mini ring
+  const homeWrap = document.getElementById('homeGoalWrap');
+  if (homeWrap) homeWrap.style.display = (target > 0 || yearCooks > 0) ? 'block' : 'none';
+
+  const homeRing = document.getElementById('homeGoalRing');
+  if (homeRing) {
+    const circ2 = 163;
+    homeRing.style.strokeDashoffset = circ2 - (circ2 * pct / 100);
+  }
+  const homePct = document.getElementById('homeGoalPct');
+  if (homePct) homePct.textContent = pct + '%';
+  const homeCooked = document.getElementById('homeGoalCooked');
+  if (homeCooked) homeCooked.textContent = yearCooks;
+  const homeTarget = document.getElementById('homeGoalTarget');
+  if (homeTarget && target > 0) homeTarget.textContent = target;
+}
+
+async function saveGoal() {
+  const val = parseInt(document.getElementById('goalInput').value);
+  if (!val || val < 1) { toast('Please enter a valid goal'); return; }
+  const year = new Date().getFullYear();
+  try {
+    if (cookingGoal) {
+      await sbf(SB('cooking_goals') + '?id=eq.' + cookingGoal.id, { method: 'PATCH', body: JSON.stringify({ target: val }) });
+      cookingGoal.target = val;
+    } else {
+      const saved = await sbf(SB('cooking_goals'), { method: 'POST', body: JSON.stringify({ year, target: val }) });
+      cookingGoal = saved[0];
+    }
+    localStorage.setItem('cookingGoal', JSON.stringify(cookingGoal));
+  } catch(e) {
+    cookingGoal = { year, target: val };
+    localStorage.setItem('cookingGoal', JSON.stringify(cookingGoal));
+  }
+  updateGoalWidgets();
+  toast('Goal set: ' + val + ' recipes in ' + year);
+}
+
+// Open cook modal from a full recipe
+function openCookModal(recipeId, bookRecipeId) {
+  currentCookEntry = { recipeId: recipeId || null, bookRecipeId: bookRecipeId || null };
+  cookRating = 0;
+  document.getElementById('cookMNote').value = '';
+  document.getElementById('cookMPhoto').value = '';
+  document.querySelectorAll('#cookMStars .star').forEach(s => s.classList.remove('active'));
+  const recipe = recipeId ? fullRecipes.find(r => r.id === recipeId) : null;
+  const bookRcp = bookRecipeId ? recipes.find(r => r.id === bookRecipeId) : null;
+  document.getElementById('cookMRecipeName').textContent = recipe ? recipe.title : bookRcp ? bookRcp.name : 'Recipe';
+  openM('cookM');
+}
+
+function setCookRating(n) {
+  cookRating = n;
+  document.querySelectorAll('#cookMStars .star').forEach((s, i) => s.classList.toggle('active', i < n));
+}
+
+async function saveCookLog() {
+  const btn = document.getElementById('saveCookBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const entry = {
+    recipe_id: currentCookEntry.recipeId || null,
+    book_recipe_id: currentCookEntry.bookRecipeId || null,
+    cooked_at: new Date().toISOString(),
+    notes: document.getElementById('cookMNote').value.trim() || null,
+    photo: document.getElementById('cookMPhoto').value.trim() || null,
+    rating: cookRating || 0
+  };
+  try {
+    const saved = await sbf(SB('cook_log'), { method: 'POST', body: JSON.stringify(entry) });
+    cookLog.unshift(saved[0]);
+    localStorage.setItem('cookLog', JSON.stringify(cookLog));
+  } catch(e) {
+    entry.id = 'local-' + Date.now();
+    cookLog.unshift(entry);
+    localStorage.setItem('cookLog', JSON.stringify(cookLog));
+  }
+  closeM('cookM');
+  renderCookHistory();
+  updateGoalWidgets();
+  toast('Cooked! Added to your history');
+  btn.disabled = false; btn.textContent = '\u2713 Mark as Cooked';
+}
+
+// How many times has this recipe been cooked?
+function cookCount(recipeId) {
+  return cookLog.filter(e => e.recipe_id === recipeId).length;
 }
 
 // ── AI TOGGLE ─────────────────────────────────────────────────
