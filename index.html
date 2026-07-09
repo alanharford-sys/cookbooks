@@ -116,8 +116,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .own{border-radius:16px;padding:20px;margin-top:14px;text-align:center;} .own-y{background:rgba(45,106,79,.1);border:1px solid rgba(45,106,79,.25);} .own-n{background:rgba(200,98,42,.08);border:1px solid rgba(200,98,42,.2);}
 .rrow{background:var(--cr);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;border:0.5px solid var(--br);} .rrown{font-size:13px;color:var(--t3);font-weight:700;padding-top:10px;min-width:20px;}
 .rrowf{flex:1;display:flex;gap:8px;flex-wrap:wrap;} .rrowf input{flex:1;min-width:120px;background:var(--cd);border:0.5px solid var(--br);border-radius:8px;padding:8px 10px;font-size:14px;outline:none;font-family:inherit;color:var(--t1);} .rrowf input:focus{border-color:var(--g);} .rrowd{background:none;border:none;font-size:17px;cursor:pointer;color:var(--t3);padding:8px 0;}
-.fabwrap{position:fixed;bottom:calc(var(--tbh)+20px+env(safe-area-inset-bottom));right:16px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
-.fab{width:54px;height:54px;border-radius:50%;background:var(--o);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(224,124,58,.45);display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:700;}
+.fabwrap{position:fixed;bottom:80px;right:20px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.fab{width:56px;height:56px;border-radius:50%;background:var(--o);border:none;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 24px rgba(224,124,58,.6);display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:700;z-index:9001;}
 .fab:active{transform:scale(.92);} .fabo{display:none;flex-direction:column;align-items:flex-end;gap:8px;} .fabo.open{display:flex;}
 .fabrow{display:flex;align-items:center;gap:8px;} .fablbl{background:var(--t1);color:var(--cr);font-size:13px;font-weight:600;padding:7px 13px;border-radius:10px;white-space:nowrap;}
 .fabmini{width:44px;height:44px;border-radius:50%;border:none;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;} .fabmini:active{transform:scale(.92);}
@@ -316,7 +316,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
         <button class="chip" onclick="setLF('style',this)">&#x1F468;&#x200D;&#x1F373; Style</button>
         <button class="chip" onclick="setLF('ingredient',this)">&#x1F966; Ingredient</button>
       </div>
-      <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button></div></div>
+      <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button><button class="btn bp bsm" onclick="openScanM()">&#x1F4F7; Scan</button><button class="btn bp bsm" onclick="openAddBk(false)">+ Add</button></div></div>
       <div id="libgrid"></div>
     </div>
 
