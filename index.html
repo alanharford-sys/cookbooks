@@ -33,7 +33,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .hdr-r{display:flex;align-items:center;gap:8px;}
 .sdot{width:12px;height:12px;border-radius:50%;background:#ccc;flex-shrink:0;transition:background .3s;}
 .sdot.ok{background:var(--gl);} .sdot.syncing{background:#f0a500;animation:pls 1s infinite;} .sdot.err{background:#c0392b;}
-@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}} 
 .load-ind{position:fixed;bottom:calc(var(--tbh)+14px+env(safe-area-inset-bottom));left:16px;background:var(--cd);border:0.5px solid var(--br);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--t3);display:none;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:400;}
 .load-ind.show{display:flex;}
 .tc{flex:1;overflow:hidden;position:relative;}
