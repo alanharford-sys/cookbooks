@@ -116,7 +116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .own{border-radius:16px;padding:20px;margin-top:14px;text-align:center;} .own-y{background:rgba(45,106,79,.1);border:1px solid rgba(45,106,79,.25);} .own-n{background:rgba(200,98,42,.08);border:1px solid rgba(200,98,42,.2);}
 .rrow{background:var(--cr);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;border:0.5px solid var(--br);} .rrown{font-size:13px;color:var(--t3);font-weight:700;padding-top:10px;min-width:20px;}
 .rrowf{flex:1;display:flex;gap:8px;flex-wrap:wrap;} .rrowf input{flex:1;min-width:120px;background:var(--cd);border:0.5px solid var(--br);border-radius:8px;padding:8px 10px;font-size:14px;outline:none;font-family:inherit;color:var(--t1);} .rrowf input:focus{border-color:var(--g);} .rrowd{background:none;border:none;font-size:17px;cursor:pointer;color:var(--t3);padding:8px 0;}
-.fabwrap{position:fixed;bottom:calc(var(--tbh)+16px+env(safe-area-inset-bottom));right:20px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.fabwrap{position:fixed;bottom:calc(var(--tbh)+20px+env(safe-area-inset-bottom));right:16px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
 .fab{width:54px;height:54px;border-radius:50%;background:var(--o);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(224,124,58,.45);display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:700;}
 .fab:active{transform:scale(.92);} .fabo{display:none;flex-direction:column;align-items:flex-end;gap:8px;} .fabo.open{display:flex;}
 .fabrow{display:flex;align-items:center;gap:8px;} .fablbl{background:var(--t1);color:var(--cr);font-size:13px;font-weight:600;padding:7px 13px;border-radius:10px;white-space:nowrap;}
@@ -283,7 +283,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
       <div class="home-goal" id="homeGoalWrap" style="display:none">
         <div class="home-goal-header">
           <h3>&#x1F373; Cooking Goal 2026</h3>
-          <button onclick="swTab('history',document.querySelector('.ti:nth-child(4)'))" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 10px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit;">View all &#x2192;</button>
+          <button onclick="swTab('history',document.querySelector('.ti:nth-child(5)'))" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 10px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit;">View all &#x2192;</button>
         </div>
         <div class="home-goal-body">
           <div class="home-goal-mini-ring">
@@ -446,16 +446,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
     <button class="ti active" onclick="swTab('home',this)"><span class="ticon">&#x1F3E0;</span><span class="tlbl">Home</span></button>
     <button class="ti" onclick="swTab('library',this)"><span class="ticon">&#x1F4DA;</span><span class="tlbl">Library</span></button>
     <button class="ti" onclick="swTab('myrecipes',this)"><span class="ticon">&#x1F9D1;&#x200D;&#x1F373;</span><span class="tlbl">Recipes</span></button>
+    <button class="ti" onclick="swTab('shelves',this)"><span class="ticon">&#x1F516;</span><span class="tlbl">Shelves</span></button>
     <button class="ti" onclick="swTab('history',this)"><span class="ticon">&#x1F373;</span><span class="tlbl">History</span></button>
-    <button class="ti" onclick="swTab('shopping',this)"><span class="ticon">&#x1F6D2;</span><span class="tlbl">Shop</span></button>
   </div>
 </div>
 
 <div class="fabwrap" id="fabwrap" style="display:none">
   <div class="fabo" id="fabo">
-    <div class="fabrow"><span class="fablbl">Scan barcode</span><button class="fabmini" style="background:var(--g)" onclick="openScanM()">&#x1F4F7;</button></div>
-    <div class="fabrow"><span class="fablbl">Enter ISBN</span><button class="fabmini" style="background:#5c6bc0" onclick="openAddBk(true)">&#x1F522;</button></div>
-    <div class="fabrow"><span class="fablbl">Add manually</span><button class="fabmini" style="background:#888" onclick="openAddBk(false)">&#x270F;&#xFE0F;</button></div>
+    <div class="fabrow"><span class="fablbl">AI Chef</span><button class="fabmini" style="background:var(--g)" onclick="closeFab();navTab('ai')" ">&#x1F916;</button></div>
+    <div class="fabrow"><span class="fablbl">Shopping list</span><button class="fabmini" style="background:#5c6bc0" onclick="closeFab();navTab('shopping')" ">&#x1F6D2;</button></div>
+    <div class="fabrow"><span class="fablbl">Meal planner</span><button class="fabmini" style="background:#7b5ea7" onclick="closeFab();navTab('planner')" ">&#x1F4C5;</button></div>
+    <div class="fabrow"><span class="fablbl">Scan barcode</span><button class="fabmini" style="background:var(--o)" onclick="openScanM()">&#x1F4F7;</button></div>
+    <div class="fabrow"><span class="fablbl">Enter ISBN</span><button class="fabmini" style="background:#888" onclick="openAddBk(true)">&#x1F522;</button></div>
+    <div class="fabrow"><span class="fablbl">Add manually</span><button class="fabmini" style="background:#555" onclick="openAddBk(false)">&#x270F;&#xFE0F;</button></div>
   </div>
   <button class="fab" id="fabBtn" onclick="togFab()">+</button>
 </div>
@@ -683,6 +686,7 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SBH={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
 const SB=t=>SB_URL+'/rest/v1/'+t;
 const RESET_CODE='CookbookReset2024';
+const OWNER_ID='a1a0000a-1a1a-4a1a-aa1a-a1a1a1a10001';
 function hsh(s){let h=5381;for(let i=0;i<s.length;i++)h=(h*33)^s.charCodeAt(i);return(h>>>0).toString(16);}
 let OWNER=localStorage.getItem('pw_owner')||hsh('Tasha1');
 let GUEST=localStorage.getItem('pw_guest')||hsh('MargateCooks');
@@ -795,7 +799,7 @@ async function loadAll(){
 }
 function savCache(){localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves,fullRecipes,recipeIngredients,recipeSteps,rCollections,rColItems}));}
 function r2b(r){return{id:r.id,title:r.title||'',author:r.author||'',publisher:r.publisher||'',year:r.year||'',pages:r.pages||'',isbn:r.isbn||'',cover:r.cover||'',description:r.description||'',notes:r.notes||'',addedAt:r.added_at||'',shelfId:r.collection_id||null,tags:{cuisine:r.cuisine?r.cuisine.split('|').map(s=>s.trim()).filter(Boolean):[],style:r.style?r.style.split('|').map(s=>s.trim()).filter(Boolean):[],ingredient:r.ingredients?r.ingredients.split('|').map(s=>s.trim()).filter(Boolean):[]}};}
-function b2r(b){return{title:b.title,author:b.author||'',publisher:b.publisher||'',year:b.year||'',pages:b.pages||'',isbn:b.isbn||'',cover:b.cover||'',description:b.description||'',cuisine:(b.tags?.cuisine||[]).join('|'),style:(b.tags?.style||[]).join('|'),ingredients:(b.tags?.ingredient||[]).join('|'),notes:b.notes||'',added_at:b.addedAt||new Date().toISOString(),collection_id:b.shelfId||null};}
+function b2r(b){return{title:b.title,author:b.author||'',publisher:b.publisher||'',year:b.year||'',pages:b.pages||'',isbn:b.isbn||'',cover:b.cover||'',description:b.description||'',cuisine:(b.tags?.cuisine||[]).join('|'),style:(b.tags?.style||[]).join('|'),ingredients:(b.tags?.ingredient||[]).join('|'),notes:b.notes||'',added_at:b.addedAt||new Date().toISOString(),collection_id:b.shelfId||null,user_id:OWNER_ID};}
 
 // INIT
 function initApp(){
@@ -810,7 +814,7 @@ function initApp(){
   loadCookLog();
   setInterval(silentRefresh,60000);
 }
-function renderAll(){renderHome();renderLib();renderMyRecipes();renderShelves();popShelfSel();popBookSel();renderShopList();}
+function renderAll(){renderHome();renderLib();renderMyRecipes();renderShelves();popShelfSel();popBookSel();renderShopList();renderCookHistory();updateGoalWidgets();}
 function goSeason(i){swTab('myrecipes',document.querySelector('.ti:nth-child(3)'));document.getElementById('frsrch').value=i;renderMyRecipes();}
 function silentRefresh(){
   Promise.all([
@@ -819,10 +823,13 @@ function silentRefresh(){
     fetch(SB('collections')+'?order=sort_order.asc&limit=500',{headers:SBH}).then(r=>r.json()),
     fetch(SB('full_recipes')+'?order=added_at.desc&limit=5000',{headers:SBH}).then(r=>r.json()),
     fetch(SB('recipe_ingredients')+'?order=sort_order.asc&limit=100000',{headers:SBH}).then(r=>r.json()),
-    fetch(SB('recipe_steps')+'?order=sort_order.asc&limit=100000',{headers:SBH}).then(r=>r.json())
-  ]).then(([b,r,col,fr,fi,fs])=>{
+    fetch(SB('recipe_steps')+'?order=sort_order.asc&limit=100000',{headers:SBH}).then(r=>r.json()),
+    fetch(SB('cook_log')+'?order=cooked_at.desc&limit=500',{headers:SBH}).then(r=>r.json()).catch(()=>[]),
+    fetch(SB('shopping_items')+'?order=sort_order.asc&limit=500',{headers:SBH}).then(r=>r.json()).catch(()=>[])
+  ]).then(([b,r,col,fr,fi,fs,cl,si])=>{
     books=(b||[]).map(r2b);recipes=r||[];shelves=col||[];
     fullRecipes=fr||[];recipeIngredients=fi||[];recipeSteps=fs||[];
+    cookLog=cl||[];shopItems=si||[];
     savCache();setSS('ok');renderAll();
   }).catch(()=>{});
 }
@@ -874,7 +881,7 @@ function showBkDetail(id){
   const tags=(b.tags?.cuisine||[]).map(t=>'<span class="dtag tc">'+e(t)+'</span>').join('')+(b.tags?.style||[]).map(t=>'<span class="dtag ts">'+e(t)+'</span>').join('')+(b.tags?.ingredient||[]).map(t=>'<span class="dtag ting">'+e(t)+'</span>').join('');
   const meta=[b.publisher&&'<div class="mi"><div class="ml">Publisher</div><div class="mv">'+e(b.publisher)+'</div></div>',b.year&&'<div class="mi"><div class="ml">Year</div><div class="mv">'+e(b.year)+'</div></div>',b.pages&&'<div class="mi"><div class="ml">Pages</div><div class="mv">'+e(b.pages)+'</div></div>',b.isbn&&'<div class="mi"><div class="ml">ISBN</div><div class="mv" style="font-size:12px">'+e(b.isbn)+'</div></div>'].filter(Boolean).join('');
   const covH=b.cover?'<img class="dcov" src="'+b.cover+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="dcovph" style="display:none">&#x1F4D6;</div>':'<div class="dcovph">&#x1F4D6;</div>';
-  const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;"><span>'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;">'+(r.page?'p.'+e(r.page):'&mdash;')+'</span></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
+  const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button onclick="addRecipeToShopList(\''+r.id+'\',true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
   const acts=!isGuest?'<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bp" style="flex:1" onclick="openAddRcp(\''+b.id+'\')">&#x1F4D6; Add Recipes</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>':'';
   document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description&&!isGuest?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes&&!isGuest?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
   openM('bkDetailM');
@@ -1123,6 +1130,14 @@ function dl(fn,content,mime){const a=document.createElement('a');a.href=URL.crea
 
 // UI
 const TABTITLES={home:'My Cookbook Library',library:'My Library',myrecipes:'My Recipes',shelves:'My Shelves',search:'Search',shopping:'Shopping List',ai:'AI Chef',planner:'Meal Planner',history:'Cooking History'};
+function navTab(name){
+  // Switch to a tab that's not in the tab bar (AI, Shopping, Planner)
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
+  const tp=document.getElementById('tp-'+name);
+  if(tp)tp.classList.add('active');
+  document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';
+}
 function swTab(name,el){document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));document.getElementById('tp-'+name).classList.add('active');el.classList.add('active');document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';}
 function togFab(){const o=document.getElementById('fabo');const open=o.classList.toggle('open');document.getElementById('fabBtn').textContent=open?'X':'+';}
 function closeFab(){document.getElementById('fabo').classList.remove('open');document.getElementById('fabBtn').textContent='+';}
@@ -1251,7 +1266,21 @@ async function clearAllShop() {
   toast('Shopping list cleared');
 }
 
-async function addRecipeToShopList(recipeId) {
+async function addRecipeToShopList(recipeId, isBookRecipe) {
+  if (isBookRecipe) {
+    // Book recipe index entry — no ingredients stored, just add the recipe name as a reminder
+    const r = recipes.find(x => x.id === recipeId);
+    if (!r) { toast('Recipe not found'); return; }
+    const bk = books.find(b => b.id === r.book_id);
+    const item = { id: 'local-'+Date.now(), name: r.name + (bk?' ('+bk.title+', p.'+(r.page||'?')+')':''), amount:'', unit:'', category:'&#x1F4DA; From books', checked:false, sort_order:shopItems.length };
+    shopItems.push(item);
+    try { const saved=await sbf(SB('shopping_items'),{method:'POST',body:JSON.stringify({name:item.name,category:item.category,checked:false,sort_order:item.sort_order})});item.id=saved[0].id; } catch(e){}
+    localStorage.setItem('shopItems',JSON.stringify(shopItems));
+    renderShopList();
+    navTab('shopping');
+    toast('"'+r.name+'" added to shopping list');
+    return;
+  }
   const recipe = fullRecipes.find(r => r.id === recipeId);
   if (!recipe) { toast('Recipe not found'); return; }
   const ings = recipeIngredients.filter(i => i.recipe_id === recipeId);
@@ -1268,7 +1297,7 @@ async function addRecipeToShopList(recipeId) {
   }
   localStorage.setItem('shopItems', JSON.stringify(shopItems));
   renderShopList();
-  swTab('shopping', document.querySelector('.ti:nth-child(4)'));
+  navTab('shopping');
   toast(added + ' ingredients added from ' + recipe.title);
 }
 
@@ -1468,7 +1497,7 @@ async function planToShopList() {
   }
   localStorage.setItem('shopItems', JSON.stringify(shopItems));
   renderShopList();
-  swTab('shopping', document.querySelector('.ti:nth-child(4)'));
+  navTab('shopping');
   toast(added ? added + ' ingredients added to shopping list' : 'No recipes with ingredients this week');
 }
 
