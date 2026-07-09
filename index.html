@@ -266,6 +266,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
       <span class="sdot" id="sdot"></span>
       <button class="theme-btn" id="themeBtn" onclick="togTheme()">&#x1F319;</button>
       <button class="ai-toggle-btn" id="aiToggleBtn" onclick="togAI()">&#x1F916; <span id="aiToggleLabel">AI</span></button>
+      <button class="theme-btn" onclick="doLogout()" title="Log out" id="logoutBtn" style="display:none;font-size:13px;">&#x1F511;</button>
       <button class="btn bo bsm" onclick="openM('ioM')">&#x2B06;&#x2B07;</button>
     </div>
   </div>
@@ -616,7 +617,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
   <div class="mbody">
     <p style="font-size:14px;color:var(--t2);margin-bottom:16px;line-height:1.5;">Enter the master reset code then set a new password.</p>
     <div class="fg"><label class="fl">Reset Code</label><input type="password" id="rcode" class="fi" placeholder="Master reset code"></div>
-    <div class="fg"><label class="fl">Which password?</label><div class="bg2"><button class="bopt sel" id="rtO" onclick="setRT('owner',this)">Owner login</button><button class="bopt" id="rtG" onclick="setRT('guest',this)">Guest (MargateCooks)</button></div></div>
+    <div class="fg" style="display:none"><label class="fl">Password type</label></div>
     <div class="fg"><label class="fl">New Password</label><input type="password" id="rnew" class="fi" placeholder="New password"></div>
     <div class="fg"><label class="fl">Confirm</label><input type="password" id="rconf" class="fi" placeholder="Confirm new password"></div>
     <div class="st2" id="rst" style="margin-bottom:12px;"></div>
@@ -689,8 +690,7 @@ const RESET_CODE='CookbookReset2024';
 const OWNER_ID='a1a0000a-1a1a-4a1a-aa1a-a1a1a1a10001';
 function hsh(s){let h=5381;for(let i=0;i<s.length;i++)h=(h*33)^s.charCodeAt(i);return(h>>>0).toString(16);}
 let OWNER=localStorage.getItem('pw_owner')||hsh('Tasha1');
-let GUEST=localStorage.getItem('pw_guest')||hsh('MargateCooks');
-let isGuest=false,rtType='owner';
+let isGuest=false;
 const SEA={
   0:{n:'January',  i:['Leeks','Jerusalem artichokes','Parsnips','Swede','Kale','Celeriac','Venison','Mussels','Clementines','Beetroot']},
   1:{n:'February', i:['Purple sprouting broccoli','Celeriac','Blood oranges','Seville oranges','Oysters','Leeks','Kale','Venison','Rhubarb']},
@@ -729,23 +729,23 @@ function chkPw(){
   const v=document.getElementById('lpw').value;
   const el=document.getElementById('lpw');
   const er=document.getElementById('lerr');
-  if(hsh(v)===OWNER){isGuest=false;sessionStorage.setItem('cb_auth','owner');unlk();}
-  else if(hsh(v)===GUEST){isGuest=true;sessionStorage.setItem('cb_auth','guest');unlk();}
+  if(hsh(v)===OWNER){sessionStorage.setItem('cb_auth','owner');unlk();}
   else{er.textContent='Incorrect password';el.classList.add('shake');el.value='';setTimeout(()=>{el.classList.remove('shake');er.textContent='';},1500);}
 }
 function unlk(){
   document.getElementById('lock').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(!isGuest)document.getElementById('fabwrap').style.display='flex';
+  document.getElementById('fabwrap').style.display='flex';
+  document.getElementById('logoutBtn').style.display='flex';
   initApp();
 }
 function initAuth(){
   const s=sessionStorage.getItem('cb_auth');
-  if(s==='owner'||s==='guest'){
-    isGuest=s==='guest';
+  if(s==='owner'){
     document.getElementById('lock').style.display='none';
     document.getElementById('app').style.display='flex';
-    if(!isGuest)document.getElementById('fabwrap').style.display='flex';
+    document.getElementById('fabwrap').style.display='flex';
+    document.getElementById('logoutBtn').style.display='flex';
     initApp();
   } else {
     setTimeout(()=>document.getElementById('lpw').focus(),150);
@@ -882,8 +882,8 @@ function showBkDetail(id){
   const meta=[b.publisher&&'<div class="mi"><div class="ml">Publisher</div><div class="mv">'+e(b.publisher)+'</div></div>',b.year&&'<div class="mi"><div class="ml">Year</div><div class="mv">'+e(b.year)+'</div></div>',b.pages&&'<div class="mi"><div class="ml">Pages</div><div class="mv">'+e(b.pages)+'</div></div>',b.isbn&&'<div class="mi"><div class="ml">ISBN</div><div class="mv" style="font-size:12px">'+e(b.isbn)+'</div></div>'].filter(Boolean).join('');
   const covH=b.cover?'<img class="dcov" src="'+b.cover+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="dcovph" style="display:none">&#x1F4D6;</div>':'<div class="dcovph">&#x1F4D6;</div>';
   const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button onclick="addRecipeToShopList(\''+r.id+'\',true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
-  const acts=!isGuest?'<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bp" style="flex:1" onclick="openAddRcp(\''+b.id+'\')">&#x1F4D6; Add Recipes</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>':'';
-  document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description&&!isGuest?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes&&!isGuest?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
+  const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bp" style="flex:1" onclick="openAddRcp(\''+b.id+'\')">&#x1F4D6; Add Recipes</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
+  document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
   openM('bkDetailM');
 }
 
@@ -938,7 +938,7 @@ function showFRDetail(id){
   const steps=recipeSteps.filter(s=>s.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order);
   const srcBook=r.book_id?books.find(b=>b.id===r.book_id):null;
   currentScaleBase=parseInt(r.serves)||4;currentScaleServes=currentScaleBase;
-  const photoHTML=r.photo?'<div class="recipe-hero"><img src="'+r.photo+'" onerror="this.style.display=\'none\'"><div class="recipe-hero-actions">'+(!isGuest?'<button class="hero-action-btn" onclick="editFR(\''+r.id+'\')">&#x270F;&#xFE0F;</button><button class="hero-action-btn" onclick="delFR(\''+r.id+'\')">&#x1F5D1;</button>':'')+'</div></div>':'<div class="recipe-hero"><div class="recipe-hero-ph">&#x1F37D;&#xFE0F;</div><div class="recipe-hero-actions">'+(!isGuest?'<button class="hero-action-btn" onclick="editFR(\''+r.id+'\')">&#x270F;&#xFE0F;</button><button class="hero-action-btn" onclick="delFR(\''+r.id+'\')">&#x1F5D1;</button>':'')+'</div></div>';
+  const photoHTML=r.photo?'<div class="recipe-hero"><img src="'+r.photo+'" onerror="this.style.display=\'none\'"><div class="recipe-hero-actions"><button class="hero-action-btn" onclick="editFR(\''+r.id+'\')">&#x270F;&#xFE0F;</button><button class="hero-action-btn" onclick="delFR(\''+r.id+'\')">&#x1F5D1;</button></div></div>':'<div class="recipe-hero"><div class="recipe-hero-ph">&#x1F37D;&#xFE0F;</div><div class="recipe-hero-actions"><button class="hero-action-btn" onclick="editFR(\''+r.id+'\')">&#x270F;&#xFE0F;</button><button class="hero-action-btn" onclick="delFR(\''+r.id+'\')">&#x1F5D1;</button></div></div>';
   const metaPills=[r.serves&&'<span class="meta-pill">Serves '+e(r.serves)+'</span>',r.prep_time&&'<span class="meta-pill">Prep '+r.prep_time+'m</span>',r.cook_time&&'<span class="meta-pill">Cook '+r.cook_time+'m</span>',r.difficulty&&'<span class="meta-pill">'+e(r.difficulty)+'</span>',r.cuisine&&'<span class="meta-pill">'+e(r.cuisine)+'</span>',r.dietary&&'<span class="meta-pill">'+e(r.dietary)+'</span>'].filter(Boolean).join('');
   const starsHTML='<div class="star-row" id="frStars">'+[1,2,3,4,5].map(n=>'<span class="star'+((r.rating||0)>=n?' active':'')+'" onclick="setFRRating(\''+r.id+'\','+n+')">&#x2B50;</span>').join('')+'</div>';
   const ingHTML=ings.length?'<div class="section-block"><div class="section-block-title">Ingredients</div><div class="scale-row"><span class="scale-label">Adjust serving size</span><button class="scale-btn" onclick="scaleAdj(-1)">-</button><span class="scale-val" id="scaleVal">'+currentScaleServes+'</span><button class="scale-btn" onclick="scaleAdj(1)">+</button></div><div id="ingList">'+ings.map(i=>'<div class="ingredient-row" data-amount="'+(i.amount||'')+'" data-unit="'+(i.unit||'')+'"><span class="ing-amount" id="ia-'+i.id+'">'+scaleAmt(i.amount,currentScaleBase,currentScaleServes)+(i.unit?' '+i.unit:'')+'</span><span class="ing-name">'+e(i.ingredient)+'</span>'+(i.notes?'<span class="ing-note">'+e(i.notes)+'</span>':'')+'</div>').join('')+'</div></div>':'';
@@ -1002,7 +1002,22 @@ async function importFromURL(){
 
 // SHELVES
 function renderShelves(){const el=document.getElementById('shelfgrid');if(!shelves.length){el.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emico">&#x1F516;</div><h3>No shelves yet</h3><p>Create shelves to organise your books.</p><button class="btn bp" onclick="openM(\'addShelfM\')">+ Create first shelf</button></div>';return;}el.innerHTML=shelves.map(s=>{const ct=books.filter(b=>b.shelfId===s.id).length;const loc=s.shelf_row?'Row '+s.shelf_row+', Col '+s.shelf_col:'';return '<div class="ccube" onclick="showShelfDetail(\''+s.id+'\')"><div class="ccei">'+(s.emoji||'&#x1F4DA;')+'</div><div class="ccen">'+e(s.name)+'</div><div class="ccem">'+ct+' book'+(ct!==1?'s':'')+'</div>'+(loc?'<div class="cceloc">&#x1F4CD; '+loc+'</div>':'')+'</div>';}).join('');}
-function showShelfDetail(id){const s=shelves.find(x=>x.id===id);if(!s)return;const sb=books.filter(b=>b.shelfId===id);document.getElementById('shelfDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">'+(s.emoji||'&#x1F4DA;')+' '+e(s.name)+'</span><button class="mcls" onclick="closeM(\'shelfDetailM\')">&#x2715;</button></div><div class="mbody">'+(s.shelf_row?'<div class="locbadge">&#x1F4CD; Row '+s.shelf_row+', Column '+s.shelf_col+'</div><br>':'')+(s.description?'<p style="font-size:14px;color:var(--t2);margin-bottom:16px;">'+e(s.description)+'</p>':'')+'<div class="dsh">'+sb.length+' book'+(sb.length!==1?'s':'')+' on this shelf</div>'+(sb.length?'<div class="lst">'+sb.map(b=>bkList(b)).join('')+'</div>':'<div style="font-size:14px;color:var(--t3);">No books assigned yet.</div>')+(!isGuest?'<div style="margin-top:16px;"><button class="btn bd bsm" onclick="delShelf(\''+id+'\')">Delete shelf</button></div>':'')+'</div>';openM('shelfDetailM');}
+function showShelfDetail(id){
+  const s=shelves.find(x=>x.id===id);if(!s)return;
+  const sb=books.filter(b=>b.shelfId===id);
+  document.getElementById('shelfDetailCont').innerHTML=
+    '<div class="mhw"><div class="mh"></div></div>'
+    +'<div class="mhdr"><span class="mtit">'+(s.emoji||'&#x1F4DA;')+' '+e(s.name)+'</span><button class="mcls" onclick="closeM(\'shelfDetailM\')">&#x2715;</button></div>'
+    +'<div class="mbody">'
+    +(s.shelf_row?'<div class="locbadge">&#x1F4CD; Row '+s.shelf_row+', Column '+s.shelf_col+'</div><br>':'')
+    +(s.description?'<p style="font-size:14px;color:var(--t2);margin-bottom:16px;">'+e(s.description)+'</p>':'')
+    +'<div class="dsh">'+sb.length+' book'+(sb.length!==1?'s':'')+' on this shelf</div>'
+    +(sb.length?'<div class="lst">'+sb.map(b=>bkList(b)).join('')+'</div>':'<div style="font-size:14px;color:var(--t3);">No books assigned yet.</div>')
+    +'<div style="margin-top:16px;"><button class="btn bd bsm" onclick="delShelf(\''+id+'\')">Delete shelf</button></div>'
+    +'</div>';
+  openM('shelfDetailM');
+}
+
 async function saveShelf(){const nm=document.getElementById('snm').value.trim();if(!nm){toast('Please enter a name');return;}try{const row={name:nm,description:document.getElementById('sds').value.trim()||null,emoji:document.getElementById('sem').value.trim()||'&#x1F4DA;',shelf_row:parseInt(document.getElementById('srow').value)||null,shelf_col:parseInt(document.getElementById('scol').value)||null,sort_order:shelves.length};const saved=await sbf(SB('collections'),{method:'POST',body:JSON.stringify(row)});shelves.push(saved[0]);closeM('addShelfM');renderAll();toast('Shelf created');}catch(err){toast('Save failed');console.error(err);}}
 async function delShelf(id){if(!confirm('Delete this shelf?'))return;try{await sbf(SB('collections')+'?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}});shelves=shelves.filter(s=>s.id!==id);books=books.map(b=>b.shelfId===id?{...b,shelfId:null}:b);closeM('shelfDetailM');renderAll();toast('Shelf deleted');}catch(err){toast('Delete failed');}}
 function popShelfSel(){const s=document.getElementById('fShelf');if(!s)return;s.innerHTML='<option value="">-- Assign to shelf --</option>'+shelves.map(sh=>'<option value="'+sh.id+'">'+(sh.emoji||'&#x1F4DA;')+' '+e(sh.name)+'</option>').join('');}
@@ -1813,6 +1828,13 @@ function applyAIState(enabled) {
   if (offMsg) offMsg.style.display = enabled ? 'none' : 'block';
 }
 
+// LOGOUT
+function doLogout(){
+  if(!confirm('Log out?'))return;
+  sessionStorage.removeItem('cb_auth');
+  location.reload();
+}
+
 // DARK MODE
 function initTheme(){const saved=localStorage.getItem('cb_theme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');applyTheme(saved);}
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('cb_theme',t);const btn=document.getElementById('themeBtn');if(btn)btn.innerHTML=t==='dark'?'&#9728;&#65039;':'&#127769;';}
@@ -1822,6 +1844,8 @@ function togTheme(){const curr=document.documentElement.getAttribute('data-theme
 initTheme();
 initAI();
 renderAll();
+// Clear any stale guest sessions
+if(sessionStorage.getItem('cb_auth')==='guest')sessionStorage.removeItem('cb_auth');
 initAuth();
 </script>
 </body>
