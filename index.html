@@ -281,7 +281,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="hdr">
-    <h1 id="hdrtit">&#x1F4DA; My Cookbook Library</h1>
+    <button onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))" style="background:none;border:none;cursor:pointer;font-size:20px;padding:0;line-height:1;flex-shrink:0;" title="Home">&#x1F3E0;</button><h1 id="hdrtit" style="cursor:pointer;" onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))">&#x1F4DA; My Cookbook Library</h1>
     <div class="hdr-r">
       <span class="sdot" id="sdot"></span>
       <button class="theme-btn" id="themeBtn" onclick="togTheme()">&#x1F319;</button>
@@ -588,27 +588,71 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 <!-- ADD/EDIT FULL RECIPE -->
 <div class="mo" id="addFRM" onclick="if(event.target===this)closeM('addFRM')"><div class="modal" onclick="event.stopPropagation()" style="max-height:95vh;">
   <div class="mhw"><div class="mh"></div></div>
-  <div class="mhdr"><span class="mtit" id="addFRTit">New Recipe</span><button class="mcls" onclick="closeM('addFRM')">&#x2715;</button></div>
+  <div class="mhdr">
+    <span class="mtit" id="addFRTit">New Recipe</span>
+    <button class="mcls" onclick="closeM('addFRM')">&#x2715;</button>
+  </div>
   <div class="mbody">
-    <div class="url-import-wrap"><div class="url-import-title">&#x1F517; Import from website URL</div>
-      <div class="irow"><input type="url" id="frImportURL" class="fi" placeholder="https://www.bbcgoodfood.com/recipes/..."><button class="btn bp bsm" onclick="importFromURL()">Import</button></div>
-      <div class="st2" id="urlImportSt"></div>
+    <!-- Step indicator -->
+    <div style="display:flex;gap:6px;margin-bottom:20px;align-items:center;">
+      <div id="frStep1ind" style="flex:1;height:4px;border-radius:2px;background:var(--g);"></div>
+      <div id="frStep2ind" style="flex:1;height:4px;border-radius:2px;background:var(--br);"></div>
+      <div id="frStep3ind" style="flex:1;height:4px;border-radius:2px;background:var(--br);"></div>
+      <span id="frStepLabel" style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap;">Step 1 of 3</span>
     </div>
-    <div class="fg"><label class="fl">Title *</label><input type="text" id="frTitle" class="fi" placeholder="Recipe name" autocomplete="off"></div>
-    <div class="fg"><label class="fl">Description</label><textarea id="frDesc" class="fi" rows="2" placeholder="Brief description..."></textarea></div>
-    <div class="fg"><label class="fl">Photo URL (optional)</label>
-      <div class="irow"><input type="url" id="frPhoto" class="fi" placeholder="Paste image URL..."><button class="btn bo bsm" onclick="previewFRPhoto()">Preview</button></div>
-      <div id="frPhotoPreview" style="margin-top:8px;display:none;"><img id="frPhotoImg" style="width:100%;border-radius:10px;max-height:160px;object-fit:cover;" src="" alt=""></div>
+
+    <!-- STEP 1: Basics -->
+    <div id="frStep1">
+      <div class="url-import-wrap"><div class="url-import-title">&#x1F517; Import from website URL</div>
+        <div class="irow"><input type="url" id="frImportURL" class="fi" placeholder="https://www.bbcgoodfood.com/recipes/..."><button class="btn bp bsm" onclick="importFromURL()">Import</button></div>
+        <div class="st2" id="urlImportSt"></div>
+      </div>
+      <div class="fg"><label class="fl">Recipe title *</label><input type="text" id="frTitle" class="fi" placeholder="e.g. Salmon & Prawn Pie in a Pan" autocomplete="off"></div>
+      <div class="fg"><label class="fl">Description / subtitle</label><input type="text" id="frDesc" class="fi" placeholder="e.g. Crispy filo, couscous, sweet tomatoes..." autocomplete="off"></div>
+      <div class="fg"><label class="fl">From book (optional)</label><select id="frBook" class="fi"><option value="">-- Not linked to a book --</option></select></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Course</label><select id="frCourse" class="fi"><option value="">--</option><option>Starter</option><option>Main</option><option>Side</option><option>Dessert</option><option>Bread</option><option>Snack</option><option>Sauce</option><option>Drink</option></select></div>
+        <div class="fg"><label class="fl">Cuisine</label><input type="text" id="frCuisine" class="fi" placeholder="e.g. British" autocomplete="off"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Serves</label><input type="text" id="frServes" class="fi" placeholder="4" inputmode="numeric"></div>
+        <div class="fg"><label class="fl">Difficulty</label><select id="frDiff" class="fi"><option value="">--</option><option>Easy</option><option>Medium</option><option>Challenging</option><option>Weekend project</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Prep (mins)</label><input type="text" id="frPrep" class="fi" placeholder="10" inputmode="numeric"></div>
+        <div class="fg"><label class="fl">Cook (mins)</label><input type="text" id="frCook" class="fi" placeholder="34" inputmode="numeric"></div>
+      </div>
+      <div class="fg"><label class="fl">Dietary notes</label><input type="text" id="frDietary" class="fi" placeholder="e.g. Gluten-free, Dairy-free..." autocomplete="off"></div>
+      <button class="btn bp bblk" onclick="frNextStep(2)" style="margin-top:8px;">Next: Add Ingredients &#x2192;</button>
     </div>
-    <div class="fg"><label class="fl">From book (optional)</label><select id="frBook" class="fi"><option value="">-- Not linked to a book --</option></select></div>
-    <div class="fr"><div class="fg"><label class="fl">Serves</label><input type="text" id="frServes" class="fi" placeholder="4" inputmode="numeric"></div><div class="fg"><label class="fl">Prep (mins)</label><input type="text" id="frPrep" class="fi" placeholder="20" inputmode="numeric"></div></div>
-    <div class="fr"><div class="fg"><label class="fl">Cook (mins)</label><input type="text" id="frCook" class="fi" placeholder="45" inputmode="numeric"></div><div class="fg"><label class="fl">Difficulty</label><select id="frDiff" class="fi"><option value="">--</option><option>Easy</option><option>Medium</option><option>Challenging</option><option>Weekend project</option></select></div></div>
-    <div class="fr"><div class="fg"><label class="fl">Course</label><select id="frCourse" class="fi"><option value="">--</option><option>Starter</option><option>Main</option><option>Side</option><option>Dessert</option><option>Bread</option><option>Snack</option><option>Sauce</option><option>Drink</option></select></div><div class="fg"><label class="fl">Cuisine</label><input type="text" id="frCuisine" class="fi" placeholder="Italian..." autocomplete="off"></div></div>
-    <div class="fg"><label class="fl">Dietary</label><input type="text" id="frDietary" class="fi" placeholder="Vegetarian, Gluten-free..." autocomplete="off"></div>
-    <div class="fg"><label class="fl">Ingredients</label><div id="frIngRows"></div><button class="btn bo bsm" onclick="addIngRow()" style="margin-top:6px;">+ Add ingredient</button></div>
-    <div class="fg"><label class="fl">Method</label><div id="frStepRows"></div><button class="btn bo bsm" onclick="addStepRow()" style="margin-top:6px;">+ Add step</button></div>
-    <div class="fg"><label class="fl">Notes</label><textarea id="frNotes" class="fi" rows="2" placeholder="Personal notes, tips..."></textarea></div>
-    <div style="display:flex;gap:8px;padding-top:4px;"><button class="btn bo" onclick="closeM('addFRM')" style="flex:1">Cancel</button><button class="btn bp" onclick="saveFR()" style="flex:2" id="saveFRBtn">Save Recipe</button></div>
+
+    <!-- STEP 2: Ingredients -->
+    <div id="frStep2" style="display:none;">
+      <p style="font-size:14px;color:var(--t2);margin-bottom:16px;line-height:1.5;">Add each ingredient. Amount = quantity (e.g. 800g, 2, 1 x 270g). Unit = leave blank if already in amount.</p>
+      <div id="frIngRows"></div>
+      <button class="btn bo bblk" onclick="addIngRow()" style="margin-bottom:16px;">+ Add ingredient</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn bo" onclick="frNextStep(1)" style="flex:1">&#x2190; Back</button>
+        <button class="btn bp" onclick="frNextStep(3)" style="flex:2">Next: Add Method &#x2192;</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Method + photo -->
+    <div id="frStep3" style="display:none;">
+      <p style="font-size:14px;color:var(--t2);margin-bottom:16px;line-height:1.5;">Add the method steps, one action per step.</p>
+      <div id="frStepRows"></div>
+      <button class="btn bo bblk" onclick="addStepRow()" style="margin-bottom:16px;">+ Add step</button>
+      <div class="fg"><label class="fl">Photo URL (optional)</label>
+        <div class="irow"><input type="url" id="frPhoto" class="fi" placeholder="Paste image URL..."><button class="btn bo bsm" onclick="previewFRPhoto()">Preview</button></div>
+        <div id="frPhotoPreview" style="margin-top:8px;display:none;"><img id="frPhotoImg" style="width:100%;border-radius:10px;max-height:160px;object-fit:cover;" src="" alt=""></div>
+      </div>
+      <div class="fg"><label class="fl">Personal notes</label><textarea id="frNotes" class="fi" rows="2" placeholder="Tips, variations, what you'd do differently..."></textarea></div>
+      <div style="display:flex;gap:8px;padding-top:4px;">
+        <button class="btn bo" onclick="frNextStep(2)" style="flex:1">&#x2190; Back</button>
+        <button class="btn bp" onclick="saveFR()" style="flex:2" id="saveFRBtn">&#x2713; Save Recipe</button>
+      </div>
+    </div>
+
   </div>
 </div></div>
 
@@ -704,7 +748,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 <!-- OCR RECIPE SCAN MODAL -->
 <div class="mo" id="ocrM" onclick="if(event.target===this)closeM('ocrM')"><div class="modal" onclick="event.stopPropagation()" style="max-height:95vh;">
   <div class="mhw"><div class="mh"></div></div>
-  <div class="mhdr"><span class="mtit">&#x1F4F8; Scan Recipe Page</span><button class="mcls" onclick="closeM('ocrM')">&#x2715;</button></div>
+  <div class="mhdr"><span class="mtit" id="ocrModalTitle">&#x1F4F8; Scan Recipe Page</span><button class="mcls" onclick="closeM('ocrM')">&#x2715;</button></div>
   <div class="mbody">
 
     <!-- Mode selector -->
@@ -713,12 +757,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
         <span class="ocr-mode-icon">&#x1F9D1;&#x200D;&#x1F373;</span>Full Recipe<br><span style="font-size:11px;font-weight:400;opacity:.7;">Ingredients + method</span>
       </button>
       <button class="ocr-mode-btn" id="ocrModeIndex" onclick="setOcrMode('index',this)">
-        <span class="ocr-mode-icon">&#x1F4CB;</span>Recipe Index<br><span style="font-size:11px;font-weight:400;opacity:.7;">Title + page number</span>
+        <span class="ocr-mode-icon">&#x1F4CB;</span>Contents / Index<br><span style="font-size:11px;font-weight:400;opacity:.7;">Catalogue all recipes from a page</span>
       </button>
     </div>
 
-    <div class="ocr-tip">
-      <strong>Tips for best results:</strong> Good lighting, hold the camera steady, make sure all text is in frame. Works best with printed recipes — handles most modern cookbook fonts well.
+    <!-- Book selector - always visible and prominent -->
+    <div class="fg" id="ocrBookTopRow">
+      <label class="fl">&#x1F4DA; Which book are you scanning?</label>
+      <select id="ocrBook" class="fi" onchange="ocrBookChanged(this.value)" style="font-weight:600;">
+        <option value="">-- Select book first --</option>
+      </select>
+    </div>
+
+    <div class="ocr-tip" id="ocrTipText">
+      <strong>Tips for best results:</strong> Good lighting, hold the camera steady, keep all text in frame. Handles most modern cookbook fonts well — including two-column ingredient layouts.
     </div>
 
     <!-- Photo area -->
@@ -738,11 +790,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
     <div id="ocrPreview" style="display:none;">
       <div class="ocr-result-preview" id="ocrResultContent"></div>
 
-      <!-- Link to book (for full recipe mode) -->
-      <div class="fg" id="ocrBookRow">
-        <label class="fl">Link to book (optional)</label>
-        <select id="ocrBook" class="fi"><option value="">-- Not linked to a book --</option></select>
-      </div>
+<!-- book selector moved to top -->
 
       <!-- Actions -->
       <div style="display:flex;gap:8px;padding-top:4px;">
@@ -1031,8 +1079,33 @@ async function setFRRating(id,stars){document.querySelectorAll('#frStars .star')
 async function togFRFav(id){const r=fullRecipes.find(x=>x.id===id);if(!r)return;const nv=!r.is_favourite;try{await sbf(SB('full_recipes')+'?id=eq.'+id,{method:'PATCH',body:JSON.stringify({is_favourite:nv})});r.is_favourite=nv;showFRDetail(id);renderMyRecipes();toast(nv?'Added to favourites':'Removed from favourites');}catch(err){toast('Failed');}}
 
 // ADD/EDIT FULL RECIPE
-function openAddFR(){editFRId=null;frIngRowN=0;frStepRowN=0;document.getElementById('addFRTit').textContent='New Recipe';['frTitle','frDesc','frPhoto','frServes','frPrep','frCook','frNotes','frCuisine','frDietary','frImportURL'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('frDiff').value='';document.getElementById('frCourse').value='';document.getElementById('frBook').value='';document.getElementById('frPhotoPreview').style.display='none';document.getElementById('urlImportSt').innerHTML='';document.getElementById('frIngRows').innerHTML='';document.getElementById('frStepRows').innerHTML='';addIngRow();addIngRow();addIngRow();addStepRow();addStepRow();openM('addFRM');}
-function editFR(id){const r=fullRecipes.find(x=>x.id===id);if(!r)return;closeM('frDetailM');editFRId=id;frIngRowN=0;frStepRowN=0;document.getElementById('addFRTit').textContent='Edit Recipe';document.getElementById('frTitle').value=r.title||'';document.getElementById('frDesc').value=r.description||'';document.getElementById('frPhoto').value=r.photo||'';document.getElementById('frServes').value=r.serves||'';document.getElementById('frPrep').value=r.prep_time||'';document.getElementById('frCook').value=r.cook_time||'';document.getElementById('frNotes').value=r.notes||'';document.getElementById('frCuisine').value=r.cuisine||'';document.getElementById('frDietary').value=r.dietary||'';document.getElementById('frDiff').value=r.difficulty||'';document.getElementById('frCourse').value=r.course||'';document.getElementById('frBook').value=r.book_id||'';document.getElementById('frImportURL').value=r.source_url||'';document.getElementById('urlImportSt').innerHTML='';if(r.photo){document.getElementById('frPhotoPreview').style.display='block';document.getElementById('frPhotoImg').src=r.photo;}else document.getElementById('frPhotoPreview').style.display='none';document.getElementById('frIngRows').innerHTML='';recipeIngredients.filter(i=>i.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order).forEach(i=>addIngRow(i.amount,i.unit,i.ingredient,i.notes));if(!recipeIngredients.filter(i=>i.recipe_id===id).length){addIngRow();addIngRow();}document.getElementById('frStepRows').innerHTML='';recipeSteps.filter(s=>s.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order).forEach(s=>addStepRow(s.step_text));if(!recipeSteps.filter(s=>s.recipe_id===id).length)addStepRow();openM('addFRM');}
+function frNextStep(n) {
+  [1,2,3].forEach(i => {
+    const s = document.getElementById('frStep'+i);
+    const ind = document.getElementById('frStep'+i+'ind');
+    if(s) s.style.display = i===n ? 'block' : 'none';
+    if(ind) ind.style.background = i<=n ? 'var(--g)' : 'var(--br)';
+  });
+  document.getElementById('frStepLabel').textContent = 'Step '+n+' of 3';
+  // Add starter rows when entering step 2 or 3
+  if(n===2 && document.getElementById('frIngRows').children.length===0){addIngRow();addIngRow();addIngRow();}
+  if(n===3 && document.getElementById('frStepRows').children.length===0){addStepRow();addStepRow();}
+}
+function openAddFR(){
+  editFRId=null;frIngRowN=0;frStepRowN=0;
+  document.getElementById('addFRTit').textContent='New Recipe';
+  ['frTitle','frDesc','frPhoto','frServes','frPrep','frCook','frNotes','frCuisine','frDietary','frImportURL'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('frDiff').value='';
+  document.getElementById('frCourse').value='';
+  document.getElementById('frBook').value='';
+  if(document.getElementById('frPhotoPreview')) document.getElementById('frPhotoPreview').style.display='none';
+  if(document.getElementById('urlImportSt')) document.getElementById('urlImportSt').innerHTML='';
+  document.getElementById('frIngRows').innerHTML='';
+  document.getElementById('frStepRows').innerHTML='';
+  frNextStep(1);
+  openM('addFRM');
+}
+function editFR(id){const r=fullRecipes.find(x=>x.id===id);if(!r)return;closeM('frDetailM');editFRId=id;frIngRowN=0;frStepRowN=0;document.getElementById('addFRTit').textContent='Edit Recipe';document.getElementById('frTitle').value=r.title||'';document.getElementById('frDesc').value=r.description||'';document.getElementById('frPhoto').value=r.photo||'';document.getElementById('frServes').value=r.serves||'';document.getElementById('frPrep').value=r.prep_time||'';document.getElementById('frCook').value=r.cook_time||'';document.getElementById('frNotes').value=r.notes||'';document.getElementById('frCuisine').value=r.cuisine||'';document.getElementById('frDietary').value=r.dietary||'';document.getElementById('frDiff').value=r.difficulty||'';document.getElementById('frCourse').value=r.course||'';document.getElementById('frBook').value=r.book_id||'';document.getElementById('frImportURL').value=r.source_url||'';document.getElementById('urlImportSt').innerHTML='';if(r.photo){document.getElementById('frPhotoPreview').style.display='block';document.getElementById('frPhotoImg').src=r.photo;}else document.getElementById('frPhotoPreview').style.display='none';document.getElementById('frIngRows').innerHTML='';recipeIngredients.filter(i=>i.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order).forEach(i=>addIngRow(i.amount,i.unit,i.ingredient,i.notes));if(!recipeIngredients.filter(i=>i.recipe_id===id).length){addIngRow();addIngRow();}document.getElementById('frStepRows').innerHTML='';recipeSteps.filter(s=>s.recipe_id===id).sort((a,b)=>a.sort_order-b.sort_order).forEach(s=>addStepRow(s.step_text));if(!recipeSteps.filter(s=>s.recipe_id===id).length)addStepRow();frNextStep(1);openM('addFRM');}
 function addIngRow(amount,unit,ingredient,notes){frIngRowN++;const n=frIngRowN;const d=document.createElement('div');d.className='ing-form-row';d.id='ingr'+n;d.innerHTML='<input type="text" placeholder="Qty" value="'+(amount?e(amount):'')+'" style="width:52px;flex:none;" id="iq'+n+'"><input type="text" placeholder="Unit" value="'+(unit?e(unit):'')+'" style="width:52px;flex:none;" id="iu'+n+'"><input type="text" placeholder="Ingredient *" value="'+(ingredient?e(ingredient):'')+'" style="flex:2;" id="ii'+n+'"><input type="text" placeholder="Note" value="'+(notes?e(notes):'')+'" style="flex:1;font-size:12px;" id="in'+n+'"><button class="ing-del" onclick="this.parentElement.remove()">&#x2715;</button>';document.getElementById('frIngRows').appendChild(d);}
 function addStepRow(text){frStepRowN++;const n=frStepRowN;const d=document.createElement('div');d.className='step-form-row';d.id='stepr'+n;d.innerHTML='<div class="step-num-sm">'+n+'</div><textarea placeholder="Describe this step..." id="st'+n+'">'+(text?e(text):'')+'</textarea><button class="ing-del" style="margin-top:8px;" onclick="this.parentElement.remove()">&#x2715;</button>';document.getElementById('frStepRows').appendChild(d);}
 function previewFRPhoto(){const url=document.getElementById('frPhoto').value.trim();if(!url)return;document.getElementById('frPhotoPreview').style.display='block';document.getElementById('frPhotoImg').src=url;}
@@ -1130,7 +1203,18 @@ async function fetchBk(isbn){
   if(gr.status==='fulfilled'){gb=gr.value?.items?.[0]?.volumeInfo||null;}
   if(!ol&&!gb)return null;
   const title=ol?.title||gb?.title||'',author=ol?(ol.authors||[]).map(a=>a.name).join(', '):(gb?.authors||[]).join(', '),publisher=ol?(ol.publishers||[]).map(p=>p.name).join(', '):(gb?.publisher||''),year=ol?.publish_date?.match(/\d{4}/)?.[0]||gb?.publishedDate?.slice(0,4)||'',pages=String(ol?.number_of_pages||gb?.pageCount||''),desc=gb?.description||ol?.excerpts?.[0]?.text||'';
-  let cov='';if(ol?.cover?.large)cov=ol.cover.large;else if(gb?.imageLinks)cov=(gb.imageLinks.extraLarge||gb.imageLinks.large||gb.imageLinks.thumbnail||'').replace('http:','https:').replace('zoom=1','zoom=3').replace('&edge=curl','');if(!cov)cov='https://covers.openlibrary.org/b/isbn/'+isbn+'-L.jpg';
+  // Build cover URL - try multiple sources with fallbacks
+  let cov='';
+  // 1. Google Books - best quality, try largest available
+  if(gb?.imageLinks){
+    cov=(gb.imageLinks.extraLarge||gb.imageLinks.large||gb.imageLinks.medium||gb.imageLinks.thumbnail||'')
+      .replace('http:','https:').replace('zoom=1','zoom=5').replace('&edge=curl','');
+  }
+  // 2. Open Library cover
+  if(!cov && ol?.cover?.large) cov=ol.cover.large;
+  if(!cov && ol?.cover?.medium) cov=ol.cover.medium;
+  // 3. Open Library ISBN fallback (always try this as it works for most books)
+  if(!cov) cov='https://covers.openlibrary.org/b/isbn/'+isbn+'-L.jpg';
   const subs=[...(ol?(ol.subjects||[]).map(s=>typeof s==='string'?s:s.name):[]),...(gb?.categories||[])];
   return{title,author,publisher,year,pages,cover:cov,description:desc,subjects:subs,th:title.toLowerCase(),dh:desc.toLowerCase().slice(0,500)};
 }
@@ -1885,11 +1969,12 @@ let ocrImageData = null;
 let ocrPage2Data = null;
 let ocrParsed = null;
 
-function openOcrM() {
+function openOcrM(bookId) {
   ocrMode = 'recipe';
   ocrImageData = null;
   ocrPage2Data = null;
   ocrParsed = null;
+  ocrContextBookId = bookId || null;
   document.getElementById('ocrStatus').innerHTML = '';
   document.getElementById('ocrStatus').className = 'st2';
   document.getElementById('ocrPreview').style.display = 'none';
@@ -1897,9 +1982,19 @@ function openOcrM() {
   document.getElementById('ocrPhotoArea').innerHTML = '<div class="ocr-photo-ph" onclick="triggerOcrCamera()"><div class="ocr-photo-ph-icon">&#x1F4F7;</div><div class="ocr-photo-ph-label">Tap to photograph recipe page</div><div class="ocr-photo-ph-sub">Use good lighting and keep text in frame</div></div>';
   document.querySelectorAll('.ocr-mode-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ocrModeRecipe').classList.add('active');
-  // Populate book selector
+  // Populate top book selector
   const sel = document.getElementById('ocrBook');
-  sel.innerHTML = '<option value="">-- Not linked to a book --</option>' + books.map(b => '<option value="' + b.id + '">' + e(b.title) + '</option>').join('');
+  if (sel) {
+    sel.innerHTML = '<option value="">-- Select book (optional) --</option>' + books.map(b => '<option value="' + b.id + '">' + e(b.title) + '</option>').join('');
+    if (ocrContextBookId) {
+      sel.value = ocrContextBookId;
+      const bk = books.find(b => b.id === ocrContextBookId);
+      if (bk) {
+        document.getElementById('ocrStatus').className = 'st2 ok';
+        document.getElementById('ocrStatus').textContent = 'Ready to scan from: ' + bk.title;
+      }
+    }
+  }
   openM('ocrM');
 }
 
@@ -1907,9 +2002,31 @@ function setOcrMode(mode, el) {
   ocrMode = mode;
   document.querySelectorAll('.ocr-mode-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  // Update save button label
   const btn = document.getElementById('saveOcrBtn');
   if (btn) btn.textContent = mode === 'recipe' ? '\u2713 Save Recipe' : '\u2713 Add to Index';
+  // Update tip text based on mode
+  const tip = document.getElementById('ocrTipText');
+  if (tip) {
+    if (mode === 'index') {
+      tip.innerHTML = '<strong>For contents/index pages:</strong> Photograph the full page clearly. Claude will read every recipe title and page number listed. Works with most cookbook index layouts.';
+    } else {
+      tip.innerHTML = '<strong>Tips for best results:</strong> Good lighting, hold the camera steady, keep all text in frame. Handles two-column ingredient layouts well.';
+    }
+  }
+  const title = document.getElementById('ocrModalTitle');
+  if (title) title.textContent = mode === 'index' ? '\u1F4CB Scan Contents Page' : '\u1F4F8 Scan Recipe Page';
+}
+function ocrBookChanged(bookId) {
+  ocrContextBookId = bookId || null;
+  const bk = books.find(b => b.id === bookId);
+  const el = document.getElementById('ocrStatus');
+  if (bk && el) {
+    el.className = 'st2 ok';
+    el.textContent = 'Ready to scan from: ' + bk.title;
+  } else if (el) {
+    el.textContent = '';
+    el.className = 'st2';
+  }
 }
 
 function triggerOcrCamera() {
@@ -1929,30 +2046,74 @@ function triggerOcrPage2() {
 async function handleOcrPhoto(event) {
   const file = event.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    ocrImageData = e.target.result;
-    // Show preview
+  const el = document.getElementById('ocrStatus');
+  el.className = 'st2 loading';
+  el.innerHTML = '<span class="spin"></span>Preparing image...';
+  try {
+    // Convert any format (including HEIC) to JPEG via canvas
+    ocrImageData = await convertToJpeg(file);
     document.getElementById('ocrPhotoArea').innerHTML =
       '<div class="ocr-photo-wrap"><img src="' + ocrImageData + '" alt="Recipe page"><div style="position:absolute;top:8px;right:8px;"><button onclick="triggerOcrCamera()" style="background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;">&#x1F504; Retake</button></div></div>';
+    el.innerHTML = '';
     await processOcrImage();
-  };
-  reader.readAsDataURL(file);
+  } catch(err) {
+    console.error('Image prep error:', err);
+    el.className = 'st2 err';
+    el.textContent = 'Could not read image — try taking a new photo';
+  }
 }
 
 async function handleOcrPage2(event) {
   const file = event.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    ocrPage2Data = e.target.result;
-    const el = document.getElementById('ocrStatus');
-    el.className = 'st2 loading';
-    el.innerHTML = '<span class="spin"></span>Processing second page...';
+  const el = document.getElementById('ocrStatus');
+  el.className = 'st2 loading';
+  el.innerHTML = '<span class="spin"></span>Processing second page...';
+  try {
+    ocrPage2Data = await convertToJpeg(file);
     await processOcrImage(true);
-  };
-  reader.readAsDataURL(file);
+  } catch(err) {
+    el.className = 'st2 err';
+    el.textContent = 'Could not read image — try again';
+  }
 }
+
+function convertToJpeg(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        // Scale down if very large (keeps quality, reduces payload)
+        const maxDim = 1600;
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', 0.92));
+      } catch(e) { reject(e); }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      // Fallback: read as base64 directly
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    };
+    img.src = url;
+  });
+}
+
+
 
 async function processOcrImage(isPage2 = false) {
   const el = document.getElementById('ocrStatus');
@@ -1986,9 +2147,9 @@ async function processOcrImage(isPage2 = false) {
 
     let promptText = '';
     if (ocrMode === 'recipe') {
-      promptText = 'Extract the recipe from this cookbook page photograph. Return ONLY valid JSON, no markdown:\n{"title":"","description":"","serves":"","prep_time":null,"cook_time":null,"difficulty":"","course":"","cuisine":"","dietary":"","ingredients":[{"amount":"","unit":"","ingredient":"","notes":""}],"steps":[""],"notes":""}\n\nIf any field is not visible or not applicable use null or empty string. For difficulty use: Easy, Medium, Challenging, or Weekend project.';
+      promptText = 'You are reading a cookbook page photograph. Extract ALL text carefully and return ONLY valid JSON with no markdown, no backticks, no explanation:\n{"title":"","description":"","serves":"","prep_time":null,"cook_time":null,"difficulty":"","course":"","cuisine":"","dietary":"","ingredients":[{"amount":"","unit":"","ingredient":"","notes":""}],"steps":[""],"notes":""}\n\nImportant rules:\n- Title is usually the largest text at the top, often in capitals\n- Description/subtitle is often a list of key ingredients on the line below the title\n- Ingredients may be in two columns - read both columns carefully\n- Amount: the number or quantity (e.g. "800g", "2", "1 x 270g")\n- Unit: leave blank if amount already includes unit (e.g. "800g" = amount, unit blank)\n- Steps: split the method into logical steps, one action per step\n- For difficulty: Easy if under 30 mins prep, Medium if 30-60 mins, Challenging if over 60 mins\n- Serves: just the number as a string\n- prep_time and cook_time: integer minutes only\n- If a field is not visible use null or empty string';
     } else {
-      promptText = 'This is a contents page or recipe index from a cookbook. List every recipe you can see with its page number. Return ONLY valid JSON array, no markdown:\n[{"name":"Recipe name","page":"42","course":"Main"}]\n\nFor course use: Starter, Main, Side, Dessert, Bread, Snack, Sauce, or Drink. If course is unclear use empty string.';
+      promptText = 'This is a contents page, index page, or recipe listing from a cookbook. Read every recipe title and page number visible. Return ONLY a valid JSON array, no markdown, no backticks:\n[{"name":"Recipe name","page":"42","course":"Main"}]\n\nRules:\n- Read ALL recipes visible, even if small text\n- page: just the number as a string\n- course: choose from Starter, Main, Side, Dessert, Bread, Snack, Sauce, Drink — or leave empty if unclear\n- name: exact recipe name as written in the book';
     }
 
     content.push({ type: 'text', text: promptText });
@@ -2083,7 +2244,7 @@ async function saveOcrResult() {
     if (ocrMode === 'recipe') {
       // Save as full recipe
       const r = ocrParsed;
-      const bookId = document.getElementById('ocrBook').value || null;
+      const bookId = (document.getElementById('ocrBook') ? document.getElementById('ocrBook').value : null) || ocrContextBookId || null;
       const row = {
         title: r.title || 'Untitled recipe',
         description: r.description || null,
