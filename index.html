@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My Cookbook Library">
 <meta name="theme-color" content="#ffffff">
-<title>My Cookbook Library </title>
+<title>My Cookbook Library</title>
 <style>
 :root{--g:#2d6a4f;--gl:#52b788;--o:#e07c3a;--cr:#f8f6f0;--cd:#ffffff;--br:#e8e4dc;--t1:#1a1a1a;--t2:#6b6560;--t3:#9e9890;--r:14px;--tbh:56px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -33,7 +33,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .hdr-r{display:flex;align-items:center;gap:8px;}
 .sdot{width:12px;height:12px;border-radius:50%;background:#ccc;flex-shrink:0;transition:background .3s;}
 .sdot.ok{background:var(--gl);} .sdot.syncing{background:#f0a500;animation:pls 1s infinite;} .sdot.err{background:#c0392b;}
-@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}} 
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
 .load-ind{position:fixed;bottom:calc(var(--tbh)+14px+env(safe-area-inset-bottom));left:16px;background:var(--cd);border:0.5px solid var(--br);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--t3);display:none;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:400;}
 .load-ind.show{display:flex;}
 .tc{flex:1;overflow:hidden;position:relative;}
@@ -241,6 +241,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
 .home-goal-info { flex: 1; }
 .home-goal-stat { font-size: 22px; font-weight: 800; color: var(--t1); letter-spacing: -0.5px; }
 .home-goal-sub { font-size: 13px; color: var(--t2); }
+
+/* ── OCR RECIPE SCAN ─────────────────────────────────────────── */
+.ocr-photo-wrap{position:relative;width:100%;border-radius:14px;overflow:hidden;background:#000;margin-bottom:14px;}
+.ocr-photo-wrap img{width:100%;max-height:340px;object-fit:contain;display:block;}
+.ocr-photo-ph{width:100%;height:200px;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:14px;cursor:pointer;border:2px dashed rgba(255,255,255,.3);}
+.ocr-photo-ph-icon{font-size:48px;}
+.ocr-photo-ph-label{font-size:15px;font-weight:600;color:#fff;opacity:.9;}
+.ocr-photo-ph-sub{font-size:13px;color:rgba(255,255,255,.7);}
+.ocr-mode-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.ocr-mode-btn{background:var(--cr);border:1.5px solid var(--br);border-radius:12px;padding:12px 8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--t2);text-align:center;transition:all .15s;}
+.ocr-mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
+.ocr-mode-btn .ocr-mode-icon{font-size:22px;display:block;margin-bottom:4px;}
+.ocr-result-preview{background:var(--cr);border-radius:12px;padding:14px;border:0.5px solid var(--br);margin-bottom:14px;max-height:200px;overflow-y:auto;}
+.ocr-result-preview h4{font-size:13px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.ocr-ing-row{font-size:13px;color:var(--t1);padding:4px 0;border-bottom:0.5px solid var(--br);display:flex;gap:8px;}
+.ocr-ing-amt{color:var(--g);font-weight:700;min-width:60px;}
+.ocr-step-row{font-size:13px;color:var(--t1);padding:6px 0;border-bottom:0.5px solid var(--br);display:flex;gap:8px;}
+.ocr-step-n{color:var(--g);font-weight:800;min-width:20px;}
+.ocr-tip{background:rgba(45,106,79,.08);border:0.5px solid rgba(45,106,79,.2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:14px;}
+.ocr-tip strong{color:var(--g);}
 @media(min-width:640px){.modal{border-radius:24px;margin-bottom:40px;max-height:85vh;}.mo{align-items:center;}}
 </style>
 </head>
@@ -316,7 +336,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
         <button class="chip" onclick="setLF('style',this)">&#x1F468;&#x200D;&#x1F373; Style</button>
         <button class="chip" onclick="setLF('ingredient',this)">&#x1F966; Ingredient</button>
       </div>
-      <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button><button class="btn bp bsm" onclick="openScanM()">&#x1F4F7; Scan</button><button class="btn bp bsm" onclick="openAddBk(false)">+ Add</button></div></div>
+      <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button><button class="btn bp bsm" onclick="openScanM()">&#x1F4F7; Scan</button><button class="btn bp bsm" onclick="openAddBk(false)">+ Add</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM()">&#x1F9D1;&#x200D;&#x1F373; Recipe</button></div></div>
       <div id="libgrid"></div>
     </div>
 
@@ -459,6 +479,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
     <div class="fabrow"><span class="fablbl">Meal planner</span><button class="fabmini" style="background:#7b5ea7" onclick="closeFab();navTab('planner')">&#x1F4C5;</button></div>
     <div class="fabrow"><span class="fablbl">Scan barcode</span><button class="fabmini" style="background:var(--o)" onclick="openScanM()">&#x1F4F7;</button></div>
     <div class="fabrow"><span class="fablbl">Enter ISBN</span><button class="fabmini" style="background:#888" onclick="openAddBk(true)">&#x1F522;</button></div>
+    <div class="fabrow"><span class="fablbl">Scan recipe page</span><button class="fabmini" style="background:#e91e63" onclick="closeFab();openOcrM()">&#x1F4F8;</button></div>
     <div class="fabrow"><span class="fablbl">Add manually</span><button class="fabmini" style="background:#555" onclick="openAddBk(false)">&#x270F;&#xFE0F;</button></div>
   </div>
   <button class="fab" id="fabBtn" onclick="togFab()">+</button>
@@ -677,6 +698,64 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-
       <button class="btn bo" onclick="closeM('cookM')" style="flex:1">Cancel</button>
       <button class="btn bp" onclick="saveCookLog()" style="flex:2" id="saveCookBtn">&#x2713; Mark as Cooked</button>
     </div>
+  </div>
+</div></div>
+
+<!-- OCR RECIPE SCAN MODAL -->
+<div class="mo" id="ocrM" onclick="if(event.target===this)closeM('ocrM')"><div class="modal" onclick="event.stopPropagation()" style="max-height:95vh;">
+  <div class="mhw"><div class="mh"></div></div>
+  <div class="mhdr"><span class="mtit">&#x1F4F8; Scan Recipe Page</span><button class="mcls" onclick="closeM('ocrM')">&#x2715;</button></div>
+  <div class="mbody">
+
+    <!-- Mode selector -->
+    <div class="ocr-mode-row">
+      <button class="ocr-mode-btn active" id="ocrModeRecipe" onclick="setOcrMode('recipe',this)">
+        <span class="ocr-mode-icon">&#x1F9D1;&#x200D;&#x1F373;</span>Full Recipe<br><span style="font-size:11px;font-weight:400;opacity:.7;">Ingredients + method</span>
+      </button>
+      <button class="ocr-mode-btn" id="ocrModeIndex" onclick="setOcrMode('index',this)">
+        <span class="ocr-mode-icon">&#x1F4CB;</span>Recipe Index<br><span style="font-size:11px;font-weight:400;opacity:.7;">Title + page number</span>
+      </button>
+    </div>
+
+    <div class="ocr-tip">
+      <strong>Tips for best results:</strong> Good lighting, hold the camera steady, make sure all text is in frame. Works best with printed recipes — handles most modern cookbook fonts well.
+    </div>
+
+    <!-- Photo area -->
+    <div id="ocrPhotoArea">
+      <div class="ocr-photo-ph" onclick="triggerOcrCamera()">
+        <div class="ocr-photo-ph-icon">&#x1F4F7;</div>
+        <div class="ocr-photo-ph-label">Tap to photograph recipe page</div>
+        <div class="ocr-photo-ph-sub">Or tap again to use a different photo</div>
+      </div>
+    </div>
+    <input type="file" id="ocrFileIn" accept="image/*" capture="environment" style="display:none" onchange="handleOcrPhoto(event)">
+
+    <!-- Processing status -->
+    <div class="st2" id="ocrStatus" style="margin-bottom:12px;"></div>
+
+    <!-- Result preview -->
+    <div id="ocrPreview" style="display:none;">
+      <div class="ocr-result-preview" id="ocrResultContent"></div>
+
+      <!-- Link to book (for full recipe mode) -->
+      <div class="fg" id="ocrBookRow">
+        <label class="fl">Link to book (optional)</label>
+        <select id="ocrBook" class="fi"><option value="">-- Not linked to a book --</option></select>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;padding-top:4px;">
+        <button class="btn bo" onclick="ocrRetake()" style="flex:1">&#x1F504; Retake</button>
+        <button class="btn bp" onclick="saveOcrResult()" style="flex:2" id="saveOcrBtn">&#x2713; Save Recipe</button>
+      </div>
+    </div>
+
+    <!-- Second page option (for full recipes) -->
+    <div id="ocrPage2Row" style="display:none;margin-top:10px;">
+      <button class="btn bo bblk" onclick="triggerOcrPage2()">&#x1F4F8; Add second page (recipe continues overleaf)</button>
+    </div>
+
   </div>
 </div></div>
 
@@ -1797,6 +1876,310 @@ async function saveCookLog() {
 // How many times has this recipe been cooked?
 function cookCount(recipeId) {
   return cookLog.filter(e => e.recipe_id === recipeId).length;
+}
+
+
+// ── OCR RECIPE SCANNING ───────────────────────────────────────
+let ocrMode = 'recipe'; // 'recipe' or 'index'
+let ocrImageData = null;
+let ocrPage2Data = null;
+let ocrParsed = null;
+
+function openOcrM() {
+  ocrMode = 'recipe';
+  ocrImageData = null;
+  ocrPage2Data = null;
+  ocrParsed = null;
+  document.getElementById('ocrStatus').innerHTML = '';
+  document.getElementById('ocrStatus').className = 'st2';
+  document.getElementById('ocrPreview').style.display = 'none';
+  document.getElementById('ocrPage2Row').style.display = 'none';
+  document.getElementById('ocrPhotoArea').innerHTML = '<div class="ocr-photo-ph" onclick="triggerOcrCamera()"><div class="ocr-photo-ph-icon">&#x1F4F7;</div><div class="ocr-photo-ph-label">Tap to photograph recipe page</div><div class="ocr-photo-ph-sub">Use good lighting and keep text in frame</div></div>';
+  document.querySelectorAll('.ocr-mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ocrModeRecipe').classList.add('active');
+  // Populate book selector
+  const sel = document.getElementById('ocrBook');
+  sel.innerHTML = '<option value="">-- Not linked to a book --</option>' + books.map(b => '<option value="' + b.id + '">' + e(b.title) + '</option>').join('');
+  openM('ocrM');
+}
+
+function setOcrMode(mode, el) {
+  ocrMode = mode;
+  document.querySelectorAll('.ocr-mode-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // Update save button label
+  const btn = document.getElementById('saveOcrBtn');
+  if (btn) btn.textContent = mode === 'recipe' ? '\u2713 Save Recipe' : '\u2713 Add to Index';
+}
+
+function triggerOcrCamera() {
+  document.getElementById('ocrFileIn').value = '';
+  document.getElementById('ocrFileIn').click();
+}
+
+function triggerOcrPage2() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.capture = 'environment';
+  inp.onchange = handleOcrPage2;
+  inp.click();
+}
+
+async function handleOcrPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    ocrImageData = e.target.result;
+    // Show preview
+    document.getElementById('ocrPhotoArea').innerHTML =
+      '<div class="ocr-photo-wrap"><img src="' + ocrImageData + '" alt="Recipe page"><div style="position:absolute;top:8px;right:8px;"><button onclick="triggerOcrCamera()" style="background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;">&#x1F504; Retake</button></div></div>';
+    await processOcrImage();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function handleOcrPage2(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    ocrPage2Data = e.target.result;
+    const el = document.getElementById('ocrStatus');
+    el.className = 'st2 loading';
+    el.innerHTML = '<span class="spin"></span>Processing second page...';
+    await processOcrImage(true);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function processOcrImage(isPage2 = false) {
+  const el = document.getElementById('ocrStatus');
+  el.className = 'st2 loading';
+  el.innerHTML = '<span class="spin"></span>' + (isPage2 ? 'Processing second page...' : 'Reading recipe...');
+  document.getElementById('ocrPreview').style.display = 'none';
+
+  try {
+    // Build message content with image(s)
+    const content = [];
+
+    if (isPage2 && ocrImageData && ocrPage2Data) {
+      content.push({
+        type: 'text',
+        text: 'These are two pages of the same recipe. Extract the complete recipe combining both pages.'
+      });
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: getMediaType(ocrImageData), data: ocrImageData.split(',')[1] }
+      });
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: getMediaType(ocrPage2Data), data: ocrPage2Data.split(',')[1] }
+      });
+    } else {
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: getMediaType(ocrImageData), data: ocrImageData.split(',')[1] }
+      });
+    }
+
+    let promptText = '';
+    if (ocrMode === 'recipe') {
+      promptText = 'Extract the recipe from this cookbook page photograph. Return ONLY valid JSON, no markdown:\n{"title":"","description":"","serves":"","prep_time":null,"cook_time":null,"difficulty":"","course":"","cuisine":"","dietary":"","ingredients":[{"amount":"","unit":"","ingredient":"","notes":""}],"steps":[""],"notes":""}\n\nIf any field is not visible or not applicable use null or empty string. For difficulty use: Easy, Medium, Challenging, or Weekend project.';
+    } else {
+      promptText = 'This is a contents page or recipe index from a cookbook. List every recipe you can see with its page number. Return ONLY valid JSON array, no markdown:\n[{"name":"Recipe name","page":"42","course":"Main"}]\n\nFor course use: Starter, Main, Side, Dessert, Bread, Snack, Sauce, or Drink. If course is unclear use empty string.';
+    }
+
+    content.push({ type: 'text', text: promptText });
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content }]
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || 'API error');
+
+    const raw = data.content[0].text.trim();
+    ocrParsed = JSON.parse(raw);
+
+    // Show result preview
+    renderOcrPreview();
+    el.className = 'st2 ok';
+    el.textContent = ocrMode === 'recipe'
+      ? 'Recipe read successfully — check details below then save'
+      : ocrParsed.length + ' recipes found — review then save';
+
+    document.getElementById('ocrPreview').style.display = 'block';
+    document.getElementById('ocrBookRow').style.display = ocrMode === 'recipe' ? 'block' : 'none';
+    if (ocrMode === 'recipe' && !isPage2) {
+      document.getElementById('ocrPage2Row').style.display = 'block';
+    } else {
+      document.getElementById('ocrPage2Row').style.display = 'none';
+    }
+
+  } catch (err) {
+    console.error('OCR error:', err);
+    el.className = 'st2 err';
+    el.textContent = 'Could not read recipe — try better lighting or a clearer photo';
+  }
+}
+
+function getMediaType(dataUrl) {
+  const match = dataUrl.match(/^data:([^;]+);/);
+  return match ? match[1] : 'image/jpeg';
+}
+
+function renderOcrPreview() {
+  const el = document.getElementById('ocrResultContent');
+  if (!ocrParsed) return;
+
+  if (ocrMode === 'recipe') {
+    const r = ocrParsed;
+    const ings = (r.ingredients || []).filter(i => i.ingredient);
+    const steps = (r.steps || []).filter(s => s);
+    el.innerHTML =
+      '<h4>' + e(r.title || 'Untitled') + '</h4>'
+      + (r.serves ? '<div style="font-size:12px;color:var(--t3);margin-bottom:8px;">Serves ' + r.serves + (r.cook_time ? ' &middot; ' + r.cook_time + ' mins' : '') + (r.cuisine ? ' &middot; ' + r.cuisine : '') + '</div>' : '')
+      + (ings.length ? '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">' + ings.length + ' ingredients</div>'
+        + ings.slice(0, 6).map(i => '<div class="ocr-ing-row"><span class="ocr-ing-amt">' + (i.amount || '') + ' ' + (i.unit || '') + '</span><span>' + e(i.ingredient) + '</span></div>').join('')
+        + (ings.length > 6 ? '<div style="font-size:12px;color:var(--t3);padding:4px 0;">+ ' + (ings.length - 6) + ' more ingredients</div>' : '') : '')
+      + (steps.length ? '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;margin:8px 0 4px;">' + steps.length + ' steps</div>'
+        + steps.slice(0, 2).map((s, i) => '<div class="ocr-step-row"><span class="ocr-step-n">' + (i + 1) + '</span><span>' + e(typeof s === 'string' ? s.slice(0, 80) : '') + (s.length > 80 ? '...' : '') + '</span></div>').join('')
+        + (steps.length > 2 ? '<div style="font-size:12px;color:var(--t3);padding:4px 0;">+ ' + (steps.length - 2) + ' more steps</div>' : '') : '');
+  } else {
+    const recipes = Array.isArray(ocrParsed) ? ocrParsed : [];
+    el.innerHTML = '<h4>' + recipes.length + ' recipes found</h4>'
+      + recipes.slice(0, 10).map(r => '<div class="ocr-ing-row"><span class="ocr-ing-amt">p.' + (r.page || '?') + '</span><span>' + e(r.name) + (r.course ? ' <span style="color:var(--t3);font-size:11px;">(' + r.course + ')</span>' : '') + '</span></div>').join('')
+      + (recipes.length > 10 ? '<div style="font-size:12px;color:var(--t3);padding:4px 0;">+ ' + (recipes.length - 10) + ' more</div>' : '');
+  }
+}
+
+function ocrRetake() {
+  ocrImageData = null;
+  ocrPage2Data = null;
+  ocrParsed = null;
+  document.getElementById('ocrPhotoArea').innerHTML = '<div class="ocr-photo-ph" onclick="triggerOcrCamera()"><div class="ocr-photo-ph-icon">&#x1F4F7;</div><div class="ocr-photo-ph-label">Tap to photograph recipe page</div><div class="ocr-photo-ph-sub">Use good lighting and keep text in frame</div></div>';
+  document.getElementById('ocrPreview').style.display = 'none';
+  document.getElementById('ocrPage2Row').style.display = 'none';
+  document.getElementById('ocrStatus').innerHTML = '';
+}
+
+async function saveOcrResult() {
+  if (!ocrParsed) return;
+  const btn = document.getElementById('saveOcrBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    setSS('syncing');
+
+    if (ocrMode === 'recipe') {
+      // Save as full recipe
+      const r = ocrParsed;
+      const bookId = document.getElementById('ocrBook').value || null;
+      const row = {
+        title: r.title || 'Untitled recipe',
+        description: r.description || null,
+        serves: r.serves ? String(r.serves) : null,
+        prep_time: parseInt(r.prep_time) || null,
+        cook_time: parseInt(r.cook_time) || null,
+        difficulty: r.difficulty || null,
+        course: r.course || null,
+        cuisine: r.cuisine || null,
+        dietary: r.dietary || null,
+        notes: r.notes || null,
+        book_id: bookId,
+        is_favourite: false,
+        rating: 0,
+        user_id: OWNER_ID
+      };
+
+      const saved = await sbf(SB('full_recipes'), { method: 'POST', body: JSON.stringify(row) });
+      const savedId = saved[0].id;
+      fullRecipes.unshift({ ...row, id: savedId });
+
+      // Save ingredients
+      const ings = (r.ingredients || []).filter(i => i.ingredient);
+      if (ings.length) {
+        const ingRows = ings.map((i, idx) => ({
+          recipe_id: savedId,
+          amount: i.amount || null,
+          unit: i.unit || null,
+          ingredient: i.ingredient,
+          notes: i.notes || null,
+          sort_order: idx,
+          user_id: OWNER_ID
+        }));
+        const savedIngs = await sbf(SB('recipe_ingredients'), { method: 'POST', body: JSON.stringify(ingRows) });
+        recipeIngredients = recipeIngredients.concat(savedIngs || []);
+      }
+
+      // Save steps
+      const steps = (r.steps || []).filter(s => s);
+      if (steps.length) {
+        const stepRows = steps.map((s, idx) => ({
+          recipe_id: savedId,
+          step_text: typeof s === 'string' ? s : s.text || '',
+          sort_order: idx,
+          user_id: OWNER_ID
+        }));
+        const savedSteps = await sbf(SB('recipe_steps'), { method: 'POST', body: JSON.stringify(stepRows) });
+        recipeSteps = recipeSteps.concat(savedSteps || []);
+      }
+
+      savCache();
+      setSS('ok');
+      closeM('ocrM');
+      renderMyRecipes();
+      toast('Recipe saved from photo — ' + (ings.length) + ' ingredients, ' + (steps.length) + ' steps');
+
+    } else {
+      // Save as recipe index entries
+      const recipes = Array.isArray(ocrParsed) ? ocrParsed : [];
+      // Need a book to attach to — prompt if not selected
+      const bookId = document.getElementById('ocrBook').value;
+      if (!bookId) {
+        toast('Please select which book these recipes are from');
+        btn.disabled = false;
+        btn.textContent = '\u2713 Add to Index';
+        return;
+      }
+      const bk = books.find(b => b.id === bookId);
+      const toSave = recipes.filter(r => r.name).map((r, idx) => ({
+        book_id: bookId,
+        name: r.name,
+        page: r.page || null,
+        course: r.course || null,
+        added_at: new Date().toISOString(),
+        user_id: OWNER_ID
+      }));
+
+      if (toSave.length) {
+        const saved = await sbf(SB('recipes'), { method: 'POST', body: JSON.stringify(toSave) });
+        recipes = recipes.concat(saved || []);
+        savCache();
+      }
+      setSS('ok');
+      closeM('ocrM');
+      renderAll();
+      toast(toSave.length + ' recipes added to ' + (bk ? bk.title : 'book') + ' index');
+    }
+
+  } catch (err) {
+    setSS('err');
+    console.error('OCR save error:', err);
+    toast('Save failed — please try again');
+  }
+
+  btn.disabled = false;
+  btn.textContent = ocrMode === 'recipe' ? '\u2713 Save Recipe' : '\u2713 Add to Index';
 }
 
 // ── AI TOGGLE ─────────────────────────────────────────────────
