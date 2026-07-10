@@ -1730,6 +1730,15 @@ async function saveBk(){
 async function delBk(id){if(!confirm('Remove this book?'))return;try{await sbf(SB('books')+'?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}});books=books.filter(b=>b.id!==id);recipes=recipes.filter(r=>r.book_id!==id);savCache();closeM('bkDetailM');renderAll();toast('Book removed');}catch(err){toast('Delete failed');}}
 
 // ISBN LOOKUP
+function convertIsbn13to10(isbn13) {
+  // Strip 978/979 prefix and recalculate check digit
+  if(!isbn13 || isbn13.length !== 13) return isbn13;
+  const body = isbn13.slice(3, 12);
+  let sum = 0;
+  for(let i = 0; i < 9; i++) sum += parseInt(body[i]) * (10 - i);
+  const check = (11 - (sum % 11)) % 11;
+  return body + (check === 10 ? 'X' : check.toString());
+}
 async function fetchBk(isbn){
   let ol=null,gb=null;
   const[or,gr]=await Promise.allSettled([
@@ -1744,14 +1753,15 @@ async function fetchBk(isbn){
   // 1. Open Library cover API by ISBN - most reliable, no auth, works cross-origin
   // 2. Open Library direct cover from data
   // 3. Google Books thumbnail (small but loads cross-origin unlike large sizes)
-  let cov = 'https://covers.openlibrary.org/b/isbn/'+isbn+'-L.jpg';
-  // Override with better source if available
+  // Cover priority — all deterministic, no guessing:
+  // 1. Amazon CDN by ISBN-10 — consistent, public, cross-origin
+  // 2. Open Library cover ID from API — high quality when available
+  // 3. Open Library by ISBN — broad fallback
+  const isbn10 = convertIsbn13to10(isbn);
+  let cov = 'https://images-na.ssl-images-amazon.com/images/P/' + isbn10 + '.jpg';
   if(ol?.cover?.large) cov = ol.cover.large;
   else if(ol?.cover?.medium) cov = ol.cover.medium;
-  // Google Books thumbnail as additional fallback (stored but used only if OL fails)
-  const gbThumb = gb?.imageLinks?.thumbnail
-    ? gb.imageLinks.thumbnail.replace('http:','https:').replace('&edge=curl','').replace('zoom=1','zoom=1')
-    : null;
+  const gbThumb = 'https://covers.openlibrary.org/b/isbn/' + isbn + '-L.jpg';
   const subs=[...(ol?(ol.subjects||[]).map(s=>typeof s==='string'?s:s.name):[]),...(gb?.categories||[])];
   return{title,author,publisher,year,pages,cover:cov,coverFallback:gbThumb||null,description:desc,subjects:subs,th:title.toLowerCase(),dh:desc.toLowerCase().slice(0,500)};
 }
