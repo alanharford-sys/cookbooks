@@ -354,11 +354,13 @@ body {
   background: rgba(45,106,79,.08);
   color: var(--g);
   border-radius: 20px;
-  padding: 5px 13px;
-  font-size: var(--ts-sm); font-weight: 600;
+  padding: 4px 11px;
+  font-size: 12px; font-weight: 600;
   cursor: pointer;
   border: 1px solid rgba(45,106,79,.2);
   transition: all .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .seat:active { background: var(--g); color: #fff; }
 
@@ -826,9 +828,12 @@ textarea.fi { resize: vertical; min-height: 80px; }
           </div>
         </div>
       </div>
-      <div class="seac">
-        <div class="seah"><h3>&#x1F331; In Season Now</h3><p id="seamth"></p></div>
-        <div class="seai" id="seai"></div>
+      <div style="padding:0 16px 10px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--g);">&#x1F331; In Season</span>
+          <span style="font-size:11px;color:var(--t3);" id="seamth"></span>
+        </div>
+        <div id="seai" style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;"></div>
       </div>
       <div class="qs"><input type="search" placeholder="&#x1F50D; Search recipes by ingredient..." oninput="qsearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"></div>
       <div id="qres"></div>
@@ -845,7 +850,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
         <button class="chip" onclick="setLF('style',this)">&#x1F468;&#x200D;&#x1F373; Style</button>
         <button class="chip" onclick="setLF('ingredient',this)">&#x1F966; Ingredient</button>
       </div>
-      <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button><button class="btn bp bsm" onclick="openScanM()">&#x1F4F7; Scan</button><button class="btn bp bsm" onclick="openAddBk(false)">+ Add</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM()">&#x1F9D1;&#x200D;&#x1F373; Recipe</button></div></div>
+      <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button></div></div>
       <div id="libgrid"></div>
     </div>
 
@@ -1434,7 +1439,7 @@ async function loadAll(){
   }
 }
 function savCache(){localStorage.setItem('cbc',JSON.stringify({books,recipes,shelves,fullRecipes,recipeIngredients,recipeSteps,rCollections,rColItems}));}
-function r2b(r){return{id:r.id,title:r.title||'',author:r.author||'',publisher:r.publisher||'',year:r.year||'',pages:r.pages||'',isbn:r.isbn||'',cover:r.cover||'',description:r.description||'',notes:r.notes||'',addedAt:r.added_at||'',shelfId:r.collection_id||null,tags:{cuisine:r.cuisine?r.cuisine.split('|').map(s=>s.trim()).filter(Boolean):[],style:r.style?r.style.split('|').map(s=>s.trim()).filter(Boolean):[],ingredient:r.ingredients?r.ingredients.split('|').map(s=>s.trim()).filter(Boolean):[]}};}
+function r2b(r){return{id:r.id,title:r.title||'',author:r.author||'',publisher:r.publisher||'',year:r.year||'',pages:r.pages||'',isbn:r.isbn||'',cover:r.cover||'',coverFallback:r.cover_fallback||null,description:r.description||'',notes:r.notes||'',addedAt:r.added_at||'',shelfId:r.collection_id||null,tags:{cuisine:r.cuisine?r.cuisine.split('|').map(s=>s.trim()).filter(Boolean):[],style:r.style?r.style.split('|').map(s=>s.trim()).filter(Boolean):[],ingredient:r.ingredients?r.ingredients.split('|').map(s=>s.trim()).filter(Boolean):[]}};}
 function b2r(b){return{title:b.title,author:b.author||'',publisher:b.publisher||'',year:b.year||'',pages:b.pages||'',isbn:b.isbn||'',cover:b.cover||'',description:b.description||'',cuisine:(b.tags?.cuisine||[]).join('|'),style:(b.tags?.style||[]).join('|'),ingredients:(b.tags?.ingredient||[]).join('|'),notes:b.notes||'',added_at:b.addedAt||new Date().toISOString(),collection_id:b.shelfId||null,user_id:OWNER_ID};}
 
 // INIT
@@ -1506,7 +1511,13 @@ function renderLib(){
   if(libV==='grid')el.innerHTML='<div class="grid">'+list.map(b=>bkGrid(b)).join('')+'</div>';
   else el.innerHTML='<div class="lst">'+list.map(b=>bkList(b)).join('')+'</div>';
 }
-function cimg(b,ic,pc){if(b.cover)return '<img class="'+ic+'" src="'+b.cover+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="'+pc+'" style="display:none">&#x1F4D6;</div>';return '<div class="'+pc+'">&#x1F4D6;</div>';}
+function cimg(b,ic,pc){
+  if(b.cover){
+    const fb=b.coverFallback?'this.src=\''+b.coverFallback+'\';this.onerror=function(){this.style.display=\'none\';this.nextSibling.style.display=\'flex\'};':'this.style.display=\'none\';this.nextSibling.style.display=\'flex\';';
+    return '<img class="'+ic+'" src="'+b.cover+'" alt="" loading="lazy" onerror="'+fb+'"><div class="'+pc+'" style="display:none">&#x1F4D6;</div>';
+  }
+  return '<div class="'+pc+'">&#x1F4D6;</div>';
+}
 function bkGrid(b){return '<div class="bkcard" onclick="showBkDetail(\''+b.id+'\')">'+cimg(b,'bkcov','bkph')+'<div class="bkinfo"><div class="bktit">'+e(b.title)+'</div><div class="bkaut">'+e(b.author||'')+'</div><div class="bktags">'+(b.tags?.cuisine||[]).slice(0,1).map(t=>'<span class="tag tc">'+e(t)+'</span>').join('')+(b.tags?.style||[]).slice(0,1).map(t=>'<span class="tag ts">'+e(t)+'</span>').join('')+'</div></div></div>';}
 function bkList(b){const rc=recipes.filter(r=>r.book_id===b.id).length;const sh=shelves.find(s=>s.id===b.shelfId);return '<div class="lcard" onclick="showBkDetail(\''+b.id+'\')">'+cimg(b,'lcov','lph')+'<div class="linfo"><div class="ltit">'+e(b.title)+'</div><div class="laut">'+e(b.author||'')+(b.year?' &middot; '+b.year:'')+'</div><div class="bktags">'+(b.tags?.cuisine||[]).slice(0,2).map(t=>'<span class="tag tc">'+e(t)+'</span>').join('')+(b.tags?.style||[]).slice(0,1).map(t=>'<span class="tag ts">'+e(t)+'</span>').join('')+'</div>'+(rc?'<div style="font-size:11px;color:var(--t3);margin-top:5px;">&#x1F4D6; '+rc+' recipe'+(rc!==1?'s':'')+' indexed</div>':'')+(sh?'<div style="font-size:11px;color:#6a1b9a;font-weight:600;margin-top:3px;">&#x1F4CD; '+e(sh.name)+'</div>':'')+'</div></div>';}
 
@@ -1518,7 +1529,7 @@ function showBkDetail(id){
   const meta=[b.publisher&&'<div class="mi"><div class="ml">Publisher</div><div class="mv">'+e(b.publisher)+'</div></div>',b.year&&'<div class="mi"><div class="ml">Year</div><div class="mv">'+e(b.year)+'</div></div>',b.pages&&'<div class="mi"><div class="ml">Pages</div><div class="mv">'+e(b.pages)+'</div></div>',b.isbn&&'<div class="mi"><div class="ml">ISBN</div><div class="mv" style="font-size:12px">'+e(b.isbn)+'</div></div>'].filter(Boolean).join('');
   const covH=b.cover?'<img class="dcov" src="'+b.cover+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="dcovph" style="display:none">&#x1F4D6;</div>':'<div class="dcovph">&#x1F4D6;</div>';
   const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button onclick="addRecipeToShopList(\''+r.id+'\',true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
-  const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bp" style="flex:1" onclick="openAddRcp(\''+b.id+'\')">&#x1F4D6; Add Recipes</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
+  const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bo bsm" onclick="refreshCover(\''+b.id+'\')" title="Refresh cover">&#x1F5BC;&#xFE0F;</button><button class="btn bp" style="flex:1" onclick="openAddRcp(\''+b.id+'\')">&#x1F4D6; Add Recipes</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM(\''+b.id+'\')">&#x1F4F8;</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
   document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
   openM('bkDetailM');
 }
@@ -1687,6 +1698,23 @@ function popBookSel(){const s=document.getElementById('frBook');if(!s)return;s.i
 // ADD/EDIT BOOK
 function openAddBk(fi){closeFab();editBkId=null;pCover='';pDesc='';document.getElementById('addBkTit').textContent='Add Cookbook';['fT','fA','fPub','fYr','fPg','fISBN','fN','isbnIn'].forEach(id=>document.getElementById(id).value='');document.getElementById('isbnSt').innerHTML='';document.getElementById('fShelf').value='';ctags={cuisine:[],style:[],ingredient:[]};renderTAs();openM('addBkM');if(fi)setTimeout(()=>document.getElementById('isbnIn').focus(),400);}
 function editBk(id){const b=books.find(x=>x.id===id);if(!b)return;closeM('bkDetailM');editBkId=id;pCover=b.cover||'';pDesc=b.description||'';document.getElementById('addBkTit').textContent='Edit Cookbook';document.getElementById('fT').value=b.title||'';document.getElementById('fA').value=b.author||'';document.getElementById('fPub').value=b.publisher||'';document.getElementById('fYr').value=b.year||'';document.getElementById('fPg').value=b.pages||'';document.getElementById('fISBN').value=b.isbn||'';document.getElementById('fN').value=b.notes||'';document.getElementById('isbnIn').value=b.isbn||'';document.getElementById('isbnSt').innerHTML='';document.getElementById('fShelf').value=b.shelfId||'';ctags={cuisine:[...(b.tags?.cuisine||[])],style:[...(b.tags?.style||[])],ingredient:[...(b.tags?.ingredient||[])]};renderTAs();openM('addBkM');}
+
+async function refreshCover(bookId) {
+  const b = books.find(x=>x.id===bookId);
+  if (!b || !b.isbn) { toast('No ISBN — cannot look up cover'); return; }
+  const el = document.querySelector('#bkDetailCont .locbadge') || document.getElementById('bkDetailCont');
+  toast('Looking up cover...');
+  try {
+    const d = await fetchBk(b.isbn);
+    if (!d || !d.cover) { toast('No cover found for this ISBN'); return; }
+    await sbf(SB('books')+'?id=eq.'+bookId, {method:'PATCH', body:JSON.stringify({cover:d.cover})});
+    b.cover = d.cover;
+    savCache();
+    renderLib();
+    showBkDetail(bookId);
+    toast('Cover updated');
+  } catch(err) { toast('Failed to update cover'); }
+}
 async function saveBk(){
   const title=document.getElementById('fT').value.trim();if(!title){alert('Please enter a title.');return;}
   const btn=document.getElementById('saveBkBtn');btn.disabled=true;btn.textContent='Saving...';
@@ -1712,23 +1740,23 @@ async function fetchBk(isbn){
   if(gr.status==='fulfilled'){gb=gr.value?.items?.[0]?.volumeInfo||null;}
   if(!ol&&!gb)return null;
   const title=ol?.title||gb?.title||'',author=ol?(ol.authors||[]).map(a=>a.name).join(', '):(gb?.authors||[]).join(', '),publisher=ol?(ol.publishers||[]).map(p=>p.name).join(', '):(gb?.publisher||''),year=ol?.publish_date?.match(/\d{4}/)?.[0]||gb?.publishedDate?.slice(0,4)||'',pages=String(ol?.number_of_pages||gb?.pageCount||''),desc=gb?.description||ol?.excerpts?.[0]?.text||'';
-  // Build cover URL - try multiple sources with fallbacks
-  let cov='';
-  // 1. Google Books - best quality, try largest available
-  if(gb?.imageLinks){
-    cov=(gb.imageLinks.extraLarge||gb.imageLinks.large||gb.imageLinks.medium||gb.imageLinks.thumbnail||'')
-      .replace('http:','https:').replace('zoom=1','zoom=5').replace('&edge=curl','');
-  }
-  // 2. Open Library cover
-  if(!cov && ol?.cover?.large) cov=ol.cover.large;
-  if(!cov && ol?.cover?.medium) cov=ol.cover.medium;
-  // 3. Open Library ISBN fallback (always try this as it works for most books)
-  if(!cov) cov='https://covers.openlibrary.org/b/isbn/'+isbn+'-L.jpg';
+  // Cover strategy:
+  // 1. Open Library cover API by ISBN - most reliable, no auth, works cross-origin
+  // 2. Open Library direct cover from data
+  // 3. Google Books thumbnail (small but loads cross-origin unlike large sizes)
+  let cov = 'https://covers.openlibrary.org/b/isbn/'+isbn+'-L.jpg';
+  // Override with better source if available
+  if(ol?.cover?.large) cov = ol.cover.large;
+  else if(ol?.cover?.medium) cov = ol.cover.medium;
+  // Google Books thumbnail as additional fallback (stored but used only if OL fails)
+  const gbThumb = gb?.imageLinks?.thumbnail
+    ? gb.imageLinks.thumbnail.replace('http:','https:').replace('&edge=curl','').replace('zoom=1','zoom=1')
+    : null;
   const subs=[...(ol?(ol.subjects||[]).map(s=>typeof s==='string'?s:s.name):[]),...(gb?.categories||[])];
-  return{title,author,publisher,year,pages,cover:cov,description:desc,subjects:subs,th:title.toLowerCase(),dh:desc.toLowerCase().slice(0,500)};
+  return{title,author,publisher,year,pages,cover:cov,coverFallback:gbThumb||null,description:desc,subjects:subs,th:title.toLowerCase(),dh:desc.toLowerCase().slice(0,500)};
 }
 function popForm(data,isbn){
-  document.getElementById('fT').value=data.title;document.getElementById('fA').value=data.author;document.getElementById('fPub').value=data.publisher;document.getElementById('fYr').value=data.year;document.getElementById('fPg').value=data.pages;document.getElementById('fISBN').value=isbn;pCover=data.cover||'';pDesc=data.description||'';
+  document.getElementById('fT').value=data.title;document.getElementById('fA').value=data.author;document.getElementById('fPub').value=data.publisher;document.getElementById('fYr').value=data.year;document.getElementById('fPg').value=data.pages;document.getElementById('fISBN').value=isbn;pCover=data.cover||'';if(!pCover&&data.coverFallback)pCover=data.coverFallback;pDesc=data.description||'';
   const corp=[...(data.subjects||[]),data.th||'',data.dh||''].join(' ').toLowerCase();
   const CM=[['Italian',['italian','pasta','risotto','pizza','sicilian','tuscan']],['French',['french','france','provencal','bistro','brasserie']],['British',['british','english cooking','scottish','welsh','irish','pub food']],['Asian',['asian','east asian']],['Japanese',['japanese','japan','sushi','ramen','tempura']],['Chinese',['chinese','china','cantonese','sichuan','dim sum']],['Indian',['indian','india','curry','tandoor','bengali','punjabi']],['Mexican',['mexican','mexico','taco','enchilada','salsa']],['Thai',['thai','thailand','tom yum']],['Greek',['greek','greece','hellenic']],['Spanish',['spanish','spain','tapas','paella','catalan']],['Middle Eastern',['middle eastern','persian','lebanese','iranian','arabic','mezze']],['Mediterranean',['mediterranean']],['American',['american','southern cooking','soul food','cajun']],['Vietnamese',['vietnamese','vietnam','pho']],['Korean',['korean','korea','kimchi']],['Turkish',['turkish','turkey']],['Moroccan',['moroccan','morocco','tagine']],['Caribbean',['caribbean','jamaican']],['Scandinavian',['scandinavian','nordic','swedish','norwegian']],['German',['german','germany','austrian']],['Portuguese',['portuguese','portugal']]];
   const SM=[['Baking',['baking','baked goods','cake','cakes','cookies','scones','tarts']],['Pastry',['pastry','patisserie','croissant']],['Bread',['bread','sourdough','loaf','baguette']],['BBQ & Grilling',['barbecue','bbq','grilling','smoker']],['Chocolate',['chocolate','cocoa','ganache']],['Fermentation',['ferment','fermented','pickling']],['Slow Cooking',['slow cook','braise','casserole','stew']],['One-pot',['one pot','sheet pan','traybake']],['Quick & Easy',['quick','easy recipes','weeknight']],['Fine Dining',['fine dining','michelin','gourmet']],['Vegetarian',['vegetarian','meat-free']],['Vegan',['vegan','plant-based']],['Preserving',['preserving','jam','chutney','pickle']],['Comfort Food',['comfort food','hearty','homestyle']]];
