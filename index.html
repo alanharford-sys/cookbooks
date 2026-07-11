@@ -835,7 +835,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="hdr">
-    <button onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))" style="background:none;border:none;cursor:pointer;font-size:20px;padding:0;line-height:1;flex-shrink:0;" title="Home">&#x1F3E0;</button><h1 id="hdrtit" style="cursor:pointer;" onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))">&#x1F4DA; My Cookbook Library</h1>
+    <h1 id="hdrtit" style="cursor:pointer;" onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))">&#x1F4DA; My Cookbook Library</h1>
     <div class="hdr-r">
       <span class="sdot" id="sdot"></span>
       <button class="theme-btn" id="themeBtn" onclick="togTheme()">&#x1F319;</button>
@@ -2021,14 +2021,28 @@ function dl(fn,content,mime){const a=document.createElement('a');a.href=URL.crea
 // UI
 const TABTITLES={home:'My Cookbook Library',library:'My Library',myrecipes:'My Recipes',shelves:'My Shelves',search:'Search',shopping:'Shopping List',ai:'AI Chef',planner:'Meal Planner',history:'Cooking History'};
 function navTab(name){
-  // Switch to a tab that's not in the tab bar (AI, Shopping, Planner)
   document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
   const tp=document.getElementById('tp-'+name);
   if(tp)tp.classList.add('active');
-  document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';
+  const tit=document.getElementById('hdrtit');
+  if(tit){
+    if(name==='home'){tit.innerHTML='&#x1F4DA; My Cookbook Library';}
+    else{tit.textContent=TABTITLES[name]||'My Cookbook Library';}
+  }
 }
-function swTab(name,el){document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));document.getElementById('tp-'+name).classList.add('active');el.classList.add('active');document.getElementById('hdrtit').textContent=TABTITLES[name]||'My Cookbook Library';}
+function swTab(name,el){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
+  const tp=document.getElementById('tp-'+name);
+  if(tp)tp.classList.add('active');
+  if(el&&el.classList)el.classList.add('active');
+  const tit=document.getElementById('hdrtit');
+  if(tit){
+    if(name==='home'){tit.innerHTML='&#x1F4DA; My Cookbook Library';}
+    else{tit.textContent=TABTITLES[name]||'My Cookbook Library';}
+  }
+}
 function togFab(){const o=document.getElementById('fabo');const open=o.classList.toggle('open');document.getElementById('fabBtn').textContent=open?'X':'+';}
 function closeFab(){document.getElementById('fabo').classList.remove('open');document.getElementById('fabBtn').textContent='+';}
 function openScanM(){closeFab();stopScn();document.getElementById('scnISBN').value='';document.getElementById('scnst').innerHTML='';document.getElementById('scnstm').innerHTML='';openM('scanM');}
