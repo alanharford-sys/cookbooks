@@ -768,6 +768,49 @@ textarea.fi { resize: vertical; min-height: 80px; }
 .cook-log-item { background: var(--cd); border-radius: var(--r-md); border: 0.5px solid var(--br); padding: 14px; margin-bottom: 10px; box-shadow: var(--sh-sm); }
 
 /* ── RESPONSIVE ────────────────────────────────────────────────── */
+
+/* ── INDEX SCANNER ───────────────────────────────────────────── */
+.idx-book-header{background:linear-gradient(135deg,var(--gx),var(--g));border-radius:var(--r-md);padding:14px 16px;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.idx-book-thumb{width:44px;height:60px;object-fit:cover;border-radius:6px;background:rgba(255,255,255,.2);flex-shrink:0;}
+.idx-book-thumb-ph{width:44px;height:60px;border-radius:6px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.idx-book-info h3{font-size:var(--ts-md);font-weight:700;margin-bottom:2px;}
+.idx-book-info p{font-size:var(--ts-sm);opacity:.8;}
+.idx-pages-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.idx-page-thumb{position:relative;width:72px;height:96px;border-radius:var(--r-sm);overflow:hidden;cursor:pointer;border:2px solid var(--br);background:var(--cs);}
+.idx-page-thumb img{width:100%;height:100%;object-fit:cover;}
+.idx-page-thumb.processing{border-color:var(--o);}
+.idx-page-thumb.done{border-color:var(--g);}
+.idx-page-thumb .idx-pg-badge{position:absolute;bottom:3px;left:3px;right:3px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:700;text-align:center;border-radius:3px;padding:2px;}
+.idx-page-thumb .idx-pg-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.idx-add-page{width:72px;height:96px;border-radius:var(--r-sm);border:2px dashed var(--br);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);font-size:11px;font-weight:600;gap:4px;background:var(--cd);transition:border-color .15s;}
+.idx-add-page:active{border-color:var(--g);color:var(--g);}
+.idx-add-page-icon{font-size:22px;}
+.idx-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.idx-results-header h4{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;}
+.idx-count-badge{background:var(--g);color:#fff;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;}
+.idx-recipe-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:.5px solid var(--br);}
+.idx-recipe-row:last-child{border-bottom:none;}
+.idx-recipe-name{flex:1;font-size:var(--ts-sm);font-weight:500;color:var(--t1);}
+.idx-recipe-page{font-size:var(--ts-sm);font-weight:700;color:var(--g);min-width:36px;text-align:right;}
+.idx-recipe-del{background:none;border:none;color:var(--t3);font-size:14px;cursor:pointer;padding:2px 4px;}
+.idx-processing-bar{background:var(--cs);border-radius:var(--r-md);padding:14px;margin-bottom:14px;text-align:center;}
+.idx-processing-bar p{font-size:var(--ts-sm);color:var(--t2);margin-top:6px;}
+.idx-progress{height:4px;background:var(--br);border-radius:2px;margin-top:10px;overflow:hidden;}
+.idx-progress-fill{height:100%;background:var(--g);border-radius:2px;transition:width .3s;}
+
+/* ── SEARCH RESULTS ──────────────────────────────────────────── */
+.srch-result-book{background:var(--cd);border-radius:var(--r-md);border:.5px solid var(--br);box-shadow:var(--sh-sm);margin-bottom:10px;overflow:hidden;}
+.srch-result-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:.5px solid var(--br);}
+.srch-result-cover{width:36px;height:50px;object-fit:cover;border-radius:5px;background:var(--br);flex-shrink:0;}
+.srch-result-cover-ph{width:36px;height:50px;border-radius:5px;background:linear-gradient(160deg,var(--gx),var(--g));display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0;}
+.srch-result-book-info{flex:1;}
+.srch-result-book-title{font-size:var(--ts-sm);font-weight:700;margin-bottom:2px;}
+.srch-result-book-shelf{font-size:11px;color:#6a1b9a;font-weight:600;}
+.srch-result-recipes{padding:4px 0;}
+.srch-result-recipe{display:flex;align-items:center;padding:9px 14px;border-bottom:.5px solid var(--br);}
+.srch-result-recipe:last-child{border-bottom:none;}
+.srch-result-recipe-name{flex:1;font-size:var(--ts-md);font-weight:500;}
+.srch-result-recipe-page{background:rgba(45,106,79,.1);color:var(--g);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;}
 @media(min-width: 640px) {
   .modal { border-radius: var(--r-xl); margin-bottom: 40px; max-height: 85vh; }
   .mo { align-items: center; }
@@ -993,6 +1036,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
     <div class="fabrow"><span class="fablbl">Meal planner</span><button class="fabmini" style="background:#7b5ea7" onclick="closeFab();navTab('planner')">&#x1F4C5;</button></div>
     <div class="fabrow"><span class="fablbl">Scan barcode</span><button class="fabmini" style="background:var(--o)" onclick="openScanM()">&#x1F4F7;</button></div>
     <div class="fabrow"><span class="fablbl">Enter ISBN</span><button class="fabmini" style="background:#888" onclick="openAddBk(true)">&#x1F522;</button></div>
+    <div class="fabrow"><span class="fablbl">Scan index pages</span><button class="fabmini" style="background:#2d6a4f" onclick="closeFab();openIdxScan(null)">&#x1F4CB;</button></div>
     <div class="fabrow"><span class="fablbl">Scan recipe page</span><button class="fabmini" style="background:#e91e63" onclick="closeFab();openOcrM()">&#x1F4F8;</button></div>
     <div class="fabrow"><span class="fablbl">Add manually</span><button class="fabmini" style="background:#555" onclick="openAddBk(false)">&#x270F;&#xFE0F;</button></div>
   </div>
@@ -1259,6 +1303,81 @@ textarea.fi { resize: vertical; min-height: 80px; }
   </div>
 </div></div>
 
+<!-- INDEX SCANNER MODAL -->
+<div class="mo" id="idxScanM" onclick="if(event.target===this)closeM('idxScanM')"><div class="modal" onclick="event.stopPropagation()" style="max-height:95vh;">
+  <div class="mhw"><div class="mh"></div></div>
+  <div class="mhdr">
+    <span class="mtit">&#x1F4CB; Scan Book Index</span>
+    <button class="mcls" onclick="closeM('idxScanM')">&#x2715;</button>
+  </div>
+  <div class="mbody">
+
+    <!-- Book context -->
+    <div class="idx-book-header" id="idxBookHeader">
+      <div class="idx-book-thumb-ph" id="idxBookThumb">&#x1F4DA;</div>
+      <div class="idx-book-info">
+        <h3 id="idxBookTitle">Select a book</h3>
+        <p id="idxBookAuthor"></p>
+      </div>
+    </div>
+
+    <!-- Book selector (when opened from FAB rather than book detail) -->
+    <div class="fg" id="idxBookSelRow">
+      <label class="fl">&#x1F4DA; Which book are you indexing?</label>
+      <select id="idxBookSel" class="fi" onchange="idxBookChanged(this.value)">
+        <option value="">-- Select a book --</option>
+      </select>
+    </div>
+
+    <p style="font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.6;">
+      Photograph each <strong>contents or index page</strong> of the book. Add as many pages as needed — Claude reads them all and extracts every recipe title and page number.
+    </p>
+
+    <!-- Pages strip -->
+    <div class="idx-pages-strip" id="idxPagesStrip">
+      <div class="idx-add-page" onclick="idxAddPage()">
+        <div class="idx-add-page-icon">&#x1F4F7;</div>
+        <span>Add page</span>
+      </div>
+    </div>
+    <input type="file" id="idxFileIn" accept="image/*" capture="environment" style="display:none" onchange="idxHandlePhoto(event)">
+
+    <!-- Processing state -->
+    <div id="idxProcessing" style="display:none;">
+      <div class="idx-processing-bar">
+        <div class="spin" style="width:24px;height:24px;border-width:3px;margin:0 auto;"></div>
+        <p id="idxProcessingMsg">Reading index pages...</p>
+        <div class="idx-progress"><div class="idx-progress-fill" id="idxProgressFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Results preview -->
+    <div id="idxResults" style="display:none;">
+      <div class="idx-results-header">
+        <h4>Recipes found</h4>
+        <span class="idx-count-badge" id="idxCountBadge">0</span>
+      </div>
+      <div style="background:var(--cd);border-radius:var(--r-md);border:.5px solid var(--br);max-height:280px;overflow-y:auto;margin-bottom:14px;">
+        <div id="idxRecipeList"></div>
+      </div>
+      <div class="st2" id="idxStatus"></div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;padding-top:4px;" id="idxActions">
+      <button class="btn bo" onclick="idxProcess()" id="idxProcessBtn" style="flex:1;display:none;">&#x1F9E0; Read Pages</button>
+      <button class="btn bp" onclick="idxSave()" id="idxSaveBtn" style="flex:2;display:none;">&#x2713; Save to Index</button>
+    </div>
+    <div id="idxSavedMsg" style="display:none;text-align:center;padding:16px 0;">
+      <div style="font-size:36px;margin-bottom:8px;">&#x2705;</div>
+      <div style="font-size:var(--ts-lg);font-weight:700;color:var(--g);margin-bottom:4px;" id="idxSavedCount"></div>
+      <div style="font-size:var(--ts-sm);color:var(--t2);">Added to your recipe index</div>
+      <button class="btn bp bblk" style="margin-top:16px;" onclick="closeM('idxScanM')">Done</button>
+    </div>
+
+  </div>
+</div></div>
+
 <!-- OCR RECIPE SCAN MODAL -->
 <div class="mo" id="ocrM" onclick="if(event.target===this)closeM('ocrM')"><div class="modal" onclick="event.stopPropagation()" style="max-height:95vh;">
   <div class="mhw"><div class="mh"></div></div>
@@ -1489,12 +1608,58 @@ function renderHome(){
 function qsearch(q){
   const el=document.getElementById('qres');
   if(!q.trim()){el.innerHTML='';return;}
-  const m=recipes.filter(r=>(r.name||'').toLowerCase().includes(q.toLowerCase()));
-  const fm=fullRecipes.filter(r=>{const ings=recipeIngredients.filter(i=>i.recipe_id===r.id).map(i=>i.ingredient).join(' ').toLowerCase();return(r.title||'').toLowerCase().includes(q.toLowerCase())||ings.includes(q.toLowerCase());});
-  if(!m.length&&!fm.length){el.innerHTML='<div style="padding:8px 16px;font-size:14px;color:var(--t3)">No recipes found for "'+q+'"</div>';return;}
-  let h='<div style="padding:4px 16px 0;font-size:13px;font-weight:700;color:var(--t3);text-transform:uppercase;">'+(m.length+fm.length)+' results</div>';
-  if(fm.length)h+='<div style="padding:8px 16px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">'+fm.slice(0,4).map(r=>frGridCard(r)).join('')+'</div>';
-  if(m.length)h+='<div style="padding:4px 16px 0;">'+m.slice(0,4).map(r=>rcpCard(r,books.find(b=>b.id===r.book_id))).join('')+'</div>';
+  const ql=q.toLowerCase();
+  // Recipe index hits (from scanned book indexes)
+  const idxHits=recipes.filter(r=>(r.name||'').toLowerCase().includes(ql));
+  // Full saved recipes (with ingredients)
+  const frHits=fullRecipes.filter(r=>{
+    const ings=recipeIngredients.filter(i=>i.recipe_id===r.id).map(i=>i.ingredient).join(' ').toLowerCase();
+    return(r.title||'').toLowerCase().includes(ql)||ings.includes(ql);
+  });
+  if(!idxHits.length&&!frHits.length){
+    el.innerHTML='<div style="padding:20px 16px;text-align:center;color:var(--t3);font-size:14px;">No results for "'+e(q)+'"<br><span style="font-size:12px;">Try scanning your book indexes to improve search</span></div>';
+    return;
+  }
+  let h='';
+  // Full recipes first (saved with ingredients)
+  if(frHits.length){
+    h+='<div style="padding:10px 16px 6px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;">Saved Recipes ('+frHits.length+')</div>';
+    h+='<div style="padding:0 16px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">'+frHits.slice(0,6).map(r=>frGridCard(r)).join('')+'</div>';
+  }
+  // Index results grouped by book with shelf location
+  if(idxHits.length){
+    const byBook={};
+    idxHits.forEach(r=>{
+      const bid=r.book_id||r.bookId;
+      if(!byBook[bid])byBook[bid]=[];
+      byBook[bid].push(r);
+    });
+    h+='<div style="padding:10px 16px 6px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;">In Your Books ('+idxHits.length+' recipes across '+Object.keys(byBook).length+' book'+(Object.keys(byBook).length!==1?'s':'')+')</div>';
+    h+=Object.entries(byBook).map(([bid,rlist])=>{
+      const bk=books.find(b=>b.id===bid);
+      const sh=bk?.shelfId?shelves.find(s=>s.id===bk.shelfId):null;
+      const covPh='<div class="srch-result-cover-ph">&#x1F4DA;</div>';
+      const cov=bk?.cover
+        ?'<img class="srch-result-cover" src="'+bk.cover+'" onerror="this.style.display=\'none\'">'+ covPh
+        :covPh;
+      return '<div class="srch-result-book" onclick="bk&&showBkDetail(bk.id)" style="cursor:pointer;margin:0 16px 10px;">'+
+        '<div class="srch-result-header">'+cov+
+        '<div class="srch-result-book-info">'+
+        '<div class="srch-result-book-title">'+(bk?e(bk.title):'Unknown book')+'</div>'+
+        (sh?'<div class="srch-result-book-shelf">&#x1F4CD; '+e(sh.name)+'</div>':
+            (bk?'<div style="font-size:11px;color:var(--t3);">No shelf assigned</div>':''))+
+        '</div></div>'+
+        '<div class="srch-result-recipes">'+
+        rlist.slice(0,10).map(r=>
+          '<div class="srch-result-recipe">'+
+          '<span class="srch-result-recipe-name">'+e(r.name||'')+'</span>'+
+          '<span class="srch-result-recipe-page">p.'+(r.page||'?')+'</span>'+
+          '</div>'
+        ).join('')+
+        (rlist.length>10?'<div style="padding:8px 14px;font-size:12px;color:var(--t3);">+' +(rlist.length-10)+' more in this book</div>':'')+
+        '</div></div>';
+    }).join('');
+  }
   el.innerHTML=h;
 }
 
@@ -1529,7 +1694,7 @@ function showBkDetail(id){
   const meta=[b.publisher&&'<div class="mi"><div class="ml">Publisher</div><div class="mv">'+e(b.publisher)+'</div></div>',b.year&&'<div class="mi"><div class="ml">Year</div><div class="mv">'+e(b.year)+'</div></div>',b.pages&&'<div class="mi"><div class="ml">Pages</div><div class="mv">'+e(b.pages)+'</div></div>',b.isbn&&'<div class="mi"><div class="ml">ISBN</div><div class="mv" style="font-size:12px">'+e(b.isbn)+'</div></div>'].filter(Boolean).join('');
   const covH=b.cover?'<img class="dcov" src="'+b.cover+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="dcovph" style="display:none">&#x1F4D6;</div>':'<div class="dcovph">&#x1F4D6;</div>';
   const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button onclick="addRecipeToShopList(\''+r.id+'\',true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
-  const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bo bsm" onclick="refreshCover(\''+b.id+'\')" title="Refresh cover">&#x1F5BC;&#xFE0F;</button><button class="btn bp" style="flex:1" onclick="openAddRcp(\''+b.id+'\')">&#x1F4D6; Add Recipes</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM(\''+b.id+'\')">&#x1F4F8;</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
+  const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bo bsm" onclick="refreshCover(\''+b.id+'\')" title="Refresh cover">&#x1F5BC;&#xFE0F;</button><button class="btn bp" style="flex:1" onclick="openIdxScan(\''+b.id+'\')">&#x1F4CB; Scan Index</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM(\''+b.id+'\')">&#x1F4F8;</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
   document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
   openM('bkDetailM');
 }
@@ -2509,6 +2674,290 @@ function cookCount(recipeId) {
   return cookLog.filter(e => e.recipe_id === recipeId).length;
 }
 
+
+
+// ══════════════════════════════════════════════════════════════════
+// INDEX SCANNER
+// ══════════════════════════════════════════════════════════════════
+let idxBookId = null;
+let idxPages = [];       // [{dataUrl, status:'pending'|'done'|'error'}]
+let idxParsed = [];      // accumulated recipe entries from all pages
+
+function openIdxScan(bookId) {
+  idxBookId = bookId || null;
+  idxPages = [];
+  idxParsed = [];
+
+  // Reset UI
+  document.getElementById('idxPagesStrip').innerHTML =
+    '<div class="idx-add-page" onclick="idxAddPage()"><div class="idx-add-page-icon">&#x1F4F7;</div><span>Add page</span></div>';
+  document.getElementById('idxProcessing').style.display = 'none';
+  document.getElementById('idxResults').style.display = 'none';
+  document.getElementById('idxSavedMsg').style.display = 'none';
+  document.getElementById('idxProcessBtn').style.display = 'none';
+  document.getElementById('idxSaveBtn').style.display = 'none';
+  document.getElementById('idxStatus').textContent = '';
+
+  // Populate book selector
+  const sel = document.getElementById('idxBookSel');
+  sel.innerHTML = '<option value="">-- Select a book --</option>' +
+    books.map(b => '<option value="' + b.id + '">' + e(b.title) + '</option>').join('');
+
+  if (bookId) {
+    sel.value = bookId;
+    document.getElementById('idxBookSelRow').style.display = 'none';
+    idxSetBook(bookId);
+  } else {
+    document.getElementById('idxBookSelRow').style.display = 'block';
+    document.getElementById('idxBookTitle').textContent = 'Select a book above';
+    document.getElementById('idxBookAuthor').textContent = '';
+    document.getElementById('idxBookThumb').innerHTML = '&#x1F4DA;';
+  }
+
+  openM('idxScanM');
+}
+
+function idxBookChanged(bookId) {
+  idxBookId = bookId || null;
+  if (bookId) idxSetBook(bookId);
+}
+
+function idxSetBook(bookId) {
+  const bk = books.find(b => b.id === bookId);
+  if (!bk) return;
+  document.getElementById('idxBookTitle').textContent = bk.title;
+  document.getElementById('idxBookAuthor').textContent = bk.author || '';
+  const thumb = document.getElementById('idxBookThumb');
+  if (bk.cover) {
+    thumb.outerHTML = '<img class="idx-book-thumb" id="idxBookThumb" src="' + bk.cover + '" onerror="this.style.display=\'none\'">';
+  } else {
+    thumb.innerHTML = '&#x1F4DA;';
+  }
+}
+
+function idxAddPage() {
+  document.getElementById('idxFileIn').value = '';
+  document.getElementById('idxFileIn').click();
+}
+
+async function idxHandlePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const dataUrl = await convertToJpeg(file);
+    const pageNum = idxPages.length + 1;
+    idxPages.push({ dataUrl, status: 'pending' });
+    idxRenderStrip();
+    // Show process button once we have at least one page
+    document.getElementById('idxProcessBtn').style.display = 'flex';
+  } catch(err) {
+    console.error('Photo error:', err);
+  }
+}
+
+function idxRenderStrip() {
+  const strip = document.getElementById('idxPagesStrip');
+  const thumbs = idxPages.map((pg, i) => {
+    const cls = pg.status === 'done' ? 'done' : pg.status === 'error' ? 'processing' : '';
+    const badge = pg.status === 'done' ? '&#x2713; Read' : pg.status === 'error' ? 'Error' : 'Page ' + (i+1);
+    return '<div class="idx-page-thumb ' + cls + '">' +
+      '<img src="' + pg.dataUrl + '">' +
+      '<button class="idx-pg-del" onclick="idxRemovePage(' + i + ')">&#x2715;</button>' +
+      '<div class="idx-pg-badge">' + badge + '</div>' +
+      '</div>';
+  }).join('');
+  strip.innerHTML = thumbs +
+    '<div class="idx-add-page" onclick="idxAddPage()"><div class="idx-add-page-icon">&#x2795;</div><span>Add page</span></div>';
+}
+
+function idxRemovePage(i) {
+  idxPages.splice(i, 1);
+  idxRenderStrip();
+  if (idxPages.length === 0) {
+    document.getElementById('idxProcessBtn').style.display = 'none';
+    document.getElementById('idxResults').style.display = 'none';
+    document.getElementById('idxSaveBtn').style.display = 'none';
+  }
+}
+
+async function idxProcess() {
+  if (!idxPages.length) { return; }
+  if (!idxBookId) { alert('Please select a book first'); return; }
+
+  document.getElementById('idxProcessing').style.display = 'block';
+  document.getElementById('idxProcessBtn').style.display = 'none';
+  document.getElementById('idxResults').style.display = 'none';
+  document.getElementById('idxSaveBtn').style.display = 'none';
+  idxParsed = [];
+
+  const fill = document.getElementById('idxProgressFill');
+  const msg = document.getElementById('idxProcessingMsg');
+
+  for (let i = 0; i < idxPages.length; i++) {
+    fill.style.width = Math.round(((i) / idxPages.length) * 100) + '%';
+    msg.textContent = 'Reading page ' + (i + 1) + ' of ' + idxPages.length + '...';
+    idxPages[i].status = 'processing';
+    idxRenderStrip();
+
+    try {
+      const result = await idxReadPage(idxPages[i].dataUrl, i + 1);
+      idxParsed = idxParsed.concat(result);
+      idxPages[i].status = 'done';
+    } catch(err) {
+      console.error('Page ' + (i+1) + ' error:', err);
+      idxPages[i].status = 'error';
+    }
+    idxRenderStrip();
+  }
+
+  fill.style.width = '100%';
+  msg.textContent = 'Done — deduplicating results...';
+
+  // Deduplicate by name (case-insensitive)
+  const seen = new Set();
+  idxParsed = idxParsed.filter(r => {
+    const key = r.name.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Sort alphabetically
+  idxParsed.sort((a, b) => a.name.localeCompare(b.name));
+
+  document.getElementById('idxProcessing').style.display = 'none';
+  idxRenderResults();
+}
+
+async function idxReadPage(dataUrl, pageNum) {
+  const prompt = 'This is a photograph of a cookbook contents page, index page, or recipe listing. ' +
+    'Extract every recipe or dish name you can see along with its page number. ' +
+    'Return ONLY a valid JSON array with no markdown, no backticks, no explanation:\n' +
+    '[{"name":"Recipe name exactly as written","page":"42","course":""}]\n\n' +
+    'Rules:\n' +
+    '- Include every recipe title visible, even if small text\n' +
+    '- page: the page number as a string, or empty string if not visible\n' +
+    '- course: if clearly indicated choose from Starter, Main, Side, Dessert, Bread, Snack, Sauce, Drink — otherwise leave empty\n' +
+    '- name: exact title as printed, preserve capitalisation\n' +
+    '- If a recipe appears under multiple sub-headings, include it once\n' +
+    '- Do not include chapter titles, section headings, or non-recipe entries\n' +
+    '- If this page has no recipes, return an empty array []';
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: dataUrl.split(',')[1] } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || 'API error');
+
+  const raw = data.content[0].text.trim().replace(/^```json\s*/,'').replace(/```\s*$/,'');
+  const parsed = JSON.parse(raw);
+  return Array.isArray(parsed) ? parsed.filter(r => r.name && r.name.trim()) : [];
+}
+
+function idxRenderResults() {
+  const el = document.getElementById('idxRecipeList');
+  document.getElementById('idxCountBadge').textContent = idxParsed.length;
+
+  if (!idxParsed.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);font-size:14px;">No recipes found — try a clearer photo with better lighting</div>';
+    document.getElementById('idxResults').style.display = 'block';
+    return;
+  }
+
+  el.innerHTML = idxParsed.map((r, i) =>
+    '<div class="idx-recipe-row">' +
+    '<span class="idx-recipe-name">' + e(r.name) + '</span>' +
+    '<span class="idx-recipe-page">p.' + (r.page || '?') + '</span>' +
+    '<button class="idx-recipe-del" onclick="idxRemoveRecipe(' + i + ')">&#x2715;</button>' +
+    '</div>'
+  ).join('');
+
+  document.getElementById('idxResults').style.display = 'block';
+  document.getElementById('idxSaveBtn').style.display = 'flex';
+  document.getElementById('idxStatus').className = 'st2 ok';
+  document.getElementById('idxStatus').textContent = idxParsed.length + ' recipes ready to save';
+}
+
+function idxRemoveRecipe(i) {
+  idxParsed.splice(i, 1);
+  idxRenderResults();
+}
+
+async function idxSave() {
+  if (!idxParsed.length || !idxBookId) return;
+  const btn = document.getElementById('idxSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    setSS('syncing');
+    const bk = books.find(b => b.id === idxBookId);
+
+    // Check for existing entries for this book and remove them first
+    // (re-scanning replaces previous index for this book)
+    const existing = (window.recipes || []).filter(r => r.bookId === idxBookId);
+    if (existing.length) {
+      await sbf(SB('recipes') + '?book_id=eq.' + idxBookId + '&user_id=eq.' + OWNER_ID, { method: 'DELETE' });
+      window.recipes = (window.recipes || []).filter(r => r.bookId !== idxBookId);
+    }
+
+    const toSave = idxParsed.map((r, idx) => ({
+      book_id: idxBookId,
+      name: r.name.trim(),
+      page: r.page || null,
+      course: r.course || null,
+      sort_order: idx,
+      user_id: OWNER_ID
+    }));
+
+    // Save in batches of 100 to avoid payload limits
+    const batchSize = 100;
+    let allSaved = [];
+    for (let i = 0; i < toSave.length; i += batchSize) {
+      const batch = toSave.slice(i, i + batchSize);
+      const saved = await sbf(SB('recipes'), { method: 'POST', body: JSON.stringify(batch) });
+      allSaved = allSaved.concat(saved || []);
+    }
+
+    // Update local cache
+    window.recipes = (window.recipes || []).concat(allSaved.map(r => ({
+      id: r.id, bookId: r.book_id, name: r.name, page: r.page, course: r.course
+    })));
+    savCache();
+    setSS('ok');
+
+    // Show success
+    document.getElementById('idxSaveBtn').style.display = 'none';
+    document.getElementById('idxProcessBtn').style.display = 'none';
+    document.getElementById('idxResults').style.display = 'none';
+    document.getElementById('idxSavedCount').textContent =
+      idxParsed.length + ' recipes indexed from ' + (bk ? bk.title : 'book');
+    document.getElementById('idxSavedMsg').style.display = 'block';
+
+    renderAll();
+
+  } catch(err) {
+    console.error('Index save error:', err);
+    setSS('err');
+    document.getElementById('idxStatus').className = 'st2 err';
+    document.getElementById('idxStatus').textContent = 'Save failed — please try again';
+    btn.disabled = false;
+    btn.textContent = '\u2713 Save to Index';
+  }
+}
 
 // ── OCR RECIPE SCANNING ───────────────────────────────────────
 let ocrMode = 'recipe'; // 'recipe' or 'index'
