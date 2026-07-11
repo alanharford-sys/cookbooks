@@ -1819,7 +1819,7 @@ async function importFromURL(){
     const data=await resp.json();if(!data.contents){el.className='st2 err';el.textContent='Could not fetch page';return;}
     const txt=data.contents.replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,8000);
     el.innerHTML='<span class="spin"></span>Parsing with AI...';
-    const aiResp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:'Extract recipe from this text. Return ONLY valid JSON, no markdown:\n{"title":"","description":"","serves":"","prep_time":null,"cook_time":null,"difficulty":"","course":"","cuisine":"","dietary":"","ingredients":[{"amount":"","unit":"","ingredient":"","notes":""}],"steps":[""],"notes":""}\n\nText:\n'+txt}]})});
+    const aiResp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-ipc': 'true' },body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:'Extract recipe from this text. Return ONLY valid JSON, no markdown:\n{"title":"","description":"","serves":"","prep_time":null,"cook_time":null,"difficulty":"","course":"","cuisine":"","dietary":"","ingredients":[{"amount":"","unit":"","ingredient":"","notes":""}],"steps":[""],"notes":""}\n\nText:\n'+txt}]})});
     const aiData=await aiResp.json();const recipe=JSON.parse(aiData.content[0].text.trim());
     if(recipe.title)document.getElementById('frTitle').value=recipe.title;
     if(recipe.description)document.getElementById('frDesc').value=recipe.description;
@@ -2468,7 +2468,7 @@ async function askAI() {
     try {
       const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-ipc': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 600,
@@ -2486,7 +2486,7 @@ async function askAI() {
     try {
       const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-ipc': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 800,
@@ -2504,7 +2504,7 @@ async function askAI() {
     try {
       const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-ipc': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 800,
@@ -2859,7 +2859,7 @@ async function idxReadPage(dataUrl, pageNum) {
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-ipc': 'true' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
@@ -3166,7 +3166,7 @@ async function processOcrImage(isPage2 = false) {
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-ipc': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 2000,
