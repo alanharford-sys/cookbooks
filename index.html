@@ -838,8 +838,8 @@ textarea.fi { resize: vertical; min-height: 80px; }
     <h1 id="hdrtit" style="cursor:pointer;" onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))">&#x1F4DA; My Cookbook Library</h1>
     <div class="hdr-r">
       <span class="sdot" id="sdot"></span>
-      <button class="theme-btn" id="themeBtn" onclick="togTheme()">&#x1F319;</button>
-      <button class="ai-toggle-btn" id="aiToggleBtn" onclick="togAI()">&#x1F916; <span id="aiToggleLabel">AI</span></button>
+      <button class="theme-btn" id="themeBtn" onclick="togTheme()" style="font-size:16px;">&#x1F319;</button>
+      <button class="ai-toggle-btn" id="aiToggleBtn" onclick="togAI()"><span id="aiToggleLabel">AI</span></button>
       <button class="theme-btn" onclick="doLogout()" title="Log out" id="logoutBtn" style="display:none;font-size:13px;">&#x1F511;</button>
       <button class="btn bo bsm" onclick="openM('ioM')">&#x2B06;&#x2B07;</button>
     </div>
@@ -894,6 +894,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
         <button class="chip" onclick="setLF('ingredient',this)">&#x1F966; Ingredient</button>
       </div>
       <div class="sech"><span class="sect" id="libct"></span><div style="display:flex;gap:6px;"><button class="btn bo bsm" onclick="setLV('grid',this)">&#x229E;</button><button class="btn bo bsm" onclick="setLV('list',this)">&#x2630;</button></div></div>
+      <div id="libRcpResults" style="display:none;"></div>
       <div id="libgrid"></div>
     </div>
 
@@ -1340,7 +1341,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
         <span>Add page</span>
       </div>
     </div>
-    <input type="file" id="idxFileIn" accept="image/*" capture="environment" style="display:none" onchange="idxHandlePhoto(event)">
+    <input type="file" id="idxFileIn" accept="image/*" style="display:none" onchange="idxHandlePhoto(event)">
 
     <!-- Processing state -->
     <div id="idxProcessing" style="display:none;">
@@ -1414,7 +1415,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
         <div class="ocr-photo-ph-sub">Or tap again to use a different photo</div>
       </div>
     </div>
-    <input type="file" id="ocrFileIn" accept="image/*" capture="environment" style="display:none" onchange="handleOcrPhoto(event)">
+    <input type="file" id="ocrFileIn" accept="image/*" style="display:none" onchange="handleOcrPhoto(event)">
 
     <!-- Processing status -->
     <div class="st2" id="ocrStatus" style="margin-bottom:12px;"></div>
@@ -1670,6 +1671,34 @@ function renderLib(){
   const q=(document.getElementById('libsrch').value||'').toLowerCase().trim();
   const list=books.filter(b=>{const t=[b.title,b.author,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase();return(!q||t.includes(q))&&(libF==='all'||(b.tags?.[libF]?.length>0));});
   document.getElementById('libct').textContent=list.length+(books.length!==list.length?' of '+books.length:'')+' book'+(list.length!==1?'s':'');
+  // Also show recipe index hits when searching
+  const libRcpEl=document.getElementById('libRcpResults');
+  if(q&&libRcpEl){
+    const idxHits=recipes.filter(r=>(r.name||'').toLowerCase().includes(q));
+    if(idxHits.length){
+      const byBook={};
+      idxHits.forEach(r=>{const bid=r.book_id;if(!byBook[bid])byBook[bid]=[];byBook[bid].push(r);});
+      libRcpEl.innerHTML='<div style="padding:10px 16px 6px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;">Recipe Index ('+idxHits.length+' matches)</div>'+
+        Object.entries(byBook).map(([bid,rlist])=>{
+          const bk=books.find(b=>b.id===bid);
+          const sh=bk?.shelfId?shelves.find(s=>s.id===bk.shelfId):null;
+          const covPh='<div class="srch-result-cover-ph">&#x1F4DA;</div>';
+          const cov=bk?.cover?'<img class="srch-result-cover" src="'+bk.cover+'" onerror="this.style.display=\'none\'">'+covPh:covPh;
+          return '<div class="srch-result-book" onclick="bk&&showBkDetail(bk.id)" style="cursor:pointer;margin:0 16px 10px;">'+
+            '<div class="srch-result-header">'+cov+
+            '<div class="srch-result-book-info">'+
+            '<div class="srch-result-book-title">'+(bk?e(bk.title):'Unknown book')+'</div>'+
+            (sh?'<div class="srch-result-book-shelf">&#x1F4CD; '+e(sh.name)+'</div>':'')+'</div></div>'+
+            '<div class="srch-result-recipes">'+
+            rlist.slice(0,8).map(r=>'<div class="srch-result-recipe"><span class="srch-result-recipe-name">'+e(r.name)+'</span><span class="srch-result-recipe-page">p.'+(r.page||'?')+'</span></div>').join('')+
+            (rlist.length>8?'<div style="padding:6px 14px;font-size:12px;color:var(--t3);">+' +(rlist.length-8)+' more</div>':'')+
+            '</div></div>';
+        }).join('');
+      libRcpEl.style.display='block';
+    } else {
+      libRcpEl.innerHTML='';libRcpEl.style.display='none';
+    }
+  } else if(libRcpEl){libRcpEl.innerHTML='';libRcpEl.style.display='none';}
   const el=document.getElementById('libgrid');
   if(!books.length){el.innerHTML='<div class="empty"><div class="emico">&#x1F4DA;</div><h3>Your library awaits</h3><p>Tap the orange + button to add your first cookbook.</p></div>';return;}
   if(!list.length){el.innerHTML='<div class="empty"><div class="emico">&#x1F50D;</div><h3>No results</h3><p>Try a different search.</p></div>';return;}
@@ -1695,7 +1724,7 @@ function showBkDetail(id){
   const covH=b.cover?'<img class="dcov" src="'+b.cover+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="dcovph" style="display:none">&#x1F4D6;</div>':'<div class="dcovph">&#x1F4D6;</div>';
   const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button onclick="addRecipeToShopList(\''+r.id+'\',true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
   const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bo bsm" onclick="refreshCover(\''+b.id+'\')" title="Refresh cover">&#x1F5BC;&#xFE0F;</button><button class="btn bp" style="flex:1" onclick="openIdxScan(\''+b.id+'\')">&#x1F4CB; Scan Index</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM(\''+b.id+'\')">&#x1F4F8;</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
-  document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><span class="mtit">Book details</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
+  document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><button class="mcls" onclick="closeM(\'bkDetailM\')" style="margin-right:4px;">&#x2190;</button><span class="mtit">'+e(b.title)+'</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
   openM('bkDetailM');
 }
 
@@ -2948,23 +2977,43 @@ function idxRemoveRecipe(i) {
 
 async function idxSave() {
   if (!idxParsed.length || !idxBookId) return;
+  const bk = books.find(b => b.id === idxBookId);
+
+  // Warn if book already has an index
+  const existing = recipes.filter(r => r.book_id === idxBookId);
+  if (existing.length) {
+    const ok = confirm(bk ? bk.title + ' already has ' + existing.length + ' recipes indexed. Replace them with this new scan?' : 'This book already has recipes indexed. Replace them?');
+    if (!ok) return;
+  }
+
   const btn = document.getElementById('idxSaveBtn');
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
+  // Overall timeout — if save takes more than 30s something is wrong
+  const saveTimeout = setTimeout(() => {
+    btn.disabled = false;
+    btn.textContent = '\u2713 Save to Index';
+    document.getElementById('idxStatus').className = 'st2 err';
+    document.getElementById('idxStatus').textContent = 'Save timed out — check your connection and try again';
+    setSS('err');
+  }, 30000);
+
   try {
     setSS('syncing');
-    const bk = books.find(b => b.id === idxBookId);
 
-    // Check for existing entries for this book and remove them first
-    // (re-scanning replaces previous index for this book)
-    const existing = (window.recipes || []).filter(r => r.bookId === idxBookId);
+    // Delete existing entries for this book first
     if (existing.length) {
-      await sbf(SB('recipes') + '?book_id=eq.' + idxBookId + '&user_id=eq.' + OWNER_ID, { method: 'DELETE' });
-      recipes = recipes.filter(r => r.book_id !== idxBookId);
+      try {
+        await sbf(SB('recipes') + '?book_id=eq.' + idxBookId + '&user_id=eq.' + OWNER_ID, { method: 'DELETE' });
+        recipes = recipes.filter(r => r.book_id !== idxBookId);
+      } catch(delErr) {
+        console.warn('Delete existing failed:', delErr);
+        // Continue anyway — duplicates are better than losing the scan
+      }
     }
 
-    const toSave = idxParsed.map((r) => ({
+    const toSave = idxParsed.map(r => ({
       book_id: idxBookId,
       name: r.name.trim(),
       page: r.page || null,
@@ -2972,13 +3021,14 @@ async function idxSave() {
       user_id: OWNER_ID
     }));
 
-    // Save in batches of 100 to avoid payload limits
-    const batchSize = 100;
+    // Save in batches of 50 (safer than 100 for mobile connections)
+    const batchSize = 50;
     let allSaved = [];
     for (let i = 0; i < toSave.length; i += batchSize) {
       const batch = toSave.slice(i, i + batchSize);
+      btn.textContent = 'Saving ' + Math.min(i + batchSize, toSave.length) + ' of ' + toSave.length + '...';
       const saved = await sbf(SB('recipes'), { method: 'POST', body: JSON.stringify(batch) });
-      allSaved = allSaved.concat(saved || []);
+      if (saved) allSaved = allSaved.concat(saved);
     }
 
     // Update local cache
@@ -2986,6 +3036,7 @@ async function idxSave() {
       id: r.id, book_id: r.book_id, name: r.name, page: r.page, course: r.course
     })));
     savCache();
+    clearTimeout(saveTimeout);
     setSS('ok');
 
     // Show success
@@ -2993,16 +3044,16 @@ async function idxSave() {
     document.getElementById('idxProcessBtn').style.display = 'none';
     document.getElementById('idxResults').style.display = 'none';
     document.getElementById('idxSavedCount').textContent =
-      idxParsed.length + ' recipes indexed from ' + (bk ? bk.title : 'book');
+      allSaved.length + ' recipes indexed from ' + (bk ? bk.title : 'book');
     document.getElementById('idxSavedMsg').style.display = 'block';
-
     renderAll();
 
   } catch(err) {
+    clearTimeout(saveTimeout);
     console.error('Index save error:', err);
     setSS('err');
     document.getElementById('idxStatus').className = 'st2 err';
-    document.getElementById('idxStatus').textContent = 'Save failed — please try again';
+    document.getElementById('idxStatus').textContent = 'Save failed: ' + (err.message || err);
     btn.disabled = false;
     btn.textContent = '\u2713 Save to Index';
   }
