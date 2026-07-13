@@ -2820,6 +2820,7 @@ async function idxProcess() {
     } catch(err) {
       console.error('Page ' + (i+1) + ' error:', err);
       idxPages[i].status = 'error';
+      idxPages[i].errorMsg = err.message || String(err);
     }
     idxRenderStrip();
   }
@@ -2840,6 +2841,14 @@ async function idxProcess() {
   idxParsed.sort((a, b) => a.name.localeCompare(b.name));
 
   document.getElementById('idxProcessing').style.display = 'none';
+  // Show any errors
+  const errorPages = idxPages.filter(p => p.status === 'error');
+  if (errorPages.length) {
+    const errDetail = errorPages.map(p => p.errorMsg || 'Unknown error').join('; ');
+    document.getElementById('idxStatus').className = 'st2 err';
+    document.getElementById('idxStatus').textContent = errorPages.length + ' page(s) failed: ' + errDetail;
+    document.getElementById('idxResults').style.display = 'block';
+  }
   idxRenderResults();
 }
 
@@ -2874,10 +2883,25 @@ async function idxReadPage(dataUrl, pageNum) {
   });
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error?.message || 'API error');
+  console.log('API response status:', response.status, response.ok);
+  console.log('API response data:', JSON.stringify(data).slice(0, 500));
 
-  const raw = data.content[0].text.trim().replace(/^```json\s*/,'').replace(/```\s*$/,'');
-  const parsed = JSON.parse(raw);
+  if (!response.ok) {
+    const errMsg = data.error?.message || data.error?.type || JSON.stringify(data).slice(0,200);
+    throw new Error('API ' + response.status + ': ' + errMsg);
+  }
+  if (!data.content || !data.content[0]) {
+    throw new Error('Empty response from API — stop_reason: ' + (data.stop_reason||'unknown'));
+  }
+
+  const raw = data.content[0].text.trim().replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+  console.log('Raw OCR response:', raw.slice(0, 300));
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch(e) {
+    throw new Error('JSON parse failed. Raw response: ' + raw.slice(0,150));
+  }
   return Array.isArray(parsed) ? parsed.filter(r => r.name && r.name.trim()) : [];
 }
 
