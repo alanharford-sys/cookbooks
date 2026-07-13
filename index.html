@@ -2961,15 +2961,14 @@ async function idxSave() {
     const existing = (window.recipes || []).filter(r => r.bookId === idxBookId);
     if (existing.length) {
       await sbf(SB('recipes') + '?book_id=eq.' + idxBookId + '&user_id=eq.' + OWNER_ID, { method: 'DELETE' });
-      window.recipes = (window.recipes || []).filter(r => r.bookId !== idxBookId);
+      recipes = recipes.filter(r => r.book_id !== idxBookId);
     }
 
-    const toSave = idxParsed.map((r, idx) => ({
+    const toSave = idxParsed.map((r) => ({
       book_id: idxBookId,
       name: r.name.trim(),
       page: r.page || null,
       course: r.course || null,
-      sort_order: idx,
       user_id: OWNER_ID
     }));
 
@@ -2983,8 +2982,8 @@ async function idxSave() {
     }
 
     // Update local cache
-    window.recipes = (window.recipes || []).concat(allSaved.map(r => ({
-      id: r.id, bookId: r.book_id, name: r.name, page: r.page, course: r.course
+    recipes = recipes.concat(allSaved.map(r => ({
+      id: r.id, book_id: r.book_id, name: r.name, page: r.page, course: r.course
     })));
     savCache();
     setSS('ok');
