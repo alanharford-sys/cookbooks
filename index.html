@@ -1322,7 +1322,7 @@ textarea.fi { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- Book selector (when opened from FAB rather than book detail) -->
+    <!-- Book selector (when opened from FAB) -->
     <div class="fg" id="idxBookSelRow">
       <label class="fl">&#x1F4DA; Which book are you indexing?</label>
       <select id="idxBookSel" class="fi" onchange="idxBookChanged(this.value)">
@@ -1331,48 +1331,56 @@ textarea.fi { resize: vertical; min-height: 80px; }
     </div>
 
     <p style="font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.6;">
-      Photograph each <strong>contents or index page</strong> of the book. Add as many pages as needed — Claude reads them all and extracts every recipe title and page number.
+      Photograph <strong>one index page at a time</strong>. Each page is read and saved immediately before moving to the next.
     </p>
 
-    <!-- Pages strip -->
-    <div class="idx-pages-strip" id="idxPagesStrip">
-      <div class="idx-add-page" onclick="idxAddPage()">
-        <div class="idx-add-page-icon">&#x1F4F7;</div>
-        <span>Add page</span>
+    <!-- Progress summary -->
+    <div id="idxProgressSummary" style="display:none;background:rgba(45,106,79,.08);border:1px solid rgba(45,106,79,.2);border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;font-weight:700;color:var(--g);">&#x2705; <span id="idxTotalSaved">0</span> recipes saved so far</span>
+        <span style="font-size:12px;color:var(--t3);"><span id="idxPagesDone">0</span> pages scanned</span>
+      </div>
+    </div>
+
+    <!-- Single page shoot area -->
+    <div id="idxShootArea">
+      <div class="ocr-photo-ph" id="idxPhotoPh" onclick="idxAddPage()">
+        <div class="ocr-photo-ph-icon">&#x1F4F7;</div>
+        <div class="ocr-photo-ph-label">Tap to photograph an index page</div>
+        <div class="ocr-photo-ph-sub" id="idxPhotoSub">Use good lighting, keep all text in frame</div>
       </div>
     </div>
     <input type="file" id="idxFileIn" accept="image/*" style="display:none" onchange="idxHandlePhoto(event)">
 
     <!-- Processing state -->
-    <div id="idxProcessing" style="display:none;">
-      <div class="idx-processing-bar">
-        <div class="spin" style="width:24px;height:24px;border-width:3px;margin:0 auto;"></div>
-        <p id="idxProcessingMsg">Reading index pages...</p>
-        <div class="idx-progress"><div class="idx-progress-fill" id="idxProgressFill" style="width:0%"></div></div>
-      </div>
+    <div id="idxProcessing" style="display:none;text-align:center;padding:20px 0;">
+      <div class="spin" style="width:28px;height:28px;border-width:3px;margin:0 auto 12px;"></div>
+      <div style="font-size:14px;font-weight:600;color:var(--t2);" id="idxProcessingMsg">Reading page...</div>
     </div>
 
-    <!-- Results preview -->
-    <div id="idxResults" style="display:none;">
+    <!-- Per-page result (shown after each scan) -->
+    <div id="idxPageResult" style="display:none;">
       <div class="idx-results-header">
-        <h4>Recipes found</h4>
-        <span class="idx-count-badge" id="idxCountBadge">0</span>
+        <h4 id="idxPageResultTitle">Recipes found on this page</h4>
+        <span class="idx-count-badge" id="idxPageCountBadge">0</span>
       </div>
-      <div style="background:var(--cd);border-radius:var(--r-md);border:.5px solid var(--br);max-height:280px;overflow-y:auto;margin-bottom:14px;">
-        <div id="idxRecipeList"></div>
+      <div style="background:var(--cd);border-radius:var(--r-md);border:.5px solid var(--br);max-height:200px;overflow-y:auto;margin-bottom:12px;">
+        <div id="idxPageRecipeList"></div>
       </div>
       <div class="st2" id="idxStatus"></div>
+
+      <!-- Actions after each page -->
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn bo" style="flex:1;" onclick="idxScanNextPage()">&#x1F4F7; Next page</button>
+        <button class="btn bp" style="flex:1;" onclick="idxFinish()">&#x2713; Done</button>
+      </div>
     </div>
 
-    <!-- Actions -->
-    <div style="display:flex;gap:8px;padding-top:4px;" id="idxActions">
-      <button class="btn bo" onclick="idxProcess()" id="idxProcessBtn" style="flex:1;display:none;">&#x1F9E0; Read Pages</button>
-      <button class="btn bp" onclick="idxSave()" id="idxSaveBtn" style="flex:2;display:none;">&#x2713; Save to Index</button>
-    </div>
+    <!-- Finished state -->
     <div id="idxSavedMsg" style="display:none;text-align:center;padding:16px 0;">
-      <div style="font-size:36px;margin-bottom:8px;">&#x2705;</div>
-      <div style="font-size:var(--ts-lg);font-weight:700;color:var(--g);margin-bottom:4px;" id="idxSavedCount"></div>
-      <div style="font-size:var(--ts-sm);color:var(--t2);">Added to your recipe index</div>
+      <div style="font-size:40px;margin-bottom:10px;">&#x2705;</div>
+      <div style="font-size:var(--ts-xl);font-weight:800;color:var(--g);margin-bottom:4px;" id="idxSavedCount"></div>
+      <div style="font-size:var(--ts-sm);color:var(--t2);">Saved to your recipe index</div>
       <button class="btn bp bblk" style="margin-top:16px;" onclick="closeM('idxScanM')">Done</button>
     </div>
 
@@ -2720,26 +2728,34 @@ function cookCount(recipeId) {
 
 
 // ══════════════════════════════════════════════════════════════════
-// INDEX SCANNER
+// INDEX SCANNER — one page at a time, save immediately
 // ══════════════════════════════════════════════════════════════════
 let idxBookId = null;
-let idxPages = [];       // [{dataUrl, status:'pending'|'done'|'error'}]
-let idxParsed = [];      // accumulated recipe entries from all pages
+let idxTotalSaved = 0;
+let idxPagesDone = 0;
+let idxAllRecipes = []; // accumulated across all pages this session
 
 function openIdxScan(bookId) {
   idxBookId = bookId || null;
-  idxPages = [];
-  idxParsed = [];
+  idxTotalSaved = 0;
+  idxPagesDone = 0;
+  idxAllRecipes = [];
 
   // Reset UI
-  document.getElementById('idxPagesStrip').innerHTML =
-    '<div class="idx-add-page" onclick="idxAddPage()"><div class="idx-add-page-icon">&#x1F4F7;</div><span>Add page</span></div>';
   document.getElementById('idxProcessing').style.display = 'none';
-  document.getElementById('idxResults').style.display = 'none';
+  document.getElementById('idxPageResult').style.display = 'none';
   document.getElementById('idxSavedMsg').style.display = 'none';
-  document.getElementById('idxProcessBtn').style.display = 'none';
-  document.getElementById('idxSaveBtn').style.display = 'none';
+  document.getElementById('idxProgressSummary').style.display = 'none';
   document.getElementById('idxStatus').textContent = '';
+  document.getElementById('idxShootArea').style.display = 'block';
+  document.getElementById('idxPhotoPh').style.display = 'flex';
+
+  // Reset photo placeholder
+  document.getElementById('idxPhotoPh').innerHTML =
+    '<div class="ocr-photo-ph-icon">&#x1F4F7;</div>' +
+    '<div class="ocr-photo-ph-label">Tap to photograph an index page</div>' +
+    '<div class="ocr-photo-ph-sub">Use good lighting, keep all text in frame</div>';
+  document.getElementById('idxPhotoPh').onclick = idxAddPage;
 
   // Populate book selector
   const sel = document.getElementById('idxBookSel');
@@ -2779,6 +2795,10 @@ function idxSetBook(bookId) {
 }
 
 function idxAddPage() {
+  if (!idxBookId) {
+    toast('Select a book first');
+    return;
+  }
   document.getElementById('idxFileIn').value = '';
   document.getElementById('idxFileIn').click();
 }
@@ -2786,102 +2806,126 @@ function idxAddPage() {
 async function idxHandlePhoto(event) {
   const file = event.target.files[0];
   if (!file) return;
-  try {
-    const dataUrl = await convertToJpeg(file);
-    const pageNum = idxPages.length + 1;
-    idxPages.push({ dataUrl, status: 'pending' });
-    idxRenderStrip();
-    // Show process button once we have at least one page
-    document.getElementById('idxProcessBtn').style.display = 'flex';
-  } catch(err) {
-    console.error('Photo error:', err);
-  }
-}
 
-function idxRenderStrip() {
-  const strip = document.getElementById('idxPagesStrip');
-  const thumbs = idxPages.map((pg, i) => {
-    const cls = pg.status === 'done' ? 'done' : pg.status === 'error' ? 'processing' : '';
-    const badge = pg.status === 'done' ? '&#x2713; Read' : pg.status === 'error' ? 'Error' : 'Page ' + (i+1);
-    return '<div class="idx-page-thumb ' + cls + '">' +
-      '<img src="' + pg.dataUrl + '">' +
-      '<button class="idx-pg-del" onclick="idxRemovePage(' + i + ')">&#x2715;</button>' +
-      '<div class="idx-pg-badge">' + badge + '</div>' +
-      '</div>';
-  }).join('');
-  strip.innerHTML = thumbs +
-    '<div class="idx-add-page" onclick="idxAddPage()"><div class="idx-add-page-icon">&#x2795;</div><span>Add page</span></div>';
-}
-
-function idxRemovePage(i) {
-  idxPages.splice(i, 1);
-  idxRenderStrip();
-  if (idxPages.length === 0) {
-    document.getElementById('idxProcessBtn').style.display = 'none';
-    document.getElementById('idxResults').style.display = 'none';
-    document.getElementById('idxSaveBtn').style.display = 'none';
-  }
-}
-
-async function idxProcess() {
-  if (!idxPages.length) { return; }
-  if (!idxBookId) { alert('Please select a book first'); return; }
-
+  // Show processing
+  document.getElementById('idxShootArea').style.display = 'none';
+  document.getElementById('idxPageResult').style.display = 'none';
   document.getElementById('idxProcessing').style.display = 'block';
-  document.getElementById('idxProcessBtn').style.display = 'none';
-  document.getElementById('idxResults').style.display = 'none';
-  document.getElementById('idxSaveBtn').style.display = 'none';
-  idxParsed = [];
+  document.getElementById('idxProcessingMsg').textContent = 'Reading page ' + (idxPagesDone + 1) + '...';
 
-  const fill = document.getElementById('idxProgressFill');
-  const msg = document.getElementById('idxProcessingMsg');
+  try {
+    // Convert to JPEG
+    const dataUrl = await convertToJpeg(file);
 
-  for (let i = 0; i < idxPages.length; i++) {
-    fill.style.width = Math.round(((i) / idxPages.length) * 100) + '%';
-    msg.textContent = 'Reading page ' + (i + 1) + ' of ' + idxPages.length + '...';
-    idxPages[i].status = 'processing';
-    idxRenderStrip();
+    // Read the page
+    const pageRecipes = await idxReadPage(dataUrl);
 
-    try {
-      const result = await idxReadPage(idxPages[i].dataUrl, i + 1);
-      idxParsed = idxParsed.concat(result);
-      idxPages[i].status = 'done';
-    } catch(err) {
-      console.error('Page ' + (i+1) + ' error:', err);
-      idxPages[i].status = 'error';
-      idxPages[i].errorMsg = err.message || String(err);
+    // Deduplicate against what we already have this session
+    const existingNames = new Set(idxAllRecipes.map(r => r.name.toLowerCase().trim()));
+    const newRecipes = pageRecipes.filter(r => !existingNames.has(r.name.toLowerCase().trim()));
+
+    if (newRecipes.length > 0) {
+      // Save immediately to Supabase
+      const toSave = newRecipes.map(r => ({
+        book_id: idxBookId,
+        name: r.name.trim(),
+        page: r.page || null,
+        course: r.course || null,
+        user_id: OWNER_ID
+      }));
+
+      const saveTimeout = setTimeout(() => {
+        throw new Error('Save timed out — check your connection');
+      }, 30000);
+
+      try {
+        setSS('syncing');
+        const saved = await sbf(SB('recipes'), { method: 'POST', body: JSON.stringify(toSave) });
+        clearTimeout(saveTimeout);
+
+        // Update local cache immediately
+        if (saved) {
+          recipes = recipes.concat(saved.map(r => ({
+            id: r.id, book_id: r.book_id, name: r.name, page: r.page, course: r.course
+          })));
+          savCache();
+        }
+        setSS('ok');
+        idxAllRecipes = idxAllRecipes.concat(newRecipes);
+        idxTotalSaved += newRecipes.length;
+      } catch(saveErr) {
+        clearTimeout(saveTimeout);
+        throw new Error('Save failed: ' + (saveErr.message || saveErr));
+      }
     }
-    idxRenderStrip();
-  }
 
-  fill.style.width = '100%';
-  msg.textContent = 'Done — deduplicating results...';
+    idxPagesDone++;
 
-  // Deduplicate by name (case-insensitive)
-  const seen = new Set();
-  idxParsed = idxParsed.filter(r => {
-    const key = r.name.toLowerCase().trim();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    // Update progress summary
+    document.getElementById('idxTotalSaved').textContent = idxTotalSaved;
+    document.getElementById('idxPagesDone').textContent = idxPagesDone;
+    document.getElementById('idxProgressSummary').style.display = 'block';
 
-  // Sort alphabetically
-  idxParsed.sort((a, b) => a.name.localeCompare(b.name));
+    // Show per-page results
+    document.getElementById('idxProcessing').style.display = 'none';
+    document.getElementById('idxPageResult').style.display = 'block';
+    document.getElementById('idxPageResultTitle').textContent =
+      newRecipes.length + ' new recipe' + (newRecipes.length !== 1 ? 's' : '') + ' found on page ' + idxPagesDone;
+    document.getElementById('idxPageCountBadge').textContent = newRecipes.length;
 
-  document.getElementById('idxProcessing').style.display = 'none';
-  // Show any errors
-  const errorPages = idxPages.filter(p => p.status === 'error');
-  if (errorPages.length) {
-    const errDetail = errorPages.map(p => p.errorMsg || 'Unknown error').join('; ');
+    const listEl = document.getElementById('idxPageRecipeList');
+    if (newRecipes.length) {
+      listEl.innerHTML = newRecipes.map(r =>
+        '<div class="idx-recipe-row">' +
+        '<span class="idx-recipe-name">' + e(r.name) + '</span>' +
+        '<span class="idx-recipe-page">p.' + (r.page || '?') + '</span>' +
+        '</div>'
+      ).join('');
+    } else {
+      listEl.innerHTML = '<div style="padding:14px;text-align:center;color:var(--t3);font-size:13px;">' +
+        (pageRecipes.length ? 'All ' + pageRecipes.length + ' recipes on this page were already saved' : 'No recipes found on this page') +
+        '</div>';
+    }
+
+    document.getElementById('idxStatus').className = 'st2 ok';
+    document.getElementById('idxStatus').textContent = idxTotalSaved + ' total recipes saved across ' + idxPagesDone + ' page' + (idxPagesDone !== 1 ? 's' : '');
+
+  } catch(err) {
+    console.error('Index page error:', err);
+    document.getElementById('idxProcessing').style.display = 'none';
+    document.getElementById('idxShootArea').style.display = 'block';
+    document.getElementById('idxPhotoPh').style.display = 'flex';
     document.getElementById('idxStatus').className = 'st2 err';
-    document.getElementById('idxStatus').textContent = errorPages.length + ' page(s) failed: ' + errDetail;
-    document.getElementById('idxResults').style.display = 'block';
+    document.getElementById('idxStatus').textContent = 'Failed: ' + (err.message || err);
+    document.getElementById('idxPageResult').style.display = 'block';
+    setSS('err');
   }
-  idxRenderResults();
 }
 
-async function idxReadPage(dataUrl, pageNum) {
+function idxScanNextPage() {
+  // Reset for next page
+  document.getElementById('idxPageResult').style.display = 'none';
+  document.getElementById('idxShootArea').style.display = 'block';
+  document.getElementById('idxPhotoPh').innerHTML =
+    '<div class="ocr-photo-ph-icon">&#x1F4F7;</div>' +
+    '<div class="ocr-photo-ph-label">Tap to photograph page ' + (idxPagesDone + 1) + '</div>' +
+    '<div class="ocr-photo-ph-sub">Keep scanning until all index pages are done</div>';
+  document.getElementById('idxPhotoPh').onclick = idxAddPage;
+}
+
+function idxFinish() {
+  const bk = books.find(b => b.id === idxBookId);
+  document.getElementById('idxPageResult').style.display = 'none';
+  document.getElementById('idxProgressSummary').style.display = 'none';
+  document.getElementById('idxShootArea').style.display = 'none';
+  document.getElementById('idxSavedCount').textContent =
+    idxTotalSaved + ' recipes indexed from ' + (bk ? bk.title : 'book') +
+    ' across ' + idxPagesDone + ' page' + (idxPagesDone !== 1 ? 's' : '');
+  document.getElementById('idxSavedMsg').style.display = 'block';
+  renderAll();
+}
+
+async function idxReadPage(dataUrl) {
   const prompt = 'This is a photograph of a cookbook contents page, index page, or recipe listing. ' +
     'Extract every recipe or dish name you can see along with its page number. ' +
     'Return ONLY a valid JSON array with no markdown, no backticks, no explanation:\n' +
@@ -2891,7 +2935,6 @@ async function idxReadPage(dataUrl, pageNum) {
     '- page: the page number as a string, or empty string if not visible\n' +
     '- course: if clearly indicated choose from Starter, Main, Side, Dessert, Bread, Snack, Sauce, Drink — otherwise leave empty\n' +
     '- name: exact title as printed, preserve capitalisation\n' +
-    '- If a recipe appears under multiple sub-headings, include it once\n' +
     '- Do not include chapter titles, section headings, or non-recipe entries\n' +
     '- If this page has no recipes, return an empty array []';
 
@@ -2918,146 +2961,29 @@ async function idxReadPage(dataUrl, pageNum) {
     });
   } catch(fetchErr) {
     clearTimeout(timeoutId);
-    if (fetchErr.name === 'AbortError') throw new Error('Request timed out after 45s — try a smaller image');
+    if (fetchErr.name === 'AbortError') throw new Error('Request timed out — try again');
     throw fetchErr;
   }
   clearTimeout(timeoutId);
 
   const data = await response.json();
-  console.log('API response status:', response.status, response.ok);
-  console.log('API response data:', JSON.stringify(data).slice(0, 300));
-
-  if (!response.ok) {
-    const errMsg = data.error?.message || data.error?.type || JSON.stringify(data).slice(0,200);
-    throw new Error('API ' + response.status + ': ' + errMsg);
-  }
-  if (!data.content || !data.content[0]) {
-    throw new Error('Empty response — stop_reason: ' + (data.stop_reason||'unknown'));
-  }
+  if (!response.ok) throw new Error('API ' + response.status + ': ' + (data.error?.message || JSON.stringify(data).slice(0,100)));
+  if (!data.content || !data.content[0]) throw new Error('Empty API response');
 
   const raw = data.content[0].text.trim().replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
-  console.log('Raw OCR response:', raw.slice(0, 300));
   let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch(e) {
-    throw new Error('JSON parse failed. Raw: ' + raw.slice(0,150));
-  }
+  try { parsed = JSON.parse(raw); }
+  catch(e) { throw new Error('Could not read page — try a clearer photo'); }
   return Array.isArray(parsed) ? parsed.filter(r => r.name && r.name.trim()) : [];
 }
 
-function idxRenderResults() {
-  const el = document.getElementById('idxRecipeList');
-  document.getElementById('idxCountBadge').textContent = idxParsed.length;
-
-  if (!idxParsed.length) {
-    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);font-size:14px;">No recipes found — try a clearer photo with better lighting</div>';
-    document.getElementById('idxResults').style.display = 'block';
-    return;
-  }
-
-  el.innerHTML = idxParsed.map((r, i) =>
-    '<div class="idx-recipe-row">' +
-    '<span class="idx-recipe-name">' + e(r.name) + '</span>' +
-    '<span class="idx-recipe-page">p.' + (r.page || '?') + '</span>' +
-    '<button class="idx-recipe-del" onclick="idxRemoveRecipe(' + i + ')">&#x2715;</button>' +
-    '</div>'
-  ).join('');
-
-  document.getElementById('idxResults').style.display = 'block';
-  document.getElementById('idxSaveBtn').style.display = 'flex';
-  document.getElementById('idxStatus').className = 'st2 ok';
-  document.getElementById('idxStatus').textContent = idxParsed.length + ' recipes ready to save';
-}
-
-function idxRemoveRecipe(i) {
-  idxParsed.splice(i, 1);
-  idxRenderResults();
-}
-
-async function idxSave() {
-  if (!idxParsed.length || !idxBookId) return;
-  const bk = books.find(b => b.id === idxBookId);
-
-  // Warn if book already has an index
-  const existing = recipes.filter(r => r.book_id === idxBookId);
-  if (existing.length) {
-    const ok = confirm(bk ? bk.title + ' already has ' + existing.length + ' recipes indexed. Replace them with this new scan?' : 'This book already has recipes indexed. Replace them?');
-    if (!ok) return;
-  }
-
-  const btn = document.getElementById('idxSaveBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-
-  // Overall timeout — if save takes more than 30s something is wrong
-  const saveTimeout = setTimeout(() => {
-    btn.disabled = false;
-    btn.textContent = '\u2713 Save to Index';
-    document.getElementById('idxStatus').className = 'st2 err';
-    document.getElementById('idxStatus').textContent = 'Save timed out — check your connection and try again';
-    setSS('err');
-  }, 30000);
-
-  try {
-    setSS('syncing');
-
-    // Delete existing entries for this book first
-    if (existing.length) {
-      try {
-        await sbf(SB('recipes') + '?book_id=eq.' + idxBookId + '&user_id=eq.' + OWNER_ID, { method: 'DELETE' });
-        recipes = recipes.filter(r => r.book_id !== idxBookId);
-      } catch(delErr) {
-        console.warn('Delete existing failed:', delErr);
-        // Continue anyway — duplicates are better than losing the scan
-      }
-    }
-
-    const toSave = idxParsed.map(r => ({
-      book_id: idxBookId,
-      name: r.name.trim(),
-      page: r.page || null,
-      course: r.course || null,
-      user_id: OWNER_ID
-    }));
-
-    // Save in batches of 50 (safer than 100 for mobile connections)
-    const batchSize = 50;
-    let allSaved = [];
-    for (let i = 0; i < toSave.length; i += batchSize) {
-      const batch = toSave.slice(i, i + batchSize);
-      btn.textContent = 'Saving ' + Math.min(i + batchSize, toSave.length) + ' of ' + toSave.length + '...';
-      const saved = await sbf(SB('recipes'), { method: 'POST', body: JSON.stringify(batch) });
-      if (saved) allSaved = allSaved.concat(saved);
-    }
-
-    // Update local cache
-    recipes = recipes.concat(allSaved.map(r => ({
-      id: r.id, book_id: r.book_id, name: r.name, page: r.page, course: r.course
-    })));
-    savCache();
-    clearTimeout(saveTimeout);
-    setSS('ok');
-
-    // Show success
-    document.getElementById('idxSaveBtn').style.display = 'none';
-    document.getElementById('idxProcessBtn').style.display = 'none';
-    document.getElementById('idxResults').style.display = 'none';
-    document.getElementById('idxSavedCount').textContent =
-      allSaved.length + ' recipes indexed from ' + (bk ? bk.title : 'book');
-    document.getElementById('idxSavedMsg').style.display = 'block';
-    renderAll();
-
-  } catch(err) {
-    clearTimeout(saveTimeout);
-    console.error('Index save error:', err);
-    setSS('err');
-    document.getElementById('idxStatus').className = 'st2 err';
-    document.getElementById('idxStatus').textContent = 'Save failed: ' + (err.message || err);
-    btn.disabled = false;
-    btn.textContent = '\u2713 Save to Index';
-  }
-}
+// Legacy functions kept for compatibility
+function idxProcess() {}
+function idxRenderStrip() {}
+function idxRemovePage() {}
+function idxRenderResults() {}
+function idxRemoveRecipe() {}
+function idxSave() {}
 
 // ── OCR RECIPE SCANNING ───────────────────────────────────────
 let ocrMode = 'recipe'; // 'recipe' or 'index'
