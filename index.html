@@ -1644,17 +1644,15 @@ function qsearch(q){
       byBook[bid].push(r);
     });
     h+='<div style="padding:10px 16px 6px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;">In Your Books ('+idxHits.length+' recipes across '+Object.keys(byBook).length+' book'+(Object.keys(byBook).length!==1?'s':'')+')</div>';
-    h+=Object.entries(byBook).map(([bid,rlist])=>{
+    h+=Object.entries(byBook).sort((a,b)=>b[1].length-a[1].length).map(([bid,rlist])=>{
       const bk=books.find(b=>b.id===bid);
       const sh=bk?.shelfId?shelves.find(s=>s.id===bk.shelfId):null;
-      const covPh='<div class="srch-result-cover-ph">&#x1F4DA;</div>';
-      const cov=bk?.cover
-        ?'<img class="srch-result-cover" src="'+bk.cover+'" onerror="this.style.display=\'none\'">'+ covPh
-        :covPh;
+      const covEl=bk?.cover?'<img class="srch-result-cover" src="'+bk.cover+'" onerror="this.src=\'\';this.className=\'srch-result-cover-ph\'">'+'<span style="display:none"></span>':'<div class="srch-result-cover-ph">&#x1F4DA;</div>';
       return '<div class="srch-result-book" onclick="bk&&showBkDetail(bk.id)" style="cursor:pointer;margin:0 16px 10px;">'+
-        '<div class="srch-result-header">'+cov+
+        '<div class="srch-result-header">'+covEl+
         '<div class="srch-result-book-info">'+
         '<div class="srch-result-book-title">'+(bk?e(bk.title):'Unknown book')+'</div>'+
+        '<div style="font-size:11px;color:var(--g);font-weight:600;">'+rlist.length+' match'+(rlist.length!==1?'es':'')+'</div>'+
         (sh?'<div class="srch-result-book-shelf">&#x1F4CD; '+e(sh.name)+'</div>':
             (bk?'<div style="font-size:11px;color:var(--t3);">No shelf assigned</div>':''))+
         '</div></div>'+
@@ -1690,10 +1688,9 @@ function renderLib(){
         Object.entries(byBook).map(([bid,rlist])=>{
           const bk=books.find(b=>b.id===bid);
           const sh=bk?.shelfId?shelves.find(s=>s.id===bk.shelfId):null;
-          const covPh='<div class="srch-result-cover-ph">&#x1F4DA;</div>';
-          const cov=bk?.cover?'<img class="srch-result-cover" src="'+bk.cover+'" onerror="this.style.display=\'none\'">'+covPh:covPh;
-          return '<div class="srch-result-book" onclick="bk&&showBkDetail(bk.id)" style="cursor:pointer;margin:0 16px 10px;">'+
-            '<div class="srch-result-header">'+cov+
+          const covEl=bk?.cover?'<img class="srch-result-cover" src="'+bk.cover+'" onerror="this.src=\'\';this.className=\'srch-result-cover-ph\'">'+'<span style="display:none"></span>':'<div class="srch-result-cover-ph">&#x1F4DA;</div>';
+      return '<div class="srch-result-book" onclick="bk&&showBkDetail(bk.id)" style="cursor:pointer;margin:0 16px 10px;">'+
+            '<div class="srch-result-header">'+covEl+
             '<div class="srch-result-book-info">'+
             '<div class="srch-result-book-title">'+(bk?e(bk.title):'Unknown book')+'</div>'+
             (sh?'<div class="srch-result-book-shelf">&#x1F4CD; '+e(sh.name)+'</div>':'')+'</div></div>'+
