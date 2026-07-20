@@ -1620,7 +1620,15 @@ function qsearch(q){
   if(!q.trim()){el.innerHTML='';return;}
   const ql=q.toLowerCase();
   // Recipe index hits (from scanned book indexes)
-  const idxHits=recipes.filter(r=>(r.name||'').toLowerCase().includes(ql));
+  const idxHits=recipes.filter(r=>{
+    if(!(r.name||'').toLowerCase().includes(ql)) return false;
+    // Apply chip filter via parent book tags
+    if(libF!=='all'){
+      const bk=books.find(b=>b.id===r.book_id);
+      if(!bk||!(bk.tags?.[libF]?.length>0)) return false;
+    }
+    return true;
+  });
   // Full saved recipes (with ingredients)
   const frHits=fullRecipes.filter(r=>{
     const ings=recipeIngredients.filter(i=>i.recipe_id===r.id).map(i=>i.ingredient).join(' ').toLowerCase();
@@ -1679,7 +1687,8 @@ function renderLib(){
   const list=books.filter(b=>{const t=[b.title,b.author,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase();return(!q||t.includes(q))&&(libF==='all'||(b.tags?.[libF]?.length>0));});
   // When a filter chip is active, show matching books prominently
   // Recipe index results respect the filter too — show below
-  document.getElementById('libct').textContent=list.length+(books.length!==list.length?' of '+books.length:'')+' book'+(list.length!==1?'s':'');
+  const totalRcps=libF==='all'?recipes.length:recipes.filter(r=>{const bk=books.find(b=>b.id===r.book_id);return bk&&bk.tags?.[libF]?.length>0;}).length;
+  document.getElementById('libct').textContent=list.length+(books.length!==list.length?' of '+books.length:'')+' book'+(list.length!==1?'s':'')+(totalRcps?' · '+totalRcps+' indexed recipes':'');
   // Also show recipe index hits when searching
   const libRcpEl=document.getElementById('libRcpResults');
   if(q&&libRcpEl){
