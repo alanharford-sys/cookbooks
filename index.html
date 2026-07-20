@@ -835,7 +835,8 @@ textarea.fi { resize: vertical; min-height: 80px; }
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="hdr">
-    <h1 id="hdrtit" style="cursor:pointer;" onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))">&#x1F4DA; My Cookbook Library</h1>
+    <button onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))" style="background:none;border:none;cursor:pointer;padding:4px;border-radius:8px;font-size:18px;flex-shrink:0;line-height:1;color:var(--t1);" title="Home">&#x1F3E0;</button>
+    <h1 id="hdrtit" style="cursor:pointer;flex:1;" onclick="swTab('home',document.querySelector('.ti:nth-child(1)'))">&#x1F4DA; My Cookbook Library</h1>
     <div class="hdr-r">
       <span class="sdot" id="sdot"></span>
       <button class="theme-btn" id="themeBtn" onclick="togTheme()" style="font-size:16px;">&#x1F319;</button>
@@ -1676,6 +1677,8 @@ function setLV(v,el){libV=v;renderLib();}
 function renderLib(){
   const q=(document.getElementById('libsrch').value||'').toLowerCase().trim();
   const list=books.filter(b=>{const t=[b.title,b.author,...(b.tags?.cuisine||[]),...(b.tags?.style||[]),...(b.tags?.ingredient||[])].join(' ').toLowerCase();return(!q||t.includes(q))&&(libF==='all'||(b.tags?.[libF]?.length>0));});
+  // When a filter chip is active, show matching books prominently
+  // Recipe index results respect the filter too — show below
   document.getElementById('libct').textContent=list.length+(books.length!==list.length?' of '+books.length:'')+' book'+(list.length!==1?'s':'');
   // Also show recipe index hits when searching
   const libRcpEl=document.getElementById('libRcpResults');
@@ -1727,7 +1730,7 @@ function showBkDetail(id){
   const tags=(b.tags?.cuisine||[]).map(t=>'<span class="dtag tc">'+e(t)+'</span>').join('')+(b.tags?.style||[]).map(t=>'<span class="dtag ts">'+e(t)+'</span>').join('')+(b.tags?.ingredient||[]).map(t=>'<span class="dtag ting">'+e(t)+'</span>').join('');
   const meta=[b.publisher&&'<div class="mi"><div class="ml">Publisher</div><div class="mv">'+e(b.publisher)+'</div></div>',b.year&&'<div class="mi"><div class="ml">Year</div><div class="mv">'+e(b.year)+'</div></div>',b.pages&&'<div class="mi"><div class="ml">Pages</div><div class="mv">'+e(b.pages)+'</div></div>',b.isbn&&'<div class="mi"><div class="ml">ISBN</div><div class="mv" style="font-size:12px">'+e(b.isbn)+'</div></div>'].filter(Boolean).join('');
   const covH=b.cover?'<img class="dcov" src="'+b.cover+'" alt="" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="dcovph" style="display:none">&#x1F4D6;</div>':'<div class="dcovph">&#x1F4D6;</div>';
-  const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button onclick="addRecipeToShopList(\''+r.id+'\',true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
+  const rH=br.length?'<div class="dsh">Recipes ('+br.length+')</div>'+br.map(r=>'<div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--br);font-size:14px;gap:8px;"><span style="flex:1">'+e(r.name)+'</span><span style="color:var(--t3);font-weight:600;font-size:12px;">'+(r.page?'p.'+e(r.page):'')+'</span><button title="No ingredients — index recipes only" style="background:none;border:none;font-size:16px;padding:2px 4px;opacity:.2;cursor:not-allowed;">&#x1F6D2;</button></div>').join(''):'<div style="font-size:14px;color:var(--t3);padding:8px 0;">No recipes indexed yet.</div>';
   const acts='<button class="btn bo" style="flex:1" onclick="editBk(\''+b.id+'\')">&#x270F;&#xFE0F; Edit</button><button class="btn bo bsm" onclick="refreshCover(\''+b.id+'\')" title="Refresh cover">&#x1F5BC;&#xFE0F;</button><button class="btn bp" style="flex:1" onclick="openIdxScan(\''+b.id+'\')">&#x1F4CB; Scan Index</button><button class="btn bp bsm" style="background:#e91e63" onclick="openOcrM(\''+b.id+'\')">&#x1F4F8;</button><button class="btn bd bsm" onclick="delBk(\''+b.id+'\')">&#x1F5D1;</button>';
   document.getElementById('bkDetailCont').innerHTML='<div class="mhw"><div class="mh"></div></div><div class="mhdr"><button class="mcls" onclick="closeM(\'bkDetailM\')" style="margin-right:4px;">&#x2190;</button><span class="mtit">'+e(b.title)+'</span><button class="mcls" onclick="closeM(\'bkDetailM\')">&#x2715;</button></div><div class="mbody"><div class="dhero">'+covH+'<div class="dhi"><div class="dtit">'+e(b.title)+'</div><div class="daut">'+e(b.author||'Unknown author')+'</div>'+(sh?'<div class="locbadge">&#x1F4CD; '+e(sh.name)+(sh.shelf_row?' &middot; Row '+sh.shelf_row+', Col '+sh.shelf_col:'')+'</div>':'')+'<div class="dtags">'+tags+'</div></div></div>'+(meta?'<div class="mgrid">'+meta+'</div>':'')+(b.description?'<div class="dsh">About</div><div class="dsb">'+e(b.description).slice(0,400)+'</div>':'')+(b.notes?'<div class="dsh">My Notes</div><div class="dsb">'+e(b.notes)+'</div>':'')+'<div class="dsh">Recipe Index</div>'+rH+(!isGuest?'<div class="dacts">'+acts+'</div>':'')+'</div>';
   openM('bkDetailM');
@@ -1891,7 +1894,19 @@ function showShelfDetail(id){
 
 async function saveShelf(){const nm=document.getElementById('snm').value.trim();if(!nm){toast('Please enter a name');return;}try{const row={name:nm,description:document.getElementById('sds').value.trim()||null,emoji:document.getElementById('sem').value.trim()||'&#x1F4DA;',shelf_row:parseInt(document.getElementById('srow').value)||null,shelf_col:parseInt(document.getElementById('scol').value)||null,sort_order:shelves.length};const saved=await sbf(SB('collections'),{method:'POST',body:JSON.stringify(row)});shelves.push(saved[0]);closeM('addShelfM');renderAll();toast('Shelf created');}catch(err){toast('Save failed');console.error(err);}}
 async function delShelf(id){if(!confirm('Delete this shelf?'))return;try{await sbf(SB('collections')+'?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}});shelves=shelves.filter(s=>s.id!==id);books=books.map(b=>b.shelfId===id?{...b,shelfId:null}:b);closeM('shelfDetailM');renderAll();toast('Shelf deleted');}catch(err){toast('Delete failed');}}
-function popShelfSel(){const s=document.getElementById('fShelf');if(!s)return;s.innerHTML='<option value="">-- Assign to shelf --</option>'+shelves.map(sh=>'<option value="'+sh.id+'">'+(sh.emoji||'&#x1F4DA;')+' '+e(sh.name)+'</option>').join('');}
+function popShelfSel(){
+  const s=document.getElementById('fShelf');if(!s)return;
+  const sorted=[...shelves].sort((a,b)=>{
+    const ra=a.shelf_row||99,rb=b.shelf_row||99;
+    const ca=a.shelf_col||99,cb=b.shelf_col||99;
+    return ra!==rb?ra-rb:ca-cb;
+  });
+  s.innerHTML='<option value="">-- No shelf assigned --</option>'+
+    sorted.map(sh=>{
+      const loc=sh.shelf_row?'R'+sh.shelf_row+'C'+sh.shelf_col+' — ':'';
+      return '<option value="'+sh.id+'">'+(sh.emoji||'&#x1F4DA;')+' '+loc+e(sh.name)+'</option>';
+    }).join('');
+}
 function popBookSel(){const s=document.getElementById('frBook');if(!s)return;s.innerHTML='<option value="">-- Not linked to a book --</option>'+books.map(b=>'<option value="'+b.id+'">'+e(b.title)+'</option>').join('');}
 
 // ADD/EDIT BOOK
